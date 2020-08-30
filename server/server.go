@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
 
@@ -40,10 +41,16 @@ func v1RPCServer() http.Handler {
 	rpcServer.RegisterCodec(jsonHack.NewCodec(), "application/json;charset=UTF-8")
 
 	commentService := new(comments.Service)
-	statusService := new(status.ServerService)
+	statusService := new(status.Service)
 
-	rpcServer.RegisterService(commentService, "comment")
-	rpcServer.RegisterService(statusService, "server")
+	err := rpcServer.RegisterService(commentService, "comment")
+	if err != nil {
+		logrus.Panicf("Error registering comment service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(statusService, "server")
+	if err != nil {
+		logrus.Panicf("Error registering status service: %s", errors.FullTrace(err))
+	}
 	rpcServer.RegisterBeforeFunc(func(info *rpcHack.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
 	})
@@ -64,10 +71,16 @@ func v2RPCServer() http.Handler {
 	rpcServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
 
 	commentService := new(comments.Service)
-	statusService := new(status.ServerService)
+	statusService := new(status.Service)
 
-	rpcServer.RegisterService(commentService, "comment")
-	rpcServer.RegisterService(statusService, "server")
+	err := rpcServer.RegisterService(commentService, "comment")
+	if err != nil {
+		logrus.Panicf("Error registering v2 comment service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(statusService, "server")
+	if err != nil {
+		logrus.Panicf("Error registering v2 status service: %s", errors.FullTrace(err))
+	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
 	})

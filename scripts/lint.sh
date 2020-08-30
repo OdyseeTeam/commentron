@@ -11,19 +11,22 @@ GO_FILES=$(find . -iname '*.go' -type f | grep -v /model/*  | grep -v /migration
 	go get -u github.com/jgautheron/gocyclo                        # Check against high complexity
 	go get -u github.com/mdempsky/unconvert                        # Identifies unnecessary type conversions
 	go get -u github.com/kisielk/errcheck                          # Checks for unhandled errors
-	go get -u github.com/opennota/check/cmd/varcheck               # Checks for unused vars
-	go get -u github.com/opennota/check/cmd/structcheck            # Checks for unused fields in structs
+	go get -u gitlab.com/opennota/check/cmd/aligncheck             # Checks for inefficiently packed structs
+  go get -u gitlab.com/opennota/check/cmd/structcheck            # Checks for unused fields in structs
+  go get -u gitlab.com/opennota/check/cmd/varcheck               # Checks for unused vars
+
 )
-echo "Running varcheck..." && varcheck $(go list ./... | grep -v /migration/* | grep -v /model/* )
-echo "Running structcheck..." && structcheck $(go list ./... | grep -v /migration/* | grep -v /model/* )
+echo "Running varcheck..." && varcheck $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/* )
+echo "Running structcheck..." && structcheck $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
+echo "Running aligncheck..." && aligncheck $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 # go vet is the official Go static analyzer
-echo "Running go vet..." && go vet $(go list ./... | grep -v /migration/* | grep -v /model/* )
+echo "Running go vet..." && go vet $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 # checks for unhandled errors
-echo "Running errcheck..." && errcheck $(go list ./... | grep -v /migration/* | grep -v /model/* )
+echo "Running errcheck..." && errcheck $(go list ./... | grep -v /migration/* | grep -v /model/*  | grep -v /server/services/v1/rpc/* )
 # check for unnecessary conversions - ignore autogen code
-echo "Running unconvert..." && unconvert -v $(go list ./... | grep -v /migration/* | grep -v /model/* )
+echo "Running unconvert..." && unconvert -v $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 # checks for function complexity, too big or too many returns
 echo "Running gocyclo..." && gocyclo -ignore "_test" -avg -over 19 $GO_FILES
 # one last linter - ignore autogen code
-echo "Running golint..." && golint -set_exit_status $(go list ./... | grep -v /migration/* | grep -v /model/* )
+echo "Running golint..." && golint -set_exit_status $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 test $err = 0 # Return non-zero if any command failed

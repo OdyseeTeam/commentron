@@ -8,6 +8,7 @@ import (
 	"github.com/volatiletech/null"
 )
 
+// CommentItem is the data structure of a comment returned from commentron
 type CommentItem struct {
 	Comment     string `json:"comment"`
 	CommentID   string `json:"comment_id"`

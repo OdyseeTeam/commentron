@@ -6,18 +6,25 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/lbryio/commentron/util"
+
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 )
 
+// APIToken is the token allowed to access the api used for internal-apis
 var APIToken string
+
+// APIURL is the url for internal-apis to be used by commentron
 var APIURL string
 
+// CommentResponse is the response structure from internal-apis for the comment event api
 type CommentResponse struct {
 	Success bool        `json:"success"`
 	Error   interface{} `json:"error"`
 	Data    string      `json:"data"`
 }
 
+// NotifyOptions Are the options used to construct the comment event api signature.
 type NotifyOptions struct {
 	ActionType string
 	CommentID  string
@@ -27,6 +34,7 @@ type NotifyOptions struct {
 	ClaimID    string
 }
 
+// Notify notifies internal-apis of a new comment when one is recieved.
 func Notify(options NotifyOptions) error {
 	c := http.Client{}
 	form := make(url.Values)
@@ -51,7 +59,7 @@ func Notify(options NotifyOptions) error {
 	if err != nil {
 		return errors.Err(err)
 	}
-	defer response.Body.Close()
+	defer util.CloseBody(response.Body)
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return errors.Err(err)

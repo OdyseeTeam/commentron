@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Service1Request struct {
@@ -80,12 +82,18 @@ func (r MockCodecRequest) ReadRequest(args interface{}) error {
 
 func (r MockCodecRequest) WriteResponse(w http.ResponseWriter, reply interface{}) {
 	res := reply.(*Service1Response)
-	w.Write([]byte(strconv.Itoa(res.Result)))
+	_, writeErr := w.Write([]byte(strconv.Itoa(res.Result)))
+	if writeErr != nil {
+		logrus.Error(writeErr)
+	}
 }
 
 func (r MockCodecRequest) WriteError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
-	w.Write([]byte(err.Error()))
+	_, writeErr := w.Write([]byte(err.Error()))
+	if writeErr != nil {
+		logrus.Error(writeErr)
+	}
 }
 
 type MockResponseWriter struct {
@@ -123,7 +131,10 @@ func TestServeHTTP(t *testing.T) {
 	expected := A * B
 
 	s := NewServer()
-	s.RegisterService(new(Service1), "")
+	err := s.RegisterService(new(Service1), "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.RegisterCodec(MockCodec{A, B}, "mock")
 	r, err := http.NewRequest("POST", "", nil)
 	if err != nil {
@@ -175,7 +186,10 @@ func TestInterception(t *testing.T) {
 	}
 
 	s := NewServer()
-	s.RegisterService(new(Service1), "")
+	err = s.RegisterService(new(Service1), "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.RegisterCodec(MockCodec{A, B}, "mock")
 	s.RegisterInterceptFunc(func(i *RequestInfo) *http.Request {
 		return r2
@@ -212,7 +226,10 @@ func TestValidationSuccessful(t *testing.T) {
 	validate := func(info *RequestInfo, v interface{}) error { return nil }
 
 	s := NewServer()
-	s.RegisterService(new(Service1), "")
+	err := s.RegisterService(new(Service1), "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.RegisterCodec(MockCodec{A, B}, "mock")
 	s.RegisterValidateRequestFunc(validate)
 
@@ -243,7 +260,10 @@ func TestValidationFails(t *testing.T) {
 	}
 
 	s := NewServer()
-	s.RegisterService(new(Service1), "")
+	err := s.RegisterService(new(Service1), "")
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.RegisterCodec(MockCodec{1, 2}, "mock")
 	s.RegisterValidateRequestFunc(validate)
 

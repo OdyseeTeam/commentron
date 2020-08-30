@@ -28,8 +28,10 @@ page for comment ( params: page, [size], order-by )
 
 */
 
+// Service is the service struct defined for the comment package for rpc service "comment.*"
 type Service struct{}
 
+// Create creates a comment
 func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateResponse) error {
 	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFromPtr(args.ChannelID).String)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
@@ -45,7 +47,7 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 	if err != nil {
 		return errors.Err(err)
 	}
-	commentID, timestamp, err := createCommentId(args.CommentText, null.StringFromPtr(args.ChannelID).String)
+	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFromPtr(args.ChannelID).String)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -79,6 +81,7 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 	return nil
 }
 
+// List lists comments based on filters and arguments passed. The returned result is dynamic based on the args passed
 func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 	args.ApplyDefaults()
 	loadChannels := qm.Load("Channel")
@@ -143,6 +146,7 @@ func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) err
 	return nil
 }
 
+// GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
 func (c *Service) GetChannelFromCommentID(_ *http.Request, args *ChannelArgs, reply *ChannelResponse) error {
 	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(m.CommentRels.Channel)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
@@ -159,6 +163,7 @@ func (c *Service) GetChannelFromCommentID(_ *http.Request, args *ChannelArgs, re
 	return nil
 }
 
+// Abandon deletes a comment
 func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResponse) error {
 	item, err := abandon(args)
 	if err != nil {
@@ -169,6 +174,7 @@ func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResp
 	return nil
 }
 
+// Edit edits a comment
 func (c *Service) Edit(_ *http.Request, args *AbandonArgs, reply *AbandonResponse) error {
 	return nil
 }

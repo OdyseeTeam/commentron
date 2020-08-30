@@ -1,5 +1,6 @@
 package util
 
+// CreateDigest utility function for grouping multiple sets of bytes. Largely used for signature verification
 func CreateDigest(pieces ...[]byte) []byte {
 	var digest []byte
 	for _, p := range pieces {

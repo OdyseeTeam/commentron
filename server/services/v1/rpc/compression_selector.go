@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"strings"
 	"unicode"
+
+	"github.com/lbryio/commentron/util"
 )
 
 // gzipWriter writes and closes the gzip writer.
@@ -20,7 +22,7 @@ type gzipWriter struct {
 }
 
 func (gw *gzipWriter) Write(p []byte) (n int, err error) {
-	defer gw.w.Close()
+	defer util.CloseWriter(gw.w)
 	return gw.w.Write(p)
 }
 
@@ -39,7 +41,7 @@ type flateWriter struct {
 }
 
 func (fw *flateWriter) Write(p []byte) (n int, err error) {
-	defer fw.w.Close()
+	defer util.CloseWriter(fw.w)
 	return fw.w.Write(p)
 }
 

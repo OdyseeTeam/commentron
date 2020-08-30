@@ -7,12 +7,14 @@ import (
 	"github.com/lbryio/commentron/model"
 )
 
+// AbandonArgs are the arguments passed to comment.Abandon RPC call
 type AbandonArgs struct {
 	CommentID string `json:"comment_id"`
 	Signature string `json:"signature"`
 	SigningTS string `json:"signing_ts"`
 }
 
+// AbandonResponse the response to the abandon call
 type AbandonResponse struct {
 	*CommentItem
 }

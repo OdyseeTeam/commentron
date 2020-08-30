@@ -10,10 +10,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lbryio/commentron/util"
+
 	"github.com/lbryio/commentron/server/services/v1/rpc"
 )
 
-var null = json.RawMessage([]byte("null"))
 var Version = "2.0"
 
 // ----------------------------------------------------------------------------
@@ -118,7 +119,7 @@ func newCodecRequest(r *http.Request, encoder rpc.Encoder, errorMapper func(erro
 		}
 	}
 
-	r.Body.Close()
+	util.CloseBody(r.Body)
 	return &CodecRequest{request: req, err: err, encoder: encoder, errorMapper: errorMapper}
 }
 

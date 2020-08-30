@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 var nilErrorValue = reflect.Zero(reflect.TypeOf((*error)(nil)).Elem())
@@ -259,5 +261,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func WriteError(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(status)
-	fmt.Fprint(w, msg)
+	_, err := fmt.Fprint(w, msg)
+	if err != nil {
+		logrus.Error(err)
+	}
 }

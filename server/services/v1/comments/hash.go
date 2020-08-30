@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func createCommentId(comment, channelID string) (string, int64, error) {
+func createCommentID(comment, channelID string) (string, int64, error) {
 	// We convert the timestamp from seconds into minutes
 	// to prevent spammers from commenting the same BS everywhere.
 	timestamp := time.Now().Unix()

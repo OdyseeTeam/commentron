@@ -1,5 +1,6 @@
 package comments
 
+// ListArgs arguments for the comment.List rpc call
 type ListArgs struct {
 	ClaimID  *string `json:"claim_id"`
 	ParentID *string `json:"parent_id"`
@@ -8,6 +9,7 @@ type ListArgs struct {
 	TopLevel bool    `json:"top_level"`
 }
 
+// ApplyDefaults applies the default values for arguments passed that are different from normal defaults.
 func (c *ListArgs) ApplyDefaults() {
 	if c.Page == 0 {
 		c.Page = 1
@@ -18,6 +20,7 @@ func (c *ListArgs) ApplyDefaults() {
 	}
 }
 
+// ListResponse response for the comment.List rpc call
 type ListResponse struct {
 	Page              int           `json:"page"`
 	PageSize          int           `json:"page_size"`

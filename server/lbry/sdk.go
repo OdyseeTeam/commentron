@@ -5,6 +5,7 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 )
 
+// GetChannelClaim retrieves the channel claim information from the sdk.
 func GetChannelClaim(claimID string) (*jsonrpc.Claim, error) {
 	c := jsonrpc.NewClient("")
 	claimSearchResp, err := c.ClaimSearch(nil, &claimID, nil, nil, 1, 1)

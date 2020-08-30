@@ -15,17 +15,18 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 )
 
-func ValidateSignature(channelClaimId, signature, signingTS, data string) error {
-	channel, err := GetChannelClaim(channelClaimId)
+// ValidateSignature validates the signature was signed by the channel reference.
+func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
+	channel, err := GetChannelClaim(channelClaimID)
 	if err != nil {
 		return errors.Err(err)
 	}
 	pk := channel.Value.GetChannel().GetPublicKey()
-	return validateSignature(channelClaimId, signature, signingTS, data, pk)
+	return validateSignature(channelClaimID, signature, signingTS, data, pk)
 
 }
 
-func validateSignature(channelClaimId, signature, signingTS, data string, pubkey []byte) error {
+func validateSignature(channelClaimID, signature, signingTS, data string, pubkey []byte) error {
 	publicKey, err := getPublicKeyFromBytes(pubkey)
 	if err != nil {
 		return errors.Err(err)
@@ -33,7 +34,7 @@ func validateSignature(channelClaimId, signature, signingTS, data string, pubkey
 	injest := sha256.Sum256(
 		util.CreateDigest(
 			[]byte(signingTS),
-			unhelixifyAndReverse(channelClaimId),
+			unhelixifyAndReverse(channelClaimID),
 			[]byte(data),
 		))
 	sig, err := hex.DecodeString(signature)
@@ -77,7 +78,10 @@ type publicKeyInfo struct {
 
 func getPublicKeyFromBytes(pubKeyBytes []byte) (*btcec.PublicKey, error) {
 	PKInfo := publicKeyInfo{}
-	asn1.Unmarshal(pubKeyBytes, &PKInfo)
+	_, err := asn1.Unmarshal(pubKeyBytes, &PKInfo)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
 	pubkeyBytes1 := PKInfo.PublicKey.Bytes
 	return btcec.ParsePubKey(pubkeyBytes1, btcec.S256())
 }

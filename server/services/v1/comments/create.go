@@ -1,5 +1,6 @@
 package comments
 
+// CreateArgs arguments for the comment.Create rpc call
 type CreateArgs struct {
 	CommentText string  `json:"comment"`
 	ClaimID     string  `json:"claim_id"`
@@ -10,6 +11,7 @@ type CreateArgs struct {
 	SigningTS   *string `json:"signing_ts"`
 }
 
+// CreateResponse response for the comment.Create rpc call
 type CreateResponse struct {
 	*CommentItem
 }
