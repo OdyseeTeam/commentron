@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/lbryio/commentron/migration"
-	"github.com/lbryio/lbry.go/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	_ "github.com/go-sql-driver/mysql" // import mysql
 	"github.com/jmoiron/sqlx"

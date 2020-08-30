@@ -14,7 +14,6 @@ require (
 	github.com/johntdyer/slack-go v0.0.0-20180213144715-95fac1160b22 // indirect
 	github.com/johntdyer/slackrus v0.0.0-20180518184837-f7aae3243a07
 	github.com/jteeuwen/go-bindata v3.0.7+incompatible
-	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.4.6
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
