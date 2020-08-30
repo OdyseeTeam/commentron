@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lbryio/commentron/rpc"
+	"github.com/lbryio/commentron/server/services/v1/rpc"
 )
 
 // ResponseRecorder is an implementation of http.ResponseWriter that
