@@ -1,0 +1,9 @@
+POST http://localhost:5279/
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "channel_list",
+  "params": {}
+}

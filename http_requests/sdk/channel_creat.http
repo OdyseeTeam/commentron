@@ -1,0 +1,8 @@
+# curl -d'{"method": "channel_create", "params": {"name": "@channel", "bid": "1.0", "featured": [], "tags": [], "languages": [], "locations": [], "funding_account_ids": [], "preview": false, "blocking": false}}' http://localhost:5279/
+POST http://localhost:5279/
+Content-Type: application/x-www-form-urlencoded
+
+{"method": "channel_create", "params": {"name": "@dtrdtr", "bid": "0.01", "featured": [], "tags": [], "languages": [], "locations": [], "funding_account_ids": [], "preview": false, "blocking": false}}
+
+###
+

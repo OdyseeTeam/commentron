@@ -1,0 +1,16 @@
+# curl -d'{"method": "comment_list", "params": {"claim_id": "b417290577f86e33f746980cc43dcf35a76e3374", "include_replies": true, "is_channel_signature_valid": false, "visible": false, "hidden": false}}' http://localhost:5279/
+POST http://localhost:5279/
+Content-Type: application/x-www-form-urlencoded
+
+{
+  "method": "comment_list",
+  "params": {
+    "claim_id": "e0a2e8130451ce371b8fdab6e2c7abf615097615",
+    "include_replies": true,
+    "is_channel_signature_valid": false,
+    "visible": false,
+    "hidden": false
+  }
+}
+###
+

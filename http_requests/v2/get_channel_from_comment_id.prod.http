@@ -1,0 +1,19 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+POST https://comments.lbry.com/api
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "method": "get_channel_from_comment_id",
+  "params": {
+    "comment_id": "000021df277e956c3f9d92bd46bd0ddc8ac9f36c03ffb3c4c6905ed8cc676261"
+  }
+}
+
+###

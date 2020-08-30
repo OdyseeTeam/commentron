@@ -1,0 +1,11 @@
+POST http://localhost:5279/
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "comment_abandon",
+  "params": {
+    "comment_id": "c1f4efb8a69d661791fb09b8ec5a43f63a2966db65e3b258436dcce406e4e7b0"
+  }
+}

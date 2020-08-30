@@ -1,0 +1,28 @@
+os: linux
+dist: xenial
+language: go
+go_import_path: github.com/lbryio/commentron
+
+go: 1.14.4
+
+cache:
+  directories:
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
+
+script:
+  #Fetch master to be used in deploy condition to prevent deploying on old commits.
+  - git fetch origin master:master
+  - ./scripts/build.sh
+  - go test ./...
+  - ./scripts/lint.sh
+  - go mod tidy
+  - git diff --exit-code
+
+deploy:
+  # creates and publishes new docker image per branch
+  - provider: script
+    script: bash docker/docker.sh
+    skip_cleanup: true
+    on:
+      all_branches: true
