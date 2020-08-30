@@ -11,8 +11,6 @@ cache:
     - $HOME/gopath/pkg/mod
 
 script:
-  #Fetch master to be used in deploy condition to prevent deploying on old commits.
-  - git fetch origin master:master
   - ./scripts/build.sh
   - go test ./...
   - ./scripts/lint.sh
