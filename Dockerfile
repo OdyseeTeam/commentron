@@ -11,9 +11,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 WORKDIR /usr/bin
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-COPY ./bin/mooney mooney
-RUN chmod +x ./mooney
+COPY ./bin/commentron commentron
+RUN chmod +x ./commentron
 
 EXPOSE 6060
 STOPSIGNAL SIGINT
-CMD ./mooney serve
+CMD ./commentron serve

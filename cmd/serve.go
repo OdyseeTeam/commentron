@@ -22,8 +22,8 @@ func init() {
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Runs the LBRY First JSON RPC server",
-	Long:  `Runs the LBRY First JSON RPC server`,
+	Short: "Runs the Commentron JSON RPC server",
+	Long:  `Runs the Commentron JSON RPC server`,
 	Args:  cobra.OnlyValidArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("codeprofile") {

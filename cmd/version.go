@@ -12,8 +12,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of LBRY-First",
-	Long:  `All software has versions. This is LBRY-First's`,
+	Short: "Print the version number of Commentron",
+	Long:  `All software has versions. This is Commentron's`,
 	Run: func(cmd *cobra.Command, args []string) {
 		println("Semantic Version: ", meta.GetSemVersion())
 		println("Version: " + meta.GetVersion())

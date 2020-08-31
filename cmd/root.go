@@ -19,9 +19,9 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "lbry-first",
-	Short: "Upload to Alternatives",
-	Long:  `One stop shop for uploading digital content to alternatives to empower LBRY First!`,
+	Use:   "commentron",
+	Short: "LBRY Comment Server",
+	Long:  `Accepts new and delivers existing comments`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 	},
