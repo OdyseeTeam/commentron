@@ -3,7 +3,7 @@ dist: xenial
 language: go
 go_import_path: github.com/lbryio/commentron
 
-go: 1.14.4
+go: 1.13.4
 
 cache:
   directories:
