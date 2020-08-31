@@ -10,8 +10,8 @@ import (
 )
 
 func init() {
-	serveCmd.PersistentFlags().StringP("host", "", "0.0.0.0", "host to listen on")
-	serveCmd.PersistentFlags().IntP("port", "p", 1100, "port binding used for the rpc server")
+	serveCmd.PersistentFlags().StringVarP(&server.RPCHost, "host", "", "", "host to listen on")
+	serveCmd.PersistentFlags().IntVarP(&server.RPCPort, "port", "p", 5900, "port binding used for the rpc server")
 	//Bind to Viper
 	err := viper.BindPFlags(serveCmd.PersistentFlags())
 	if err != nil {

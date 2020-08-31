@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -17,6 +18,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var RPCHost string
+var RPCPort int
+
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
@@ -25,8 +29,9 @@ func Start() {
 	router.Handle("/api", v1RPCServer())
 	router.Handle("/api/v1", v1RPCServer())
 	router.Handle("/api/v2", v2RPCServer())
-	logrus.Info("Running RPC Server @ http://localhost:5921/api")
-	logrus.Fatal(http.ListenAndServe(":5921", router))
+	logrus.Infof("Running RPC Server @ http://%s:%d/api", RPCHost, RPCPort)
+	address := fmt.Sprintf("%s:%d", RPCHost, RPCPort)
+	logrus.Fatal(http.ListenAndServe(address, router))
 }
 
 func v1RPCServer() http.Handler {
