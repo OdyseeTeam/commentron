@@ -1,4 +1,39 @@
 -- +migrate Up
+-- +migrate StatementBegin
+CREATE SCHEMA IF NOT EXISTS social;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+CREATE TABLE IF NOT EXISTS social.channel (
+                           claimid varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+                           name varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
+                           PRIMARY KEY (claimid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+CREATE TABLE IF NOT EXISTS social.comment (
+                           commentid char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+                           lbryclaimid char(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+                           channelid char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                           body text COLLATE utf8mb4_unicode_ci NOT NULL,
+                           parentid char(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                           signature char(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                           signingts varchar(22) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                           timestamp int(11) NOT NULL,
+                           ishidden tinyint(1) DEFAULT '0',
+                           PRIMARY KEY (commentid),
+                           KEY comment_channel_fk (channelid),
+                           KEY comment_parent_fk (parentid),
+                           KEY lbryclaimid (lbryclaimid),
+                           CONSTRAINT comment_channel_fk FOREIGN KEY (channelid) REFERENCES CHANNEL (claimid) ON DELETE CASCADE ON UPDATE CASCADE,
+                           CONSTRAINT comment_parent_fk FOREIGN KEY (parentid) REFERENCES COMMENT (commentid) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+CREATE SCHEMA IF NOT EXISTS commentron;
+-- +migrate StatementEnd
 
 -- +migrate StatementBegin
 ALTER DATABASE commentron
@@ -83,4 +118,67 @@ CREATE TABLE content_opinion (
     PRIMARY KEY (id),
     FOREIGN KEY (channel_id) REFERENCES channel (claim_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+INSERT INTO commentron.channel (channel.claim_id,channel.name)
+SELECT c.claimid, c.name FROM social.CHANNEL c;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+SET FOREIGN_KEY_CHECKS = 0;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+INSERT INTO commentron.comment (
+    comment.comment_id,
+    comment.lbry_claim_id,
+    comment.channel_id,
+    comment.body,
+    comment.parent_id,
+    comment.signature,
+    comment.signingts,
+    comment.timestamp,
+    comment.is_hidden)
+
+SELECT c.commentid,
+       c.lbryclaimid,
+       c.channelid,
+       c.body,
+       c.parentid,
+       c.signature,
+       c.signingts,
+       c.timestamp,
+       c.ishidden
+FROM social.COMMENT c
+WHERE c.parentid IS NULL;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+INSERT INTO commentron.comment (
+    comment.comment_id,
+    comment.lbry_claim_id,
+    comment.channel_id,
+    comment.body,
+    comment.parent_id,
+    comment.signature,
+    comment.signingts,
+    comment.timestamp,
+    comment.is_hidden)
+
+SELECT c.commentid,
+       c.lbryclaimid,
+       c.channelid,
+       c.body,
+       c.parentid,
+       c.signature,
+       c.signingts,
+       c.timestamp,
+       c.ishidden
+FROM social.COMMENT c
+WHERE c.parentid IS NOT NULL;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+SET FOREIGN_KEY_CHECKS = 1;
 -- +migrate StatementEnd
