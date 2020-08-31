@@ -5,6 +5,20 @@ go_import_path: github.com/lbryio/commentron
 
 go: 1.13.4
 
+install: true
+
+services:
+  - mysql
+  - docker
+
+before_install:
+  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS lbry;'
+  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS lbrytest;'
+  - mysql -u root -e "CREATE USER 'lbry'@'localhost' IDENTIFIED BY 'lbry';"
+  - mysql -u root -e "GRANT ALL ON lbry.* TO 'lbry'@'localhost';"
+  - mysql -u root -e "GRANT ALL ON lbrytest.* TO 'lbry'@'localhost';"
+  - sudo service mysql restart
+
 cache:
   directories:
     - $HOME/.cache/go-build
