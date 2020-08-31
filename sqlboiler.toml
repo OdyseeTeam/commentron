@@ -4,7 +4,7 @@ blacklist=["gorp_migrations"]
 pkgname="model"
 output="model"
 [mysql]
-  dbname="social"
+  dbname="commentron"
   host="localhost"
   port=3306
   user="lbry"

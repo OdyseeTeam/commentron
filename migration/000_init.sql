@@ -1,7 +1,7 @@
 -- +migrate Up
 
 -- +migrate StatementBegin
-ALTER DATABASE social
+ALTER DATABASE commentron
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 -- +migrate StatementEnd

@@ -1,10 +1,10 @@
 
-INSERT INTO social.channel (channel.claim_id,channel.name)
-SELECT c.claimid, c.name FROM social_prod.CHANNEL c;
+INSERT INTO commentron.channel (channel.claim_id,channel.name)
+SELECT c.claimid, c.name FROM social.CHANNEL c;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-INSERT INTO social.comment (
+INSERT INTO commentron.comment (
     comment.comment_id,
     comment.lbry_claim_id,
     comment.channel_id,
@@ -24,10 +24,10 @@ SELECT c.commentid,
        c.signingts,
        c.timestamp,
        c.ishidden
-FROM social_prod.COMMENT c
+FROM social.COMMENT c
 WHERE c.parentid IS NULL;
 
-INSERT INTO social.comment (
+INSERT INTO commentron.comment (
     comment.comment_id,
     comment.lbry_claim_id,
     comment.channel_id,
@@ -47,7 +47,7 @@ SELECT c.commentid,
        c.signingts,
        c.timestamp,
        c.ishidden
-FROM social_prod.COMMENT c
+FROM social.COMMENT c
 WHERE c.parentid IS NOT NULL;
 
 SET FOREIGN_KEY_CHECKS = 1;
