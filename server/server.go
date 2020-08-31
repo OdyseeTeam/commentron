@@ -18,7 +18,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// RPCHost specifies the host name the rpc server binds to
 var RPCHost string
+
+// RPCPort specifies the port the rpc server listens on
 var RPCPort int
 
 // Start starts the rpc server after any configuration
