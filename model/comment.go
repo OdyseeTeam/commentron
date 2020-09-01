@@ -140,23 +140,23 @@ var CommentWhere = struct {
 
 // CommentRels is where relationship names are stored.
 var CommentRels = struct {
-	Channel         string
-	Parent          string
-	ParentComments  string
-	CommentOpinions string
+	Channel        string
+	Parent         string
+	ParentComments string
+	Reactions      string
 }{
-	Channel:         "Channel",
-	Parent:          "Parent",
-	ParentComments:  "ParentComments",
-	CommentOpinions: "CommentOpinions",
+	Channel:        "Channel",
+	Parent:         "Parent",
+	ParentComments: "ParentComments",
+	Reactions:      "Reactions",
 }
 
 // commentR is where relationships are stored.
 type commentR struct {
-	Channel         *Channel
-	Parent          *Comment
-	ParentComments  CommentSlice
-	CommentOpinions CommentOpinionSlice
+	Channel        *Channel
+	Parent         *Comment
+	ParentComments CommentSlice
+	Reactions      ReactionSlice
 }
 
 // NewStruct creates a new relationship struct
@@ -414,22 +414,22 @@ func (o *Comment) ParentComments(mods ...qm.QueryMod) commentQuery {
 	return query
 }
 
-// CommentOpinions retrieves all the comment_opinion's CommentOpinions with an executor.
-func (o *Comment) CommentOpinions(mods ...qm.QueryMod) commentOpinionQuery {
+// Reactions retrieves all the reaction's Reactions with an executor.
+func (o *Comment) Reactions(mods ...qm.QueryMod) reactionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`comment_opinion`.`comment_id`=?", o.CommentID),
+		qm.Where("`reaction`.`comment_id`=?", o.CommentID),
 	)
 
-	query := CommentOpinions(queryMods...)
-	queries.SetFrom(query.Query, "`comment_opinion`")
+	query := Reactions(queryMods...)
+	queries.SetFrom(query.Query, "`reaction`")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`comment_opinion`.*"})
+		queries.SetSelect(query.Query, []string{"`reaction`.*"})
 	}
 
 	return query
@@ -717,9 +717,9 @@ func (commentL) LoadParentComments(e boil.Executor, singular bool, maybeComment 
 	return nil
 }
 
-// LoadCommentOpinions allows an eager lookup of values, cached into the
+// LoadReactions allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (commentL) LoadCommentOpinions(e boil.Executor, singular bool, maybeComment interface{}, mods queries.Applicator) error {
+func (commentL) LoadReactions(e boil.Executor, singular bool, maybeComment interface{}, mods queries.Applicator) error {
 	var slice []*Comment
 	var object *Comment
 
@@ -756,33 +756,33 @@ func (commentL) LoadCommentOpinions(e boil.Executor, singular bool, maybeComment
 		return nil
 	}
 
-	query := NewQuery(qm.From(`comment_opinion`), qm.WhereIn(`comment_id in ?`, args...))
+	query := NewQuery(qm.From(`reaction`), qm.WhereIn(`comment_id in ?`, args...))
 	if mods != nil {
 		mods.Apply(query)
 	}
 
 	results, err := query.Query(e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load comment_opinion")
+		return errors.Wrap(err, "failed to eager load reaction")
 	}
 
-	var resultSlice []*CommentOpinion
+	var resultSlice []*Reaction
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice comment_opinion")
+		return errors.Wrap(err, "failed to bind eager loaded slice reaction")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on comment_opinion")
+		return errors.Wrap(err, "failed to close results in eager load on reaction")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for comment_opinion")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for reaction")
 	}
 
 	if singular {
-		object.R.CommentOpinions = resultSlice
+		object.R.Reactions = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &commentOpinionR{}
+				foreign.R = &reactionR{}
 			}
 			foreign.R.Comment = object
 		}
@@ -792,9 +792,9 @@ func (commentL) LoadCommentOpinions(e boil.Executor, singular bool, maybeComment
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.CommentID == foreign.CommentID {
-				local.R.CommentOpinions = append(local.R.CommentOpinions, foreign)
+				local.R.Reactions = append(local.R.Reactions, foreign)
 				if foreign.R == nil {
-					foreign.R = &commentOpinionR{}
+					foreign.R = &reactionR{}
 				}
 				foreign.R.Comment = local
 				break
@@ -1292,42 +1292,42 @@ func (o *Comment) RemoveParentComments(exec boil.Executor, related ...*Comment) 
 	return nil
 }
 
-// AddCommentOpinionsG adds the given related objects to the existing relationships
+// AddReactionsG adds the given related objects to the existing relationships
 // of the comment, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Comment appropriately.
 // Uses the global database handle.
-func (o *Comment) AddCommentOpinionsG(insert bool, related ...*CommentOpinion) error {
-	return o.AddCommentOpinions(boil.GetDB(), insert, related...)
+func (o *Comment) AddReactionsG(insert bool, related ...*Reaction) error {
+	return o.AddReactions(boil.GetDB(), insert, related...)
 }
 
-// AddCommentOpinionsP adds the given related objects to the existing relationships
+// AddReactionsP adds the given related objects to the existing relationships
 // of the comment, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Comment appropriately.
 // Panics on error.
-func (o *Comment) AddCommentOpinionsP(exec boil.Executor, insert bool, related ...*CommentOpinion) {
-	if err := o.AddCommentOpinions(exec, insert, related...); err != nil {
+func (o *Comment) AddReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
+	if err := o.AddReactions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddCommentOpinionsGP adds the given related objects to the existing relationships
+// AddReactionsGP adds the given related objects to the existing relationships
 // of the comment, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Comment appropriately.
 // Uses the global database handle and panics on error.
-func (o *Comment) AddCommentOpinionsGP(insert bool, related ...*CommentOpinion) {
-	if err := o.AddCommentOpinions(boil.GetDB(), insert, related...); err != nil {
+func (o *Comment) AddReactionsGP(insert bool, related ...*Reaction) {
+	if err := o.AddReactions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddCommentOpinions adds the given related objects to the existing relationships
+// AddReactions adds the given related objects to the existing relationships
 // of the comment, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Comment appropriately.
-func (o *Comment) AddCommentOpinions(exec boil.Executor, insert bool, related ...*CommentOpinion) error {
+func (o *Comment) AddReactions(exec boil.Executor, insert bool, related ...*Reaction) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -1337,9 +1337,9 @@ func (o *Comment) AddCommentOpinions(exec boil.Executor, insert bool, related ..
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `comment_opinion` SET %s WHERE %s",
+				"UPDATE `reaction` SET %s WHERE %s",
 				strmangle.SetParamNames("`", "`", 0, []string{"comment_id"}),
-				strmangle.WhereClause("`", "`", 0, commentOpinionPrimaryKeyColumns),
+				strmangle.WhereClause("`", "`", 0, reactionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.CommentID, rel.ID}
 
@@ -1358,15 +1358,15 @@ func (o *Comment) AddCommentOpinions(exec boil.Executor, insert bool, related ..
 
 	if o.R == nil {
 		o.R = &commentR{
-			CommentOpinions: related,
+			Reactions: related,
 		}
 	} else {
-		o.R.CommentOpinions = append(o.R.CommentOpinions, related...)
+		o.R.Reactions = append(o.R.Reactions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &commentOpinionR{
+			rel.R = &reactionR{
 				Comment: o,
 			}
 		} else {

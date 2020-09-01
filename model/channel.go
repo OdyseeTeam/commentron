@@ -58,20 +58,17 @@ var ChannelWhere = struct {
 
 // ChannelRels is where relationship names are stored.
 var ChannelRels = struct {
-	Comments        string
-	CommentOpinions string
-	ContentOpinions string
+	Comments  string
+	Reactions string
 }{
-	Comments:        "Comments",
-	CommentOpinions: "CommentOpinions",
-	ContentOpinions: "ContentOpinions",
+	Comments:  "Comments",
+	Reactions: "Reactions",
 }
 
 // channelR is where relationships are stored.
 type channelR struct {
-	Comments        CommentSlice
-	CommentOpinions CommentOpinionSlice
-	ContentOpinions ContentOpinionSlice
+	Comments  CommentSlice
+	Reactions ReactionSlice
 }
 
 // NewStruct creates a new relationship struct
@@ -301,43 +298,22 @@ func (o *Channel) Comments(mods ...qm.QueryMod) commentQuery {
 	return query
 }
 
-// CommentOpinions retrieves all the comment_opinion's CommentOpinions with an executor.
-func (o *Channel) CommentOpinions(mods ...qm.QueryMod) commentOpinionQuery {
+// Reactions retrieves all the reaction's Reactions with an executor.
+func (o *Channel) Reactions(mods ...qm.QueryMod) reactionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`comment_opinion`.`channel_id`=?", o.ClaimID),
+		qm.Where("`reaction`.`channel_id`=?", o.ClaimID),
 	)
 
-	query := CommentOpinions(queryMods...)
-	queries.SetFrom(query.Query, "`comment_opinion`")
+	query := Reactions(queryMods...)
+	queries.SetFrom(query.Query, "`reaction`")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`comment_opinion`.*"})
-	}
-
-	return query
-}
-
-// ContentOpinions retrieves all the content_opinion's ContentOpinions with an executor.
-func (o *Channel) ContentOpinions(mods ...qm.QueryMod) contentOpinionQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("`content_opinion`.`channel_id`=?", o.ClaimID),
-	)
-
-	query := ContentOpinions(queryMods...)
-	queries.SetFrom(query.Query, "`content_opinion`")
-
-	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`content_opinion`.*"})
+		queries.SetSelect(query.Query, []string{"`reaction`.*"})
 	}
 
 	return query
@@ -431,9 +407,9 @@ func (channelL) LoadComments(e boil.Executor, singular bool, maybeChannel interf
 	return nil
 }
 
-// LoadCommentOpinions allows an eager lookup of values, cached into the
+// LoadReactions allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadCommentOpinions(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadReactions(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -470,33 +446,33 @@ func (channelL) LoadCommentOpinions(e boil.Executor, singular bool, maybeChannel
 		return nil
 	}
 
-	query := NewQuery(qm.From(`comment_opinion`), qm.WhereIn(`channel_id in ?`, args...))
+	query := NewQuery(qm.From(`reaction`), qm.WhereIn(`channel_id in ?`, args...))
 	if mods != nil {
 		mods.Apply(query)
 	}
 
 	results, err := query.Query(e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load comment_opinion")
+		return errors.Wrap(err, "failed to eager load reaction")
 	}
 
-	var resultSlice []*CommentOpinion
+	var resultSlice []*Reaction
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice comment_opinion")
+		return errors.Wrap(err, "failed to bind eager loaded slice reaction")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on comment_opinion")
+		return errors.Wrap(err, "failed to close results in eager load on reaction")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for comment_opinion")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for reaction")
 	}
 
 	if singular {
-		object.R.CommentOpinions = resultSlice
+		object.R.Reactions = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &commentOpinionR{}
+				foreign.R = &reactionR{}
 			}
 			foreign.R.Channel = object
 		}
@@ -506,97 +482,9 @@ func (channelL) LoadCommentOpinions(e boil.Executor, singular bool, maybeChannel
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if queries.Equal(local.ClaimID, foreign.ChannelID) {
-				local.R.CommentOpinions = append(local.R.CommentOpinions, foreign)
+				local.R.Reactions = append(local.R.Reactions, foreign)
 				if foreign.R == nil {
-					foreign.R = &commentOpinionR{}
-				}
-				foreign.R.Channel = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadContentOpinions allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadContentOpinions(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
-	var slice []*Channel
-	var object *Channel
-
-	if singular {
-		object = maybeChannel.(*Channel)
-	} else {
-		slice = *maybeChannel.(*[]*Channel)
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &channelR{}
-		}
-		args = append(args, object.ClaimID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &channelR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.ClaimID) {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ClaimID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(qm.From(`content_opinion`), qm.WhereIn(`channel_id in ?`, args...))
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.Query(e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load content_opinion")
-	}
-
-	var resultSlice []*ContentOpinion
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice content_opinion")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on content_opinion")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for content_opinion")
-	}
-
-	if singular {
-		object.R.ContentOpinions = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &contentOpinionR{}
-			}
-			foreign.R.Channel = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if queries.Equal(local.ClaimID, foreign.ChannelID) {
-				local.R.ContentOpinions = append(local.R.ContentOpinions, foreign)
-				if foreign.R == nil {
-					foreign.R = &contentOpinionR{}
+					foreign.R = &reactionR{}
 				}
 				foreign.R.Channel = local
 				break
@@ -826,42 +714,42 @@ func (o *Channel) RemoveComments(exec boil.Executor, related ...*Comment) error 
 	return nil
 }
 
-// AddCommentOpinionsG adds the given related objects to the existing relationships
+// AddReactionsG adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Channel appropriately.
 // Uses the global database handle.
-func (o *Channel) AddCommentOpinionsG(insert bool, related ...*CommentOpinion) error {
-	return o.AddCommentOpinions(boil.GetDB(), insert, related...)
+func (o *Channel) AddReactionsG(insert bool, related ...*Reaction) error {
+	return o.AddReactions(boil.GetDB(), insert, related...)
 }
 
-// AddCommentOpinionsP adds the given related objects to the existing relationships
+// AddReactionsP adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Channel appropriately.
 // Panics on error.
-func (o *Channel) AddCommentOpinionsP(exec boil.Executor, insert bool, related ...*CommentOpinion) {
-	if err := o.AddCommentOpinions(exec, insert, related...); err != nil {
+func (o *Channel) AddReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
+	if err := o.AddReactions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddCommentOpinionsGP adds the given related objects to the existing relationships
+// AddReactionsGP adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Channel appropriately.
 // Uses the global database handle and panics on error.
-func (o *Channel) AddCommentOpinionsGP(insert bool, related ...*CommentOpinion) {
-	if err := o.AddCommentOpinions(boil.GetDB(), insert, related...); err != nil {
+func (o *Channel) AddReactionsGP(insert bool, related ...*Reaction) {
+	if err := o.AddReactions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddCommentOpinions adds the given related objects to the existing relationships
+// AddReactions adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
-// Appends related to o.R.CommentOpinions.
+// Appends related to o.R.Reactions.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddCommentOpinions(exec boil.Executor, insert bool, related ...*CommentOpinion) error {
+func (o *Channel) AddReactions(exec boil.Executor, insert bool, related ...*Reaction) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -871,9 +759,9 @@ func (o *Channel) AddCommentOpinions(exec boil.Executor, insert bool, related ..
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `comment_opinion` SET %s WHERE %s",
+				"UPDATE `reaction` SET %s WHERE %s",
 				strmangle.SetParamNames("`", "`", 0, []string{"channel_id"}),
-				strmangle.WhereClause("`", "`", 0, commentOpinionPrimaryKeyColumns),
+				strmangle.WhereClause("`", "`", 0, reactionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ClaimID, rel.ID}
 
@@ -892,15 +780,15 @@ func (o *Channel) AddCommentOpinions(exec boil.Executor, insert bool, related ..
 
 	if o.R == nil {
 		o.R = &channelR{
-			CommentOpinions: related,
+			Reactions: related,
 		}
 	} else {
-		o.R.CommentOpinions = append(o.R.CommentOpinions, related...)
+		o.R.Reactions = append(o.R.Reactions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &commentOpinionR{
+			rel.R = &reactionR{
 				Channel: o,
 			}
 		} else {
@@ -910,51 +798,51 @@ func (o *Channel) AddCommentOpinions(exec boil.Executor, insert bool, related ..
 	return nil
 }
 
-// SetCommentOpinionsG removes all previously related items of the
+// SetReactionsG removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.Channel's CommentOpinions accordingly.
-// Replaces o.R.CommentOpinions with related.
-// Sets related.R.Channel's CommentOpinions accordingly.
+// Sets o.R.Channel's Reactions accordingly.
+// Replaces o.R.Reactions with related.
+// Sets related.R.Channel's Reactions accordingly.
 // Uses the global database handle.
-func (o *Channel) SetCommentOpinionsG(insert bool, related ...*CommentOpinion) error {
-	return o.SetCommentOpinions(boil.GetDB(), insert, related...)
+func (o *Channel) SetReactionsG(insert bool, related ...*Reaction) error {
+	return o.SetReactions(boil.GetDB(), insert, related...)
 }
 
-// SetCommentOpinionsP removes all previously related items of the
+// SetReactionsP removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.Channel's CommentOpinions accordingly.
-// Replaces o.R.CommentOpinions with related.
-// Sets related.R.Channel's CommentOpinions accordingly.
+// Sets o.R.Channel's Reactions accordingly.
+// Replaces o.R.Reactions with related.
+// Sets related.R.Channel's Reactions accordingly.
 // Panics on error.
-func (o *Channel) SetCommentOpinionsP(exec boil.Executor, insert bool, related ...*CommentOpinion) {
-	if err := o.SetCommentOpinions(exec, insert, related...); err != nil {
+func (o *Channel) SetReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
+	if err := o.SetReactions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetCommentOpinionsGP removes all previously related items of the
+// SetReactionsGP removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.Channel's CommentOpinions accordingly.
-// Replaces o.R.CommentOpinions with related.
-// Sets related.R.Channel's CommentOpinions accordingly.
+// Sets o.R.Channel's Reactions accordingly.
+// Replaces o.R.Reactions with related.
+// Sets related.R.Channel's Reactions accordingly.
 // Uses the global database handle and panics on error.
-func (o *Channel) SetCommentOpinionsGP(insert bool, related ...*CommentOpinion) {
-	if err := o.SetCommentOpinions(boil.GetDB(), insert, related...); err != nil {
+func (o *Channel) SetReactionsGP(insert bool, related ...*Reaction) {
+	if err := o.SetReactions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetCommentOpinions removes all previously related items of the
+// SetReactions removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.Channel's CommentOpinions accordingly.
-// Replaces o.R.CommentOpinions with related.
-// Sets related.R.Channel's CommentOpinions accordingly.
-func (o *Channel) SetCommentOpinions(exec boil.Executor, insert bool, related ...*CommentOpinion) error {
-	query := "update `comment_opinion` set `channel_id` = null where `channel_id` = ?"
+// Sets o.R.Channel's Reactions accordingly.
+// Replaces o.R.Reactions with related.
+// Sets related.R.Channel's Reactions accordingly.
+func (o *Channel) SetReactions(exec boil.Executor, insert bool, related ...*Reaction) error {
+	query := "update `reaction` set `channel_id` = null where `channel_id` = ?"
 	values := []interface{}{o.ClaimID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
@@ -967,7 +855,7 @@ func (o *Channel) SetCommentOpinions(exec boil.Executor, insert bool, related ..
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CommentOpinions {
+		for _, rel := range o.R.Reactions {
 			queries.SetScanner(&rel.ChannelID, nil)
 			if rel.R == nil {
 				continue
@@ -976,43 +864,43 @@ func (o *Channel) SetCommentOpinions(exec boil.Executor, insert bool, related ..
 			rel.R.Channel = nil
 		}
 
-		o.R.CommentOpinions = nil
+		o.R.Reactions = nil
 	}
-	return o.AddCommentOpinions(exec, insert, related...)
+	return o.AddReactions(exec, insert, related...)
 }
 
-// RemoveCommentOpinionsG relationships from objects passed in.
-// Removes related items from R.CommentOpinions (uses pointer comparison, removal does not keep order)
+// RemoveReactionsG relationships from objects passed in.
+// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
 // Sets related.R.Channel.
 // Uses the global database handle.
-func (o *Channel) RemoveCommentOpinionsG(related ...*CommentOpinion) error {
-	return o.RemoveCommentOpinions(boil.GetDB(), related...)
+func (o *Channel) RemoveReactionsG(related ...*Reaction) error {
+	return o.RemoveReactions(boil.GetDB(), related...)
 }
 
-// RemoveCommentOpinionsP relationships from objects passed in.
-// Removes related items from R.CommentOpinions (uses pointer comparison, removal does not keep order)
+// RemoveReactionsP relationships from objects passed in.
+// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
 // Sets related.R.Channel.
 // Panics on error.
-func (o *Channel) RemoveCommentOpinionsP(exec boil.Executor, related ...*CommentOpinion) {
-	if err := o.RemoveCommentOpinions(exec, related...); err != nil {
+func (o *Channel) RemoveReactionsP(exec boil.Executor, related ...*Reaction) {
+	if err := o.RemoveReactions(exec, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// RemoveCommentOpinionsGP relationships from objects passed in.
-// Removes related items from R.CommentOpinions (uses pointer comparison, removal does not keep order)
+// RemoveReactionsGP relationships from objects passed in.
+// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
 // Sets related.R.Channel.
 // Uses the global database handle and panics on error.
-func (o *Channel) RemoveCommentOpinionsGP(related ...*CommentOpinion) {
-	if err := o.RemoveCommentOpinions(boil.GetDB(), related...); err != nil {
+func (o *Channel) RemoveReactionsGP(related ...*Reaction) {
+	if err := o.RemoveReactions(boil.GetDB(), related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// RemoveCommentOpinions relationships from objects passed in.
-// Removes related items from R.CommentOpinions (uses pointer comparison, removal does not keep order)
+// RemoveReactions relationships from objects passed in.
+// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
 // Sets related.R.Channel.
-func (o *Channel) RemoveCommentOpinions(exec boil.Executor, related ...*CommentOpinion) error {
+func (o *Channel) RemoveReactions(exec boil.Executor, related ...*Reaction) error {
 	var err error
 	for _, rel := range related {
 		queries.SetScanner(&rel.ChannelID, nil)
@@ -1028,235 +916,16 @@ func (o *Channel) RemoveCommentOpinions(exec boil.Executor, related ...*CommentO
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CommentOpinions {
+		for i, ri := range o.R.Reactions {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CommentOpinions)
+			ln := len(o.R.Reactions)
 			if ln > 1 && i < ln-1 {
-				o.R.CommentOpinions[i] = o.R.CommentOpinions[ln-1]
+				o.R.Reactions[i] = o.R.Reactions[ln-1]
 			}
-			o.R.CommentOpinions = o.R.CommentOpinions[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddContentOpinionsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ContentOpinions.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddContentOpinionsG(insert bool, related ...*ContentOpinion) error {
-	return o.AddContentOpinions(boil.GetDB(), insert, related...)
-}
-
-// AddContentOpinionsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ContentOpinions.
-// Sets related.R.Channel appropriately.
-// Panics on error.
-func (o *Channel) AddContentOpinionsP(exec boil.Executor, insert bool, related ...*ContentOpinion) {
-	if err := o.AddContentOpinions(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddContentOpinionsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ContentOpinions.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddContentOpinionsGP(insert bool, related ...*ContentOpinion) {
-	if err := o.AddContentOpinions(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddContentOpinions adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ContentOpinions.
-// Sets related.R.Channel appropriately.
-func (o *Channel) AddContentOpinions(exec boil.Executor, insert bool, related ...*ContentOpinion) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			queries.Assign(&rel.ChannelID, o.ClaimID)
-			if err = rel.Insert(exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE `content_opinion` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"channel_id"}),
-				strmangle.WhereClause("`", "`", 0, contentOpinionPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ClaimID, rel.ID}
-
-			if boil.DebugMode {
-				fmt.Fprintln(boil.DebugWriter, updateQuery)
-				fmt.Fprintln(boil.DebugWriter, values)
-			}
-
-			if _, err = exec.Exec(updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ChannelID, o.ClaimID)
-		}
-	}
-
-	if o.R == nil {
-		o.R = &channelR{
-			ContentOpinions: related,
-		}
-	} else {
-		o.R.ContentOpinions = append(o.R.ContentOpinions, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &contentOpinionR{
-				Channel: o,
-			}
-		} else {
-			rel.R.Channel = o
-		}
-	}
-	return nil
-}
-
-// SetContentOpinionsG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ContentOpinions accordingly.
-// Replaces o.R.ContentOpinions with related.
-// Sets related.R.Channel's ContentOpinions accordingly.
-// Uses the global database handle.
-func (o *Channel) SetContentOpinionsG(insert bool, related ...*ContentOpinion) error {
-	return o.SetContentOpinions(boil.GetDB(), insert, related...)
-}
-
-// SetContentOpinionsP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ContentOpinions accordingly.
-// Replaces o.R.ContentOpinions with related.
-// Sets related.R.Channel's ContentOpinions accordingly.
-// Panics on error.
-func (o *Channel) SetContentOpinionsP(exec boil.Executor, insert bool, related ...*ContentOpinion) {
-	if err := o.SetContentOpinions(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetContentOpinionsGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ContentOpinions accordingly.
-// Replaces o.R.ContentOpinions with related.
-// Sets related.R.Channel's ContentOpinions accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetContentOpinionsGP(insert bool, related ...*ContentOpinion) {
-	if err := o.SetContentOpinions(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetContentOpinions removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ContentOpinions accordingly.
-// Replaces o.R.ContentOpinions with related.
-// Sets related.R.Channel's ContentOpinions accordingly.
-func (o *Channel) SetContentOpinions(exec boil.Executor, insert bool, related ...*ContentOpinion) error {
-	query := "update `content_opinion` set `channel_id` = null where `channel_id` = ?"
-	values := []interface{}{o.ClaimID}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, values)
-	}
-
-	_, err := exec.Exec(query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ContentOpinions {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-
-		o.R.ContentOpinions = nil
-	}
-	return o.AddContentOpinions(exec, insert, related...)
-}
-
-// RemoveContentOpinionsG relationships from objects passed in.
-// Removes related items from R.ContentOpinions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle.
-func (o *Channel) RemoveContentOpinionsG(related ...*ContentOpinion) error {
-	return o.RemoveContentOpinions(boil.GetDB(), related...)
-}
-
-// RemoveContentOpinionsP relationships from objects passed in.
-// Removes related items from R.ContentOpinions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Panics on error.
-func (o *Channel) RemoveContentOpinionsP(exec boil.Executor, related ...*ContentOpinion) {
-	if err := o.RemoveContentOpinions(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveContentOpinionsGP relationships from objects passed in.
-// Removes related items from R.ContentOpinions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveContentOpinionsGP(related ...*ContentOpinion) {
-	if err := o.RemoveContentOpinions(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveContentOpinions relationships from objects passed in.
-// Removes related items from R.ContentOpinions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveContentOpinions(exec boil.Executor, related ...*ContentOpinion) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if err = rel.Update(exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ContentOpinions {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ContentOpinions)
-			if ln > 1 && i < ln-1 {
-				o.R.ContentOpinions[i] = o.R.ContentOpinions[ln-1]
-			}
-			o.R.ContentOpinions = o.R.ContentOpinions[:ln-1]
+			o.R.Reactions = o.R.Reactions[:ln-1]
 			break
 		}
 	}

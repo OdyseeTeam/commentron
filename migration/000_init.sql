@@ -90,37 +90,6 @@ CREATE INDEX channel_comment_index ON comment (channel_id, comment_id);
 -- +migrate StatementEnd
 
 -- +migrate StatementBegin
-CREATE TABLE comment_opinion (
-    id bigint unsigned NOT NULL AUTO_INCREMENT,
-    comment_id char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-    channel_id char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    signature char(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    signingts varchar(22) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    timestamp int NOT NULL,
-    rating tinyint DEFAULT '1',
-
-    PRIMARY KEY (id),
-    FOREIGN KEY (comment_id) REFERENCES comment (comment_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (channel_id) REFERENCES channel (claim_id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--- +migrate StatementEnd
-
--- +migrate StatementBegin
-CREATE TABLE content_opinion (
-    id bigint unsigned NOT NULL AUTO_INCREMENT,
-    claim_id char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    channel_id char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    signature char(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    signingts varchar(22) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-    timestamp int NOT NULL,
-    rating tinyint DEFAULT '1',
-
-    PRIMARY KEY (id),
-    FOREIGN KEY (channel_id) REFERENCES channel (claim_id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--- +migrate StatementEnd
-
--- +migrate StatementBegin
 INSERT INTO commentron.channel (channel.claim_id,channel.name)
 SELECT c.claimid, c.name FROM social.CHANNEL c;
 -- +migrate StatementEnd
@@ -181,4 +150,38 @@ WHERE c.parentid IS NOT NULL;
 
 -- +migrate StatementBegin
 SET FOREIGN_KEY_CHECKS = 1;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+create table reaction_type (
+    id                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name              VARCHAR(255) NOT NULL,
+    created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_name (name)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- +migrate StatementEnd
+
+-- +migrate StatementBegin
+create table reaction (
+    id                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    comment_id        CHAR(64) NOT NULL,
+    channel_id        CHAR(40) DEFAULT NULL,
+    claim_id          CHAR(40) NOT NULL,
+    reaction_type_id  BIGINT UNSIGNED NOT NULL,
+    created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_unique_reaction (channel_id,comment_id,claim_id,reaction_type_id),
+    INDEX idx_channel_reaction (channel_id,reaction_type_id),
+    INDEX idx_publish_reaction (claim_id,reaction_type_id),
+    INDEX idx_created_at (created_at),
+    INDEX idx_updated_at (updated_at),
+    FOREIGN KEY (channel_id) REFERENCES commentron.channel(claim_id ) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES commentron.comment(comment_id ) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (reaction_type_id) REFERENCES reaction_type(id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- +migrate StatementEnd

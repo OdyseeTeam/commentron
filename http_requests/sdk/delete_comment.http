@@ -6,6 +6,6 @@ Content-Type: application/json
   "id": 1,
   "method": "comment_abandon",
   "params": {
-    "comment_id": "c1f4efb8a69d661791fb09b8ec5a43f63a2966db65e3b258436dcce406e4e7b0"
+    "comment_id": "44e5705cf32d47ac21c889e2d174858053ffe852008a68c3ebc6ef5d997f6371"
   }
 }

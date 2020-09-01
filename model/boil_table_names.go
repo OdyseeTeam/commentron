@@ -6,13 +6,13 @@ package model
 var TableNames = struct {
 	Channel        string
 	Comment        string
-	CommentOpinion string
-	ContentOpinion string
 	GorpMigrations string
+	Reaction       string
+	ReactionType   string
 }{
 	Channel:        "channel",
 	Comment:        "comment",
-	CommentOpinion: "comment_opinion",
-	ContentOpinion: "content_opinion",
 	GorpMigrations: "gorp_migrations",
+	Reaction:       "reaction",
+	ReactionType:   "reaction_type",
 }

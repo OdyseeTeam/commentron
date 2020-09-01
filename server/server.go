@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/lbryio/commentron/server/services/v2/reactions"
+
 	"github.com/lbryio/commentron/server/services/v1/comments"
 	rpcHack "github.com/lbryio/commentron/server/services/v1/rpc"
 	jsonHack "github.com/lbryio/commentron/server/services/v1/rpc/json"
@@ -80,6 +82,7 @@ func v2RPCServer() http.Handler {
 
 	commentService := new(comments.Service)
 	statusService := new(status.Service)
+	reactionService := new(reactions.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -88,6 +91,10 @@ func v2RPCServer() http.Handler {
 	err = rpcServer.RegisterService(statusService, "server")
 	if err != nil {
 		logrus.Panicf("Error registering v2 status service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(reactionService, "reaction")
+	if err != nil {
+		logrus.Panicf("Error registering v2 reaction service: %s", errors.FullTrace(err))
 	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
