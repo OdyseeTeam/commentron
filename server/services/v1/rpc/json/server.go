@@ -136,6 +136,7 @@ var methodMap = map[string]string{
 	"get_channel_from_comment_id": "comment.GetChannelFromCommentID",
 	"create_comment":              "comment.Create",
 	"abandon_comment":             "comment.Abandon",
+	"edit_comment":                "comment.Edit",
 }
 
 // Method returns the RPC method for the current request.

@@ -178,7 +178,12 @@ func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResp
 }
 
 // Edit edits a comment
-func (c *Service) Edit(_ *http.Request, args *AbandonArgs, reply *AbandonResponse) error {
+func (c *Service) Edit(_ *http.Request, args *EditArgs, reply *EditResponse) error {
+	item, err := edit(args)
+	if err != nil {
+		return errors.Err(err)
+	}
+	reply.CommentItem = item
 
 	return nil
 }
