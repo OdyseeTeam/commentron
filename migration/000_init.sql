@@ -4,7 +4,7 @@ CREATE SCHEMA IF NOT EXISTS social;
 -- +migrate StatementEnd
 
 -- +migrate StatementBegin
-CREATE TABLE IF NOT EXISTS social.channel (
+CREATE TABLE IF NOT EXISTS social.CHANNEL (
                            claimid varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
                            name varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
                            PRIMARY KEY (claimid)
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS social.channel (
 -- +migrate StatementEnd
 
 -- +migrate StatementBegin
-CREATE TABLE IF NOT EXISTS social.comment (
+CREATE TABLE IF NOT EXISTS social.COMMENT (
                            commentid char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
                            lbryclaimid char(40) COLLATE utf8mb4_unicode_ci NOT NULL,
                            channelid char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
