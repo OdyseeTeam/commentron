@@ -39,6 +39,7 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 			ClaimID: null.StringFromPtr(args.ChannelID).String,
 			Name:    null.StringFromPtr(args.ChannelName).String,
 		}
+		err = nil
 		err := channel.InsertG(boil.Infer())
 		if err != nil {
 			return errors.Err(err)
