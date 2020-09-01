@@ -17,6 +17,7 @@ type AbandonArgs struct {
 // AbandonResponse the response to the abandon call
 type AbandonResponse struct {
 	*CommentItem
+	Abandoned bool `json:"abandoned"`
 }
 
 func abandon(args *AbandonArgs) (*CommentItem, error) {

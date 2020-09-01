@@ -171,6 +171,7 @@ func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResp
 		return errors.Err(err)
 	}
 	reply.CommentItem = item
+	reply.Abandoned = true
 
 	return nil
 }
