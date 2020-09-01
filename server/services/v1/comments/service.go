@@ -92,7 +92,8 @@ func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) err
 	filterParent := m.CommentWhere.ParentID.EQ(null.StringFrom(util.StrFromPtr(args.ParentID)))
 
 	totalCommentsQuery := make([]qm.QueryMod, 0)
-	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(args.Page - 1*args.PageSize), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
+	offset := (args.Page - 1) * args.PageSize
+	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
 	if args.ClaimID != nil {
