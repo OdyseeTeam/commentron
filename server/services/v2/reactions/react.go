@@ -66,8 +66,16 @@ func react(_ *http.Request, args *ReactArgs, reply *ReactResponse) error {
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature: %s", err)
 	}
+	modifiedReactions, err := updateReactions(channel, args, commentIDs, comments)
+	if err != nil {
+		return errors.Err(err)
+	}
+	reply.reactions = modifiedReactions
+	return nil
+}
+func updateReactions(channel *model.Channel, args *ReactArgs, commentIDs []interface{}, comments model.CommentSlice) (reactions, error) {
 	var modifiedReactions = newReactions(strings.Split(args.CommentIDs, ","), &args.Type)
-	err = db.WithTx(nil, func(tx boil.Transactor) error {
+	err := db.WithTx(nil, func(tx boil.Transactor) error {
 		if len(args.ClearTypes) > 0 {
 			typeNames := util.StringSplitArg(args.ClearTypes, ",")
 			reactionTypes, err := model.ReactionTypes(qm.WhereIn(model.ReactionTypeColumns.Name+" IN ?", typeNames...)).All(tx)
@@ -128,8 +136,7 @@ func react(_ *http.Request, args *ReactArgs, reply *ReactResponse) error {
 		return nil
 	})
 	if err != nil {
-		return errors.Err(err)
+		return nil, errors.Err(err)
 	}
-	reply.reactions = modifiedReactions
-	return nil
+	return modifiedReactions, nil
 }
