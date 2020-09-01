@@ -8,7 +8,7 @@ import (
 
 // Config holds the environment configuration used by lighthouse.
 type Config struct {
-	MySQLDsn     string `env:"MYSQL_DSN" envDefault:"lbry:lbry@tcp(localhost:3306)/social"`
+	MySQLDsn     string `env:"MYSQL_DSN"`
 	SlackHookURL string `env:"SLACKHOOKURL"`
 	SlackChannel string `env:"SLACKCHANNEL"`
 	APIURL       string `env:"APIURL" envDefault:"https://api.lbry.com/event/comment"`
