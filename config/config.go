@@ -24,7 +24,7 @@ func InitializeConfiguration() {
 		util.Debugging = true
 		logrus.SetLevel(logrus.TraceLevel)
 	}
-
+	logrus.Info("DSN: ", conf.MySQLDsn)
 	err = db.Init(conf.MySQLDsn, util.Debugging)
 	if err != nil {
 		logrus.Panic(err)
