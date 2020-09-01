@@ -32,10 +32,6 @@ CREATE TABLE IF NOT EXISTS social.comment (
 -- +migrate StatementEnd
 
 -- +migrate StatementBegin
-CREATE SCHEMA IF NOT EXISTS commentron;
--- +migrate StatementEnd
-
--- +migrate StatementBegin
 USE commentron;
 -- +migrate StatementEnd
 
