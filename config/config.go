@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/env"
+	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/commentron/util"
 
 	"github.com/johntdyer/slackrus"
@@ -24,6 +25,7 @@ func InitializeConfiguration() {
 		util.Debugging = true
 		logrus.SetLevel(logrus.TraceLevel)
 	}
+	lbry.SDKURL = conf.SDKUrl
 	logrus.Info("DSN: ", conf.MySQLDsn)
 	err = db.Init(conf.MySQLDsn, util.Debugging)
 	if err != nil {
