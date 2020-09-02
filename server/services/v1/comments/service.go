@@ -6,8 +6,11 @@ import (
 	"net/http"
 
 	m "github.com/lbryio/commentron/model"
+	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -79,6 +82,15 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 	}
 	item := populateItem(comment, channel)
 	reply.CommentItem = &item
+
+	go lbry.Notify(lbry.NotifyOptions{
+		ActionType: "C",
+		CommentID:  item.CommentID,
+		ChannelID:  &item.ChannelID,
+		ParentID:   &item.ParentID,
+		Comment:    &item.Comment,
+		ClaimID:    item.ClaimID,
+	})
 	return nil
 }
 
@@ -174,6 +186,15 @@ func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResp
 	reply.CommentItem = item
 	reply.Abandoned = true
 
+	go lbry.Notify(lbry.NotifyOptions{
+		ActionType: "D",
+		CommentID:  item.CommentID,
+		ChannelID:  &item.ChannelID,
+		ParentID:   &item.ParentID,
+		Comment:    &item.Comment,
+		ClaimID:    item.ClaimID,
+	})
+
 	return nil
 }
 
@@ -185,5 +206,13 @@ func (c *Service) Edit(_ *http.Request, args *EditArgs, reply *EditResponse) err
 	}
 	reply.CommentItem = item
 
+	go lbry.Notify(lbry.NotifyOptions{
+		ActionType: "U",
+		CommentID:  item.CommentID,
+		ChannelID:  &item.ChannelID,
+		ParentID:   &item.ParentID,
+		Comment:    &item.Comment,
+		ClaimID:    item.ClaimID,
+	})
 	return nil
 }

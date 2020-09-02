@@ -9,6 +9,8 @@ import (
 	"github.com/lbryio/commentron/util"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+
+	"github.com/sirupsen/logrus"
 )
 
 // APIToken is the token allowed to access the api used for internal-apis
@@ -35,7 +37,14 @@ type NotifyOptions struct {
 }
 
 // Notify notifies internal-apis of a new comment when one is recieved.
-func Notify(options NotifyOptions) error {
+func Notify(options NotifyOptions) {
+	err := notify(options)
+	if err != nil {
+		logrus.Error("API Notification: ", err)
+	}
+}
+
+func notify(options NotifyOptions) error {
 	c := http.Client{}
 	form := make(url.Values)
 	form.Set("auth_token", APIToken)
