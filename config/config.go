@@ -26,6 +26,8 @@ func InitializeConfiguration() {
 		logrus.SetLevel(logrus.TraceLevel)
 	}
 	lbry.SDKURL = conf.SDKUrl
+	lbry.APIToken = conf.APIToken
+	lbry.APIURL = conf.APIURL
 	logrus.Info("DSN: ", conf.MySQLDsn)
 	err = db.Init(conf.MySQLDsn, util.Debugging)
 	if err != nil {
