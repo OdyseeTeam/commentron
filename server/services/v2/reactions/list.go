@@ -42,10 +42,10 @@ func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 	for _, p := range comments {
 		commentIDs = append(commentIDs, p.CommentID)
 	}
-	var myfilters = []qm.QueryMod{qm.WhereIn(model.ReactionColumns.ChannelID+" IN ?", commentIDs...),
+	var myfilters = []qm.QueryMod{qm.WhereIn(model.ReactionColumns.CommentID+" IN ?", commentIDs...),
 		qm.Load("ReactionType"),
 		qm.Load("Comment")}
-	var allfilters = []qm.QueryMod{qm.WhereIn(model.ReactionColumns.ClaimID+" IN ?", commentIDs...),
+	var allfilters = []qm.QueryMod{qm.WhereIn(model.ReactionColumns.CommentID+" IN ?", commentIDs...),
 		qm.Load("ReactionType"),
 		qm.Load("Comment")}
 	if args.Types != nil {
@@ -73,17 +73,19 @@ func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 			return errors.Err(err)
 		}
 	}
-	chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
 	var userReactions reactions
-	if chanErr == nil {
-		allfilters = append(allfilters, qm.Where(model.ReactionColumns.ChannelID+" != ?", channel.ClaimID))
-		reactionlist, err := channel.Reactions(myfilters...).AllG()
-		if err != nil {
-			return errors.Err(err)
-		}
-		userReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
-		for _, r := range reactionlist {
-			userReactions[r.R.Channel.ClaimID].Add(r.R.ReactionType.Name)
+	if args.ChannelName != nil {
+		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
+		if chanErr == nil {
+			allfilters = append(allfilters, qm.Where(model.ReactionColumns.ChannelID+" != ?", channel.ClaimID))
+			reactionlist, err := channel.Reactions(myfilters...).AllG()
+			if err != nil {
+				return errors.Err(err)
+			}
+			userReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
+			for _, r := range reactionlist {
+				userReactions[r.R.Channel.ClaimID].Add(r.R.ReactionType.Name)
+			}
 		}
 	}
 

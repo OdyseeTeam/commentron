@@ -15,8 +15,13 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 )
 
+var ValidateSignatures bool
+
 // ValidateSignature validates the signature was signed by the channel reference.
 func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
+	if !ValidateSignatures {
+		return nil
+	}
 	channel, err := GetChannelClaim(channelClaimID)
 	if err != nil {
 		return errors.Err(err)

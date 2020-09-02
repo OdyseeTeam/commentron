@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/server"
+	"github.com/lbryio/commentron/server/lbry"
 	"github.com/pkg/profile"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 func init() {
 	serveCmd.PersistentFlags().StringVarP(&server.RPCHost, "host", "", "", "host to listen on")
 	serveCmd.PersistentFlags().IntVarP(&server.RPCPort, "port", "p", 5900, "port binding used for the rpc server")
+	serveCmd.PersistentFlags().BoolVar(&lbry.ValidateSignatures, "validate", true, "allows the server to avoid validating signatures. good for local testing")
 	//Bind to Viper
 	err := viper.BindPFlags(serveCmd.PersistentFlags())
 	if err != nil {

@@ -1,9 +1,11 @@
 package server
 
 import (
+	jsonmarshall "encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/lbryio/commentron/server/services/v2/reactions"
 
@@ -17,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,12 +34,39 @@ func Start() {
 	logrus.SetOutput(os.Stdout)
 
 	router := mux.NewRouter()
+	router.Handle("/", state())
 	router.Handle("/api", v1RPCServer())
 	router.Handle("/api/v1", v1RPCServer())
 	router.Handle("/api/v2", v2RPCServer())
 	logrus.Infof("Running RPC Server @ http://%s:%d/api", RPCHost, RPCPort)
 	address := fmt.Sprintf("%s:%d", RPCHost, RPCPort)
 	logrus.Fatal(http.ListenAndServe(address, router))
+}
+
+func state() http.Handler {
+	var startUp = time.Now()
+	type status struct {
+		Text      string  `json:"text"`
+		IsRunning bool    `json:"is_running"`
+		Uptime    float64 `json:"up_time"`
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jsonBytes, err := jsonmarshall.Marshal(&status{
+			Text:      "OK",
+			IsRunning: true,
+			Uptime:    time.Since(startUp).Seconds(),
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			_, err = w.Write(jsonBytes)
+			if err != nil {
+				logrus.Error(err)
+			}
+		}
+	})
 }
 
 func v1RPCServer() http.Handler {
