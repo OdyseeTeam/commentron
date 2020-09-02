@@ -133,6 +133,7 @@ type CodecRequest struct {
 
 var methodMap = map[string]string{
 	"get_claim_comments":          "comment.List",
+	"get_claim_hidden_comments":   "comment.List",
 	"get_channel_from_comment_id": "comment.GetChannelFromCommentID",
 	"create_comment":              "comment.Create",
 	"abandon_comment":             "comment.Abandon",

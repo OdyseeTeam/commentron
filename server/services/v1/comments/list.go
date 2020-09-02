@@ -7,6 +7,7 @@ type ListArgs struct {
 	Page     int     `json:"page"`
 	PageSize int     `json:"page_size"`
 	TopLevel bool    `json:"top_level"`
+	Hidden   bool    `json:"hidden"`
 }
 
 // ApplyDefaults applies the default values for arguments passed that are different from normal defaults.
