@@ -8,8 +8,6 @@ import (
 
 	"github.com/lbryio/commentron/util"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/spf13/cast"
 )
 
@@ -19,7 +17,6 @@ func createCommentID(comment, channelID string) (string, int64, error) {
 	timestamp := time.Now().Unix()
 	nearestMinute := math.Floor(float64(timestamp) / 60.0)
 
-	logrus.Info("Inputs:", comment, " ", channelID, " ", timestamp, " ", int(nearestMinute))
 	c := sha256.Sum256(util.CreateDigest(
 		[]byte(":"),
 		[]byte(comment),
