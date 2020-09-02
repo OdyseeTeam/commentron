@@ -78,11 +78,11 @@ func notify(options NotifyOptions) error {
 	if err != nil {
 		return errors.Err(err)
 	}
-	if response.StatusCode >= 200 {
+	if response.StatusCode > 200 {
 		if response.StatusCode <= 300 {
-			logrus.Warning("Status: ", response.StatusCode, " : ", string(b))
+			logrus.Warning("Notification Failure[Status - ", response.StatusCode, "] : ", string(b))
 		} else {
-			logrus.Error("Status: ", response.StatusCode, " : ", string(b))
+			logrus.Error("Notification Failure[Status - ", response.StatusCode, "] : ", string(b))
 		}
 	}
 	return nil
