@@ -58,7 +58,10 @@ func state() http.Handler {
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
+			_, err := w.Write([]byte(err.Error()))
+			if err != nil {
+				logrus.Error(err)
+			}
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			_, err = w.Write(jsonBytes)
