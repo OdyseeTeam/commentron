@@ -5,6 +5,8 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/lbryio/lbry.go/extras/api"
+
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
@@ -62,7 +64,7 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 	}
 
 	if comment != nil {
-		return errors.Err("duplicate comment!")
+		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
 	}
 
 	comment = &m.Comment{
@@ -164,13 +166,13 @@ func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) err
 func (c *Service) GetChannelFromCommentID(_ *http.Request, args *ChannelArgs, reply *ChannelResponse) error {
 	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(m.CommentRels.Channel)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
-		return errors.Err("could not find comment for comment id")
+		return api.StatusError{Err: errors.Err("could not find comment for comment id"), Status: http.StatusBadRequest}
 	}
 	if err != nil {
 		return errors.Err(err)
 	}
 	if comment.R == nil && comment.R.Channel == nil {
-		return errors.Err("could not find channel for comment")
+		return api.StatusError{Err: errors.Err("could not find channel for comment"), Status: http.StatusBadRequest}
 	}
 	reply.ChannelID = comment.R.Channel.ClaimID
 	reply.ChannelName = comment.R.Channel.Name

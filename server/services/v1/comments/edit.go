@@ -1,7 +1,10 @@
 package comments
 
 import (
+	"net/http"
 	"time"
+
+	"github.com/lbryio/lbry.go/extras/api"
 
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -27,9 +30,15 @@ func edit(args *EditArgs) (*CommentItem, error) {
 	if err != nil {
 		return nil, errors.Err(err)
 	}
+	if comment == nil {
+		return nil, api.StatusError{Err: errors.Err("could not find comment with id %s", args.CommentID), Status: http.StatusBadRequest}
+	}
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(comment.ChannelID.String)).OneG()
 	if err != nil {
 		return nil, errors.Err(err)
+	}
+	if channel == nil {
+		return nil, api.StatusError{Err: errors.Err("channel id %s could not be found"), Status: http.StatusBadRequest}
 	}
 	err = lbry.ValidateSignature(comment.ChannelID.String, args.Signature, args.SigningTS, args.Comment)
 	if err != nil {

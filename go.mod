@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect

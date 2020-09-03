@@ -5,7 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/lbryio/commentron/util"
+	"github.com/lbryio/lbry.go/extras/api"
 
 	"github.com/lbryio/commentron/server/services/v2/reactions"
 
@@ -98,9 +103,19 @@ func v1RPCServer() http.Handler {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
 	})
 	rpcServer.RegisterAfterFunc(func(info *rpcHack.RequestInfo) {
+		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			info.StatusCode = http.StatusInternalServerError
-			logrus.Error(errors.FullTrace(info.Error))
+			err, ok := info.Error.(api.StatusError)
+			if ok {
+				info.StatusCode = err.Status
+			}
+			if info.StatusCode >= http.StatusInternalServerError {
+				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
+			} else {
+				logrus.Debug(color.RedString(consoleText + ": " + err.Error()))
+			}
+		} else if util.Debugging {
+			logrus.Debug(color.GreenString(consoleText))
 		}
 	})
 
@@ -133,9 +148,19 @@ func v2RPCServer() http.Handler {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
 	})
 	rpcServer.RegisterAfterFunc(func(info *rpc.RequestInfo) {
+		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			info.StatusCode = http.StatusInternalServerError
-			logrus.Error(errors.FullTrace(info.Error))
+			err, ok := info.Error.(api.StatusError)
+			if ok {
+				info.StatusCode = err.Status
+			}
+			if info.StatusCode >= http.StatusInternalServerError {
+				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
+			} else {
+				logrus.Debug(color.RedString(consoleText + ": " + err.Error()))
+			}
+		} else if util.Debugging {
+			logrus.Debug(color.GreenString(consoleText))
 		}
 	})
 
