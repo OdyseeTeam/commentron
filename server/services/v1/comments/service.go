@@ -218,3 +218,13 @@ func (c *Service) Edit(_ *http.Request, args *EditArgs, reply *EditResponse) err
 	})
 	return nil
 }
+
+// ByID returns the comment from the comment id passed in
+func (c *Service) ByID(r *http.Request, args *ByIDArgs, reply *ByIDResponse) error {
+	item, err := byID(r, args)
+	if err != nil {
+		return err
+	}
+	reply.Item = item
+	return nil
+}
