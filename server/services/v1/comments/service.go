@@ -5,6 +5,8 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/lbryio/commentron/commentapi"
+
 	"github.com/lbryio/lbry.go/extras/api"
 
 	m "github.com/lbryio/commentron/model"
@@ -37,7 +39,7 @@ page for comment ( params: page, [size], order-by )
 type Service struct{}
 
 // Create creates a comment
-func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateResponse) error {
+func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
 	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFromPtr(args.ChannelID).String)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &m.Channel{
@@ -97,7 +99,7 @@ func (c *Service) Create(_ *http.Request, args *CreateArgs, reply *CreateRespons
 }
 
 // List lists comments based on filters and arguments passed. The returned result is dynamic based on the args passed
-func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) error {
+func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
 	loadChannels := qm.Load("Channel")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
@@ -143,7 +145,7 @@ func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) err
 		return errors.Err(err)
 	}
 
-	var items []CommentItem
+	var items []commentapi.CommentItem
 	for _, comment := range comments {
 		var channel *m.Channel
 		if comment.R != nil {
@@ -163,7 +165,7 @@ func (c *Service) List(_ *http.Request, args *ListArgs, reply *ListResponse) err
 }
 
 // GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
-func (c *Service) GetChannelFromCommentID(_ *http.Request, args *ChannelArgs, reply *ChannelResponse) error {
+func (c *Service) GetChannelFromCommentID(_ *http.Request, args *commentapi.ChannelArgs, reply *commentapi.ChannelResponse) error {
 	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(m.CommentRels.Channel)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		return api.StatusError{Err: errors.Err("could not find comment for comment id"), Status: http.StatusBadRequest}
@@ -180,7 +182,7 @@ func (c *Service) GetChannelFromCommentID(_ *http.Request, args *ChannelArgs, re
 }
 
 // Abandon deletes a comment
-func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResponse) error {
+func (c *Service) Abandon(_ *http.Request, args *commentapi.AbandonArgs, reply *commentapi.AbandonResponse) error {
 	item, err := abandon(args)
 	if err != nil {
 		return errors.Err(err)
@@ -201,7 +203,7 @@ func (c *Service) Abandon(_ *http.Request, args *AbandonArgs, reply *AbandonResp
 }
 
 // Edit edits a comment
-func (c *Service) Edit(_ *http.Request, args *EditArgs, reply *EditResponse) error {
+func (c *Service) Edit(_ *http.Request, args *commentapi.EditArgs, reply *commentapi.EditResponse) error {
 	item, err := edit(args)
 	if err != nil {
 		return errors.Err(err)
@@ -220,7 +222,7 @@ func (c *Service) Edit(_ *http.Request, args *EditArgs, reply *EditResponse) err
 }
 
 // ByID returns the comment from the comment id passed in
-func (c *Service) ByID(r *http.Request, args *ByIDArgs, reply *ByIDResponse) error {
+func (c *Service) ByID(r *http.Request, args *commentapi.ByIDArgs, reply *commentapi.ByIDResponse) error {
 	item, err := byID(r, args)
 	if err != nil {
 		return err

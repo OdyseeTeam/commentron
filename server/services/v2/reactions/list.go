@@ -5,32 +5,18 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/commentron/server/lbry"
-	"github.com/volatiletech/sqlboiler/boil"
-
+	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/model"
+	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+
+	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-// ListArgs are the arguments passed to comment.Abandon RPC call
-type ListArgs struct {
-	CommentIDs  string `json:"comment_ids"`
-	Signature   string `json:"signature"`
-	SigningTS   string `json:"signing_ts"`
-	Types       *string
-	ChannelID   *string `json:"channel_id"`
-	ChannelName *string `json:"channel_name"`
-}
-
-// ListResponse the response to the abandon call
-type ListResponse struct {
-	MyReactions     reactions `json:"my_reactions,omitempty"`
-	OthersReactions reactions `json:"others_reactions"`
-}
-
-func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
+func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {
 	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).AllG()
 	if err != nil {
 		return errors.Err(err)
@@ -73,7 +59,7 @@ func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 			return errors.Err(err)
 		}
 	}
-	var userReactions reactions
+	var userReactions commentapi.Reactions
 	if args.ChannelName != nil {
 		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
 		if chanErr == nil {
@@ -84,7 +70,7 @@ func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 			}
 			userReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
 			for _, r := range reactionlist {
-				userReactions[r.R.Channel.ClaimID].Add(r.R.ReactionType.Name)
+				addTo(userReactions[r.R.Channel.ClaimID], r.R.ReactionType.Name)
 			}
 		}
 	}
@@ -95,26 +81,14 @@ func list(_ *http.Request, args *ListArgs, reply *ListResponse) error {
 	}
 	var othersReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
 	for _, r := range reactionlist {
-		othersReactions[r.R.Channel.ClaimID].Add(r.R.ReactionType.Name)
+		addTo(othersReactions[r.R.Channel.ClaimID], r.R.ReactionType.Name)
 	}
 	reply.MyReactions = userReactions
 	reply.OthersReactions = othersReactions
 	return nil
 }
 
-type reactions map[string]commentReaction
-
-type commentReaction map[string]int
-
-func (c commentReaction) Add(reactionType string) {
-	curr, ok := c[reactionType]
-	if !ok {
-		c[reactionType] = 0
-	}
-	c[reactionType] = curr + 1
-}
-
-func newReactions(commentIDs []string, types *string) reactions {
+func newReactions(commentIDs []string, types *string) commentapi.Reactions {
 	var reactionTypes []string
 	if types == nil {
 		rts, err := model.ReactionTypes().AllG()
@@ -126,7 +100,7 @@ func newReactions(commentIDs []string, types *string) reactions {
 	} else {
 		reactionTypes = strings.Split(*types, ",")
 	}
-	r := make(map[string]commentReaction, len(commentIDs))
+	r := make(map[string]commentapi.CommentReaction, len(commentIDs))
 	for _, c := range commentIDs {
 		r[c] = make(map[string]int)
 		for _, t := range reactionTypes {
@@ -134,4 +108,12 @@ func newReactions(commentIDs []string, types *string) reactions {
 		}
 	}
 	return r
+}
+
+func addTo(c commentapi.CommentReaction, reactionType string) {
+	curr, ok := c[reactionType]
+	if !ok {
+		c[reactionType] = 0
+	}
+	c[reactionType] = curr + 1
 }

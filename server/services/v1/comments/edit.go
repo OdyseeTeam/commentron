@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lbryio/commentron/commentapi"
+
 	"github.com/lbryio/lbry.go/extras/api"
 
 	"github.com/lbryio/commentron/model"
@@ -12,20 +14,7 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
-// EditArgs arguments for the comment.Edit rpc call
-type EditArgs struct {
-	Comment   string `json:"comment"`
-	CommentID string `json:"comment_id"`
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
-}
-
-// EditResponse response for the comment.Edit rpc call
-type EditResponse struct {
-	*CommentItem
-}
-
-func edit(args *EditArgs) (*CommentItem, error) {
+func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID)).OneG()
 	if err != nil {
 		return nil, errors.Err(err)

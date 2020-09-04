@@ -6,6 +6,7 @@ require (
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/fatih/color v1.7.0
+	github.com/fatih/structs v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
@@ -19,7 +20,7 @@ require (
 	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.6.1-0.20200901183659-29574578c1c1
 	github.com/magiconair/properties v1.8.2 // indirect
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mitchellh/mapstructure v1.3.3
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
@@ -34,6 +35,7 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.4.0+incompatible
+	github.com/ybbus/jsonrpc v0.0.0-20180411222309-2a548b7d822d
 	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/ini.v1 v1.60.2 // indirect

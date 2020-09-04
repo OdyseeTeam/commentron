@@ -3,6 +3,8 @@ package comments
 import (
 	"fmt"
 
+	"github.com/lbryio/commentron/commentapi"
+
 	m "github.com/lbryio/commentron/model"
 
 	"github.com/volatiletech/null"
@@ -23,7 +25,7 @@ type CommentItem struct {
 	ChannelURL  string `json:"channel_url,omitempty"`
 }
 
-func populateItem(comment *m.Comment, channel *m.Channel) CommentItem {
+func populateItem(comment *m.Comment, channel *m.Channel) commentapi.CommentItem {
 	var channelName null.String
 	var channelURL null.String
 	if channel != nil {
@@ -31,7 +33,7 @@ func populateItem(comment *m.Comment, channel *m.Channel) CommentItem {
 		channelURL = null.StringFrom(fmt.Sprintf("lbry://%s#%s", channelName.String, comment.ChannelID.String))
 	}
 
-	item := CommentItem{
+	item := commentapi.CommentItem{
 		Comment:     comment.Body,
 		CommentID:   comment.CommentID,
 		ClaimID:     comment.LbryClaimID,

@@ -5,39 +5,22 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/volatiletech/null"
-
-	"github.com/lbryio/commentron/server/lbry"
-
+	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
+	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+
+	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-// ReactArgs are the arguments passed to comment.Abandon RPC call
-type ReactArgs struct {
-	CommentIDs  string  `json:"comment_ids"`
-	Signature   string  `json:"signature"`
-	SigningTS   string  `json:"signing_ts"`
-	Remove      bool    `json:"remove"`
-	ClearTypes  string  `json:"clear_types"`
-	Type        string  `json:"type"`
-	ChannelID   *string `json:"channel_id"`
-	ChannelName *string `json:"channel_name"`
-}
-
-// ReactResponse the response to the abandon call
-type ReactResponse struct {
-	reactions
-}
-
 // React creates/updates a reaction to a comment
-func react(_ *http.Request, args *ReactArgs, reply *ReactResponse) error {
+func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactResponse) error {
 
 	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).AllG()
 	if err != nil {
@@ -70,10 +53,10 @@ func react(_ *http.Request, args *ReactArgs, reply *ReactResponse) error {
 	if err != nil {
 		return errors.Err(err)
 	}
-	reply.reactions = modifiedReactions
+	reply.Reactions = modifiedReactions
 	return nil
 }
-func updateReactions(channel *model.Channel, args *ReactArgs, commentIDs []interface{}, comments model.CommentSlice) (reactions, error) {
+func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, commentIDs []interface{}, comments model.CommentSlice) (commentapi.Reactions, error) {
 	var modifiedReactions = newReactions(strings.Split(args.CommentIDs, ","), &args.Type)
 	err := db.WithTx(nil, func(tx boil.Transactor) error {
 		if len(args.ClearTypes) > 0 {
@@ -117,7 +100,7 @@ func updateReactions(channel *model.Channel, args *ReactArgs, commentIDs []inter
 				return api.StatusError{Err: errors.Err("there are no reactions for the claim(s) to remove"), Status: http.StatusBadRequest}
 			}
 			for _, r := range existingReactions {
-				modifiedReactions[r.R.Comment.CommentID].Add(args.Type)
+				addTo(modifiedReactions[r.R.Comment.CommentID], args.Type)
 			}
 			err = existingReactions.DeleteAll(tx)
 			return errors.Err(err)
@@ -131,7 +114,7 @@ func updateReactions(channel *model.Channel, args *ReactArgs, commentIDs []inter
 				}
 				return errors.Err(err)
 			}
-			modifiedReactions[p.CommentID].Add(reactionType.Name)
+			addTo(modifiedReactions[p.CommentID], reactionType.Name)
 		}
 		return nil
 	})
