@@ -19,11 +19,13 @@ import (
 // DefaultPort the default port that is used for commentron client
 const DefaultPort = 5900
 
+// Client commentron client for apis
 type Client struct {
 	conn    jsonrpc.RPCClient
 	address string
 }
 
+// NewClient init for creating a commentron client
 func NewClient(address string) *Client {
 	d := Client{}
 
@@ -41,12 +43,14 @@ func NewClient(address string) *Client {
 //  REACTION SERVICE //
 ///////////////////////
 
+// ReactionList lists reactions to comments
 func (d *Client) ReactionList(args ReactionListArgs) (*ReactionListResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ReactionListResponse)
 	return response, d.call(response, "reaction.List", structs.Map(args))
 }
 
+// ReactionReact posts a new reaction to a comment
 func (d *Client) ReactionReact(args ReactArgs) (*ReactResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ReactResponse)
@@ -57,36 +61,42 @@ func (d *Client) ReactionReact(args ReactArgs) (*ReactResponse, error) {
 //  COMMENT SERVICE //
 //////////////////////
 
+// CommentList lists comments for a claim or parent comment
 func (d *Client) CommentList(args ListArgs) (*ListResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ListResponse)
 	return response, d.call(response, "comment.List", structs.Map(args))
 }
 
+// CommentByID returns a comment for id
 func (d *Client) CommentByID(args ByIDArgs) (*ByIDResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ByIDResponse)
 	return response, d.call(response, "comment.ByID", structs.Map(args))
 }
 
+// CommentAbandon abandons a comment
 func (d *Client) CommentAbandon(args AbandonArgs) (*AbandonResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(AbandonResponse)
 	return response, d.call(response, "comment.Abandon", structs.Map(args))
 }
 
+// CommentCreate creates a comment
 func (d *Client) CommentCreate(args CreateArgs) (*CreateResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(CreateResponse)
 	return response, d.call(response, "comment.Create", structs.Map(args))
 }
 
+// CommentEdit edits a comment
 func (d *Client) CommentEdit(args EditArgs) (*EditResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(EditResponse)
 	return response, d.call(response, "comment.Edit", structs.Map(args))
 }
 
+// GetChannelForComment returns the channel information for a particular comment
 func (d *Client) GetChannelForComment(args ChannelArgs) (*ChannelResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ChannelResponse)
@@ -154,7 +164,7 @@ func (d *Client) call(response interface{}, command string, params map[string]in
 	return decode(result, response)
 }
 
-func (d *Client) SetRPCTimeout(timeout time.Duration) {
+func (d *Client) setRPCTimeout(timeout time.Duration) {
 	d.conn = jsonrpc.NewClientWithOpts(d.address, &jsonrpc.RPCClientOpts{
 		HTTPClient: &http.Client{Timeout: timeout},
 	})

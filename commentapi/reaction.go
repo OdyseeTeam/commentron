@@ -17,7 +17,7 @@ type ReactResponse struct {
 	Reactions
 }
 
-// ListArgs are the arguments passed to comment.Abandon RPC call
+// ReactionListArgs are the arguments passed to comment.Abandon RPC call
 type ReactionListArgs struct {
 	CommentIDs  string `json:"comment_ids"`
 	Signature   string `json:"signature"`
@@ -27,12 +27,14 @@ type ReactionListArgs struct {
 	ChannelName *string `json:"channel_name"`
 }
 
-// ListResponse the response to the abandon call
+// ReactionListResponse the response to the abandon call
 type ReactionListResponse struct {
 	MyReactions     Reactions `json:"my_reactions,omitempty"`
 	OthersReactions Reactions `json:"others_reactions"`
 }
 
+// Reactions a structure for a collection of reactions for a comment
 type Reactions map[string]CommentReaction
 
+// CommentReaction is a map for representing the reaction and its quantity for a comment
 type CommentReaction map[string]int
