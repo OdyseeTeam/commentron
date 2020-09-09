@@ -43,9 +43,5 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 		return nil, errors.Err(err)
 	}
 	item := populateItem(comment, channel)
-	err = comment.DeleteG()
-	if err != nil {
-		return nil, errors.Err(err)
-	}
 	return &item, nil
 }
