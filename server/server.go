@@ -112,7 +112,7 @@ func v1RPCServer() http.Handler {
 			if info.StatusCode >= http.StatusInternalServerError {
 				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
 			} else {
-				logrus.Debug(color.RedString(consoleText + ": " + err.Error()))
+				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
 			}
 		} else if util.Debugging {
 			logrus.Debug(color.GreenString(consoleText))
