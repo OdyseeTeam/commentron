@@ -150,14 +150,14 @@ func v2RPCServer() http.Handler {
 	rpcServer.RegisterAfterFunc(func(info *rpc.RequestInfo) {
 		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			err, ok := info.Error.(api.StatusError)
+			statusErr, ok := info.Error.(api.StatusError)
 			if ok {
-				info.StatusCode = err.Status
+				info.StatusCode = statusErr.Status
 			}
 			if info.StatusCode >= http.StatusInternalServerError {
 				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
 			} else {
-				logrus.Debug(color.RedString(consoleText + ": " + err.Error()))
+				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
 			}
 		} else if util.Debugging {
 			logrus.Debug(color.GreenString(consoleText))

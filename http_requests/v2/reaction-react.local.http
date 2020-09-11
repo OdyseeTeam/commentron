@@ -10,7 +10,7 @@ Content-Type: application/json
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "reaction.List",
+  "method": "reaction.React",
   "params": {
     "comment_ids": "16b55ecafb338dab63ef0819339d5070b06f227a18caedf843d0752003368ed4",
     "channel_name": "@dtrdtr",
