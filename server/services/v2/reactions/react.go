@@ -82,7 +82,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 		reactionType, err := model.ReactionTypes(model.ReactionTypeWhere.Name.EQ(args.Type)).One(tx)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil
-			reactionType := &model.ReactionType{Name: args.Type}
+			reactionType = &model.ReactionType{Name: args.Type}
 			err = reactionType.Insert(tx, boil.Infer())
 		}
 		if err != nil {
