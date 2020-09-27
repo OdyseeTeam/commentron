@@ -44,6 +44,9 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		for _, t := range types {
 			typeIDs = append(typeIDs, t.ID)
 		}
+		if len(typeIDs) == 0 {
+			return errors.Err("none of the types %s are in use in commentron", util.StrFromPtr(args.Types))
+		}
 		myfilters = append(myfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 		allfilters = append(allfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 	}
