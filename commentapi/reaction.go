@@ -33,7 +33,7 @@ type ReactionListResponse struct {
 	OthersReactions Reactions `json:"others_reactions"`
 }
 
-// Reactions a structure for a collection of reactions for a comment
+// Reactions a map structure where the key is the comment_id and the value is a CommentReaction
 type Reactions map[string]CommentReaction
 
 // CommentReaction is a map for representing the reaction and its quantity for a comment

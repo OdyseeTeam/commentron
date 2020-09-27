@@ -70,7 +70,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 			}
 			userReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
 			for _, r := range reactionlist {
-				addTo(userReactions[r.R.Channel.ClaimID], r.R.ReactionType.Name)
+				addTo(userReactions[r.CommentID], r.R.ReactionType.Name)
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 	}
 	var othersReactions = newReactions(strings.Split(args.CommentIDs, ","), args.Types)
 	for _, r := range reactionlist {
-		addTo(othersReactions[r.R.Channel.ClaimID], r.R.ReactionType.Name)
+		addTo(othersReactions[r.CommentID], r.R.ReactionType.Name)
 	}
 	reply.MyReactions = userReactions
 	reply.OthersReactions = othersReactions
