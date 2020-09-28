@@ -150,8 +150,10 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 		var channel *m.Channel
 		if comment.R != nil {
 			channel = comment.R.Channel
+			if channel != nil && channel.Name != "" {
+				items = append(items, populateItem(comment, channel))
+			}
 		}
-		items = append(items, populateItem(comment, channel))
 	}
 
 	reply.Items = items
