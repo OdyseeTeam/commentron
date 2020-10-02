@@ -19,14 +19,14 @@ require (
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.6.1-0.20200901183659-29574578c1c1
-	github.com/magiconair/properties v1.8.2 // indirect
+	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3
-	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/afero v1.3.4 // indirect
+	github.com/spf13/afero v1.4.0 // indirect
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -36,7 +36,8 @@ require (
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.4.0+incompatible
 	github.com/ybbus/jsonrpc v0.0.0-20180411222309-2a548b7d822d
-	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
+	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
-	gopkg.in/ini.v1 v1.60.2 // indirect
+	gopkg.in/ini.v1 v1.61.0 // indirect
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
