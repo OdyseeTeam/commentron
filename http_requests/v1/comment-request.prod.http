@@ -10,9 +10,10 @@ Content-Type: application/json
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "get_claim_comments",
+  "method": "comment.List",
   "params": {
-    "claim_id": "81f80f4232373f99f2a02aa0399e311238d3901e", "page": 12
+    "claim_id": "5bd299a92e7b31865d2bb3e2313402edaca41a94",
+    "page_size": 200
   }
 }
 
