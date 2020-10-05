@@ -72,7 +72,8 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 				}
 				err = channel.Reactions(
 					qm.Where(model.ReactionColumns.ChannelID+"=?", channel.ClaimID),
-					qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typesToClear...)).DeleteAll(tx)
+					qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typesToClear...),
+					qm.WhereIn(model.ReactionColumns.CommentID+" IN ?", commentIDs...)).DeleteAll(tx)
 				if err != nil {
 					return errors.Err(err)
 				}
