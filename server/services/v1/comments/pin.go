@@ -52,7 +52,7 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	if err != nil {
 		return item, err
 	}
-	comment.IsPinned = !args.RemovePin
+	comment.IsPinned = !args.Remove
 	err = comment.UpdateG(boil.Infer())
 	if err != nil {
 		return item, errors.Err(err)
