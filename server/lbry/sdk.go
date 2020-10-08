@@ -8,8 +8,8 @@ import (
 // SDKURL is the url the client should use to connect the sdk
 var SDKURL string
 
-// GetChannelClaim retrieves the channel claim information from the sdk.
-func GetChannelClaim(claimID string) (*jsonrpc.Claim, error) {
+// GetClaim retrieves the channel claim information from the sdk.
+func GetClaim(claimID string) (*jsonrpc.Claim, error) {
 	c := jsonrpc.NewClient(SDKURL)
 	claimSearchResp, err := c.ClaimSearch(nil, &claimID, nil, nil, 1, 1)
 	if err != nil {
@@ -19,5 +19,5 @@ func GetChannelClaim(claimID string) (*jsonrpc.Claim, error) {
 		channel := claimSearchResp.Claims[0]
 		return &channel, nil
 	}
-	return nil, errors.Err("could not get channel claim from sdk with claim id %s", claimID)
+	return nil, errors.Err("could not get claim from sdk with claim id %s", claimID)
 }
