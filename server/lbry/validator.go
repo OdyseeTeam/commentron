@@ -11,6 +11,7 @@ import (
 	"github.com/lbryio/commentron/util"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 
 	"github.com/btcsuite/btcd/btcec"
 )
@@ -20,12 +21,25 @@ var ValidateSignatures bool
 
 // ValidateSignature validates the signature was signed by the channel reference.
 func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
-	channel, err := GetChannelClaim(channelClaimID)
+	channel, err := GetClaim(channelClaimID)
 	if err != nil {
 		return errors.Err(err)
 	}
 	pk := channel.Value.GetChannel().GetPublicKey()
 	return validateSignature(channelClaimID, signature, signingTS, data, pk)
+
+}
+
+// ValidateSignatureFromClaim validates the signature was signed by the channel reference.
+func ValidateSignatureFromClaim(channel *jsonrpc.Claim, signature, signingTS, data string) error {
+	if channel == nil {
+		return errors.Err("no channel to validate")
+	}
+	if channel.Value.GetChannel() == nil {
+		return errors.Err("no channel for public key")
+	}
+	pk := channel.Value.GetChannel().GetPublicKey()
+	return validateSignature(channel.ClaimID, signature, signingTS, data, pk)
 
 }
 

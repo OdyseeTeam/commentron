@@ -70,7 +70,7 @@ type ByIDResponse struct {
 type PinArgs struct {
 	CommentID   string `json:"comment_id"`
 	ChannelID   string `json:"channel_id"`
-	ChannelName string `json:"channel_name"`
+	ChannelName string `json:"channel_name"` //Technical debt? probably dont need this since we can get the channel from the comment claim
 	RemovePin   bool   `json:"remove_pin"`
 	Signature   string `json:"signature"`
 	SigningTS   string `json:"signing_ts"`

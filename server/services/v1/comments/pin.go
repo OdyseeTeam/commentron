@@ -19,6 +19,15 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	if err != nil {
 		return item, errors.Err(err)
 	}
+
+	claim, err := lbry.GetClaim(comment.LbryClaimID)
+	if err != nil {
+		return item, errors.Err(err)
+	}
+	if claim == nil {
+		return item, errors.Err("could not resolve claim from comment")
+	}
+
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
@@ -31,7 +40,12 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 			return item, errors.Err(err)
 		}
 	}
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentID)
+
+	if claim.SigningChannel == nil {
+		return item, errors.Err("claim does not have a signing channel")
+	}
+
+	err = lbry.ValidateSignatureFromClaim(claim.SigningChannel, args.Signature, args.SigningTS, args.CommentID)
 	if err != nil {
 		return item, err
 	}
