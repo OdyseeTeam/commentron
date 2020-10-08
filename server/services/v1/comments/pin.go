@@ -9,7 +9,6 @@ import (
 	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
@@ -40,12 +39,16 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 			return item, errors.Err(err)
 		}
 	}
-
-	if claim.SigningChannel == nil {
-		return item, errors.Err("claim does not have a signing channel")
+	claimChannel := claim.SigningChannel
+	if claimChannel == nil {
+		if claim.ValueType == "channel" {
+			claimChannel = claim
+		} else {
+			return item, errors.Err("claim does not have a signing channel")
+		}
 	}
 
-	err = lbry.ValidateSignatureFromClaim(claim.SigningChannel, args.Signature, args.SigningTS, args.CommentID)
+	err = lbry.ValidateSignatureFromClaim(claimChannel, args.Signature, args.SigningTS, args.CommentID)
 	if err != nil {
 		return item, err
 	}
