@@ -32,6 +32,7 @@ type Comment struct {
 	Signingts   null.String `boil:"signingts" json:"signingts,omitempty" toml:"signingts" yaml:"signingts,omitempty"`
 	Timestamp   int         `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
 	IsHidden    null.Bool   `boil:"is_hidden" json:"is_hidden,omitempty" toml:"is_hidden" yaml:"is_hidden,omitempty"`
+	IsPinned    bool        `boil:"is_pinned" json:"is_pinned" toml:"is_pinned" yaml:"is_pinned"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,6 +48,7 @@ var CommentColumns = struct {
 	Signingts   string
 	Timestamp   string
 	IsHidden    string
+	IsPinned    string
 }{
 	CommentID:   "comment_id",
 	LbryClaimID: "lbry_claim_id",
@@ -57,6 +59,7 @@ var CommentColumns = struct {
 	Signingts:   "signingts",
 	Timestamp:   "timestamp",
 	IsHidden:    "is_hidden",
+	IsPinned:    "is_pinned",
 }
 
 // Generated where
@@ -116,6 +119,15 @@ func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
+type whereHelperbool struct{ field string }
+
+func (w whereHelperbool) EQ(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperbool) NEQ(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperbool) LT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
 var CommentWhere = struct {
 	CommentID   whereHelperstring
 	LbryClaimID whereHelperstring
@@ -126,6 +138,7 @@ var CommentWhere = struct {
 	Signingts   whereHelpernull_String
 	Timestamp   whereHelperint
 	IsHidden    whereHelpernull_Bool
+	IsPinned    whereHelperbool
 }{
 	CommentID:   whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID: whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -136,6 +149,7 @@ var CommentWhere = struct {
 	Signingts:   whereHelpernull_String{field: "`comment`.`signingts`"},
 	Timestamp:   whereHelperint{field: "`comment`.`timestamp`"},
 	IsHidden:    whereHelpernull_Bool{field: "`comment`.`is_hidden`"},
+	IsPinned:    whereHelperbool{field: "`comment`.`is_pinned`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -168,9 +182,9 @@ func (*commentR) NewStruct() *commentR {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned"}
 	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp"}
-	commentColumnsWithDefault    = []string{"is_hidden"}
+	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 )
 
