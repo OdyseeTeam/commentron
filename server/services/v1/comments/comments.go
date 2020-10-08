@@ -42,6 +42,7 @@ func populateItem(comment *m.Comment, channel *m.Channel) commentapi.CommentItem
 		Signature:   comment.Signature.String,
 		SigningTs:   comment.Signingts.String,
 		IsHidden:    comment.IsHidden.Bool,
+		IsPinned:    comment.IsPinned,
 		ChannelID:   comment.ChannelID.String,
 		ChannelName: channelName.String,
 		ChannelURL:  channelURL.String,

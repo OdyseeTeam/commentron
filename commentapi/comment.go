@@ -10,6 +10,7 @@ type CommentItem struct {
 	Signature   string `json:"signature,omitempty"`
 	SigningTs   string `json:"signing_ts,omitempty"`
 	IsHidden    bool   `json:"is_hidden"`
+	IsPinned    bool   `json:"is_pinned"`
 	ChannelID   string `json:"channel_id,omitempty"`
 	ChannelName string `json:"channel_name,omitempty"`
 	ChannelURL  string `json:"channel_url,omitempty"`
@@ -62,6 +63,21 @@ type ByIDArgs struct {
 
 // ByIDResponse response for the comment.ByID rpc call
 type ByIDResponse struct {
+	Item CommentItem `json:"items,omitempty"`
+}
+
+// PinArgs arguments for the comment.Pin rpc call. The comment id must be signed with a timestamp for authentication.
+type PinArgs struct {
+	CommentID   string `json:"comment_id"`
+	ChannelID   string `json:"channel_id"`
+	ChannelName string `json:"channel_name"`
+	RemovePin   bool   `json:"remove_pin"`
+	Signature   string `json:"signature"`
+	SigningTS   string `json:"signing_ts"`
+}
+
+// PinResponse response for the comment.Pin rpc call
+type PinResponse struct {
 	Item CommentItem `json:"items,omitempty"`
 }
 

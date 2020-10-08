@@ -232,3 +232,13 @@ func (c *Service) ByID(r *http.Request, args *commentapi.ByIDArgs, reply *commen
 	reply.Item = item
 	return nil
 }
+
+// Pin sets the pinned flag on a comment
+func (c *Service) Pin(r *http.Request, args *commentapi.PinArgs, reply *commentapi.PinResponse) error {
+	item, err := pin(r, args)
+	if err != nil {
+		return err
+	}
+	reply.Item = item
+	return nil
+}
