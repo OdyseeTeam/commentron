@@ -39,7 +39,7 @@ type Service struct{}
 
 // Create creates a comment
 func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
-	err := v.ValidateStruct(&args,
+	err := v.ValidateStruct(args,
 		v.Field(&args.ClaimID, v.Required))
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
