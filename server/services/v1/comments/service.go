@@ -6,14 +6,13 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
-
-	"github.com/lbryio/lbry.go/extras/api"
-
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
+	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+	v "github.com/lbryio/ozzo-validation"
 
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -40,6 +39,11 @@ type Service struct{}
 
 // Create creates a comment
 func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
+	err := v.ValidateStruct(&args,
+		v.Field(&args.ClaimID, v.Required))
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
 	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFromPtr(args.ChannelID).String)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &m.Channel{
