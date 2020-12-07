@@ -119,6 +119,8 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 
 	if args.AuthorClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
+		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
+		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
 	}
 
 	if args.ClaimID != nil {
