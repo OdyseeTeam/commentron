@@ -108,6 +108,7 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 	loadChannels := qm.Load("Channel")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
+	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
 	filterParent := m.CommentWhere.ParentID.EQ(null.StringFrom(util.StrFromPtr(args.ParentID)))
 
@@ -115,6 +116,10 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 	offset := (args.Page - 1) * args.PageSize
 	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
+
+	if args.AuthorClaimID != nil {
+		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
+	}
 
 	if args.ClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterClaimID)

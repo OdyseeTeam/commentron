@@ -83,12 +83,13 @@ type PinResponse struct {
 
 // ListArgs arguments for the comment.List rpc call
 type ListArgs struct {
-	ClaimID  *string `json:"claim_id"`
-	ParentID *string `json:"parent_id"`
-	Page     int     `json:"page"`
-	PageSize int     `json:"page_size"`
-	TopLevel bool    `json:"top_level"`
-	Hidden   bool    `json:"hidden"`
+	ClaimID       *string `json:"claim_id"`
+	AuthorClaimID *string `json:"author_claim_id"`
+	ParentID      *string `json:"parent_id"`
+	Page          int     `json:"page"`
+	PageSize      int     `json:"page_size"`
+	TopLevel      bool    `json:"top_level"`
+	Hidden        bool    `json:"hidden"`
 }
 
 // AbandonArgs are the arguments passed to comment.Abandon RPC call
