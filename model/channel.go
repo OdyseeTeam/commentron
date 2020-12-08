@@ -58,17 +58,26 @@ var ChannelWhere = struct {
 
 // ChannelRels is where relationship names are stored.
 var ChannelRels = struct {
-	Comments  string
-	Reactions string
+	BlockedChannelBlockedEntries   string
+	BlockedByChannelBlockedEntries string
+	Comments                       string
+	ModChannelModerators           string
+	Reactions                      string
 }{
-	Comments:  "Comments",
-	Reactions: "Reactions",
+	BlockedChannelBlockedEntries:   "BlockedChannelBlockedEntries",
+	BlockedByChannelBlockedEntries: "BlockedByChannelBlockedEntries",
+	Comments:                       "Comments",
+	ModChannelModerators:           "ModChannelModerators",
+	Reactions:                      "Reactions",
 }
 
 // channelR is where relationships are stored.
 type channelR struct {
-	Comments  CommentSlice
-	Reactions ReactionSlice
+	BlockedChannelBlockedEntries   BlockedEntrySlice
+	BlockedByChannelBlockedEntries BlockedEntrySlice
+	Comments                       CommentSlice
+	ModChannelModerators           ModeratorSlice
+	Reactions                      ReactionSlice
 }
 
 // NewStruct creates a new relationship struct
@@ -277,6 +286,48 @@ func (q channelQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
+// BlockedChannelBlockedEntries retrieves all the blocked_entry's BlockedEntries with an executor via blocked_channel_id column.
+func (o *Channel) BlockedChannelBlockedEntries(mods ...qm.QueryMod) blockedEntryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`blocked_entry`.`blocked_channel_id`=?", o.ClaimID),
+	)
+
+	query := BlockedEntries(queryMods...)
+	queries.SetFrom(query.Query, "`blocked_entry`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`blocked_entry`.*"})
+	}
+
+	return query
+}
+
+// BlockedByChannelBlockedEntries retrieves all the blocked_entry's BlockedEntries with an executor via blocked_by_channel_id column.
+func (o *Channel) BlockedByChannelBlockedEntries(mods ...qm.QueryMod) blockedEntryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`blocked_entry`.`blocked_by_channel_id`=?", o.ClaimID),
+	)
+
+	query := BlockedEntries(queryMods...)
+	queries.SetFrom(query.Query, "`blocked_entry`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`blocked_entry`.*"})
+	}
+
+	return query
+}
+
 // Comments retrieves all the comment's Comments with an executor.
 func (o *Channel) Comments(mods ...qm.QueryMod) commentQuery {
 	var queryMods []qm.QueryMod
@@ -293,6 +344,27 @@ func (o *Channel) Comments(mods ...qm.QueryMod) commentQuery {
 
 	if len(queries.GetSelect(query.Query)) == 0 {
 		queries.SetSelect(query.Query, []string{"`comment`.*"})
+	}
+
+	return query
+}
+
+// ModChannelModerators retrieves all the moderator's Moderators with an executor via mod_channel_id column.
+func (o *Channel) ModChannelModerators(mods ...qm.QueryMod) moderatorQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`moderator`.`mod_channel_id`=?", o.ClaimID),
+	)
+
+	query := Moderators(queryMods...)
+	queries.SetFrom(query.Query, "`moderator`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`moderator`.*"})
 	}
 
 	return query
@@ -317,6 +389,182 @@ func (o *Channel) Reactions(mods ...qm.QueryMod) reactionQuery {
 	}
 
 	return query
+}
+
+// LoadBlockedChannelBlockedEntries allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadBlockedChannelBlockedEntries(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.ClaimID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`blocked_entry`), qm.WhereIn(`blocked_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load blocked_entry")
+	}
+
+	var resultSlice []*BlockedEntry
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice blocked_entry")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on blocked_entry")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for blocked_entry")
+	}
+
+	if singular {
+		object.R.BlockedChannelBlockedEntries = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &blockedEntryR{}
+			}
+			foreign.R.BlockedChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ClaimID, foreign.BlockedChannelID) {
+				local.R.BlockedChannelBlockedEntries = append(local.R.BlockedChannelBlockedEntries, foreign)
+				if foreign.R == nil {
+					foreign.R = &blockedEntryR{}
+				}
+				foreign.R.BlockedChannel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadBlockedByChannelBlockedEntries allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadBlockedByChannelBlockedEntries(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.ClaimID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`blocked_entry`), qm.WhereIn(`blocked_by_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load blocked_entry")
+	}
+
+	var resultSlice []*BlockedEntry
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice blocked_entry")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on blocked_entry")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for blocked_entry")
+	}
+
+	if singular {
+		object.R.BlockedByChannelBlockedEntries = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &blockedEntryR{}
+			}
+			foreign.R.BlockedByChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ClaimID, foreign.BlockedByChannelID) {
+				local.R.BlockedByChannelBlockedEntries = append(local.R.BlockedByChannelBlockedEntries, foreign)
+				if foreign.R == nil {
+					foreign.R = &blockedEntryR{}
+				}
+				foreign.R.BlockedByChannel = local
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadComments allows an eager lookup of values, cached into the
@@ -407,6 +655,94 @@ func (channelL) LoadComments(e boil.Executor, singular bool, maybeChannel interf
 	return nil
 }
 
+// LoadModChannelModerators allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadModChannelModerators(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.ClaimID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`moderator`), qm.WhereIn(`mod_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load moderator")
+	}
+
+	var resultSlice []*Moderator
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice moderator")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on moderator")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for moderator")
+	}
+
+	if singular {
+		object.R.ModChannelModerators = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &moderatorR{}
+			}
+			foreign.R.ModChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ClaimID, foreign.ModChannelID) {
+				local.R.ModChannelModerators = append(local.R.ModChannelModerators, foreign)
+				if foreign.R == nil {
+					foreign.R = &moderatorR{}
+				}
+				foreign.R.ModChannel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadReactions allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (channelL) LoadReactions(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
@@ -489,6 +825,444 @@ func (channelL) LoadReactions(e boil.Executor, singular bool, maybeChannel inter
 				foreign.R.Channel = local
 				break
 			}
+		}
+	}
+
+	return nil
+}
+
+// AddBlockedChannelBlockedEntriesG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedChannelBlockedEntries.
+// Sets related.R.BlockedChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddBlockedChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.AddBlockedChannelBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// AddBlockedChannelBlockedEntriesP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedChannelBlockedEntries.
+// Sets related.R.BlockedChannel appropriately.
+// Panics on error.
+func (o *Channel) AddBlockedChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.AddBlockedChannelBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddBlockedChannelBlockedEntriesGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedChannelBlockedEntries.
+// Sets related.R.BlockedChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddBlockedChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.AddBlockedChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddBlockedChannelBlockedEntries adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedChannelBlockedEntries.
+// Sets related.R.BlockedChannel appropriately.
+func (o *Channel) AddBlockedChannelBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.BlockedChannelID, o.ClaimID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `blocked_entry` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"blocked_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, blockedEntryPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.BlockedChannelID, o.ClaimID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			BlockedChannelBlockedEntries: related,
+		}
+	} else {
+		o.R.BlockedChannelBlockedEntries = append(o.R.BlockedChannelBlockedEntries, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &blockedEntryR{
+				BlockedChannel: o,
+			}
+		} else {
+			rel.R.BlockedChannel = o
+		}
+	}
+	return nil
+}
+
+// SetBlockedChannelBlockedEntriesG removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedChannelBlockedEntries with related.
+// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Uses the global database handle.
+func (o *Channel) SetBlockedChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.SetBlockedChannelBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// SetBlockedChannelBlockedEntriesP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedChannelBlockedEntries with related.
+// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Panics on error.
+func (o *Channel) SetBlockedChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.SetBlockedChannelBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetBlockedChannelBlockedEntriesGP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedChannelBlockedEntries with related.
+// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Uses the global database handle and panics on error.
+func (o *Channel) SetBlockedChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.SetBlockedChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetBlockedChannelBlockedEntries removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedChannelBlockedEntries with related.
+// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
+func (o *Channel) SetBlockedChannelBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	query := "update `blocked_entry` set `blocked_channel_id` = null where `blocked_channel_id` = ?"
+	values := []interface{}{o.ClaimID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.BlockedChannelBlockedEntries {
+			queries.SetScanner(&rel.BlockedChannelID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.BlockedChannel = nil
+		}
+
+		o.R.BlockedChannelBlockedEntries = nil
+	}
+	return o.AddBlockedChannelBlockedEntries(exec, insert, related...)
+}
+
+// RemoveBlockedChannelBlockedEntriesG relationships from objects passed in.
+// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedChannel.
+// Uses the global database handle.
+func (o *Channel) RemoveBlockedChannelBlockedEntriesG(related ...*BlockedEntry) error {
+	return o.RemoveBlockedChannelBlockedEntries(boil.GetDB(), related...)
+}
+
+// RemoveBlockedChannelBlockedEntriesP relationships from objects passed in.
+// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedChannel.
+// Panics on error.
+func (o *Channel) RemoveBlockedChannelBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
+	if err := o.RemoveBlockedChannelBlockedEntries(exec, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveBlockedChannelBlockedEntriesGP relationships from objects passed in.
+// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedChannel.
+// Uses the global database handle and panics on error.
+func (o *Channel) RemoveBlockedChannelBlockedEntriesGP(related ...*BlockedEntry) {
+	if err := o.RemoveBlockedChannelBlockedEntries(boil.GetDB(), related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveBlockedChannelBlockedEntries relationships from objects passed in.
+// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedChannel.
+func (o *Channel) RemoveBlockedChannelBlockedEntries(exec boil.Executor, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.BlockedChannelID, nil)
+		if rel.R != nil {
+			rel.R.BlockedChannel = nil
+		}
+		if err = rel.Update(exec, boil.Whitelist("blocked_channel_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.BlockedChannelBlockedEntries {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.BlockedChannelBlockedEntries)
+			if ln > 1 && i < ln-1 {
+				o.R.BlockedChannelBlockedEntries[i] = o.R.BlockedChannelBlockedEntries[ln-1]
+			}
+			o.R.BlockedChannelBlockedEntries = o.R.BlockedChannelBlockedEntries[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddBlockedByChannelBlockedEntriesG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedByChannelBlockedEntries.
+// Sets related.R.BlockedByChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddBlockedByChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.AddBlockedByChannelBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// AddBlockedByChannelBlockedEntriesP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedByChannelBlockedEntries.
+// Sets related.R.BlockedByChannel appropriately.
+// Panics on error.
+func (o *Channel) AddBlockedByChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.AddBlockedByChannelBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddBlockedByChannelBlockedEntriesGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedByChannelBlockedEntries.
+// Sets related.R.BlockedByChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddBlockedByChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.AddBlockedByChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddBlockedByChannelBlockedEntries adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.BlockedByChannelBlockedEntries.
+// Sets related.R.BlockedByChannel appropriately.
+func (o *Channel) AddBlockedByChannelBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.BlockedByChannelID, o.ClaimID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `blocked_entry` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"blocked_by_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, blockedEntryPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.BlockedByChannelID, o.ClaimID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			BlockedByChannelBlockedEntries: related,
+		}
+	} else {
+		o.R.BlockedByChannelBlockedEntries = append(o.R.BlockedByChannelBlockedEntries, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &blockedEntryR{
+				BlockedByChannel: o,
+			}
+		} else {
+			rel.R.BlockedByChannel = o
+		}
+	}
+	return nil
+}
+
+// SetBlockedByChannelBlockedEntriesG removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedByChannelBlockedEntries with related.
+// Sets related.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Uses the global database handle.
+func (o *Channel) SetBlockedByChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.SetBlockedByChannelBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// SetBlockedByChannelBlockedEntriesP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedByChannelBlockedEntries with related.
+// Sets related.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Panics on error.
+func (o *Channel) SetBlockedByChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.SetBlockedByChannelBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetBlockedByChannelBlockedEntriesGP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedByChannelBlockedEntries with related.
+// Sets related.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Uses the global database handle and panics on error.
+func (o *Channel) SetBlockedByChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.SetBlockedByChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetBlockedByChannelBlockedEntries removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+// Replaces o.R.BlockedByChannelBlockedEntries with related.
+// Sets related.R.BlockedByChannel's BlockedByChannelBlockedEntries accordingly.
+func (o *Channel) SetBlockedByChannelBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	query := "update `blocked_entry` set `blocked_by_channel_id` = null where `blocked_by_channel_id` = ?"
+	values := []interface{}{o.ClaimID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.BlockedByChannelBlockedEntries {
+			queries.SetScanner(&rel.BlockedByChannelID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.BlockedByChannel = nil
+		}
+
+		o.R.BlockedByChannelBlockedEntries = nil
+	}
+	return o.AddBlockedByChannelBlockedEntries(exec, insert, related...)
+}
+
+// RemoveBlockedByChannelBlockedEntriesG relationships from objects passed in.
+// Removes related items from R.BlockedByChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedByChannel.
+// Uses the global database handle.
+func (o *Channel) RemoveBlockedByChannelBlockedEntriesG(related ...*BlockedEntry) error {
+	return o.RemoveBlockedByChannelBlockedEntries(boil.GetDB(), related...)
+}
+
+// RemoveBlockedByChannelBlockedEntriesP relationships from objects passed in.
+// Removes related items from R.BlockedByChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedByChannel.
+// Panics on error.
+func (o *Channel) RemoveBlockedByChannelBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
+	if err := o.RemoveBlockedByChannelBlockedEntries(exec, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveBlockedByChannelBlockedEntriesGP relationships from objects passed in.
+// Removes related items from R.BlockedByChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedByChannel.
+// Uses the global database handle and panics on error.
+func (o *Channel) RemoveBlockedByChannelBlockedEntriesGP(related ...*BlockedEntry) {
+	if err := o.RemoveBlockedByChannelBlockedEntries(boil.GetDB(), related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveBlockedByChannelBlockedEntries relationships from objects passed in.
+// Removes related items from R.BlockedByChannelBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedByChannel.
+func (o *Channel) RemoveBlockedByChannelBlockedEntries(exec boil.Executor, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.BlockedByChannelID, nil)
+		if rel.R != nil {
+			rel.R.BlockedByChannel = nil
+		}
+		if err = rel.Update(exec, boil.Whitelist("blocked_by_channel_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.BlockedByChannelBlockedEntries {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.BlockedByChannelBlockedEntries)
+			if ln > 1 && i < ln-1 {
+				o.R.BlockedByChannelBlockedEntries[i] = o.R.BlockedByChannelBlockedEntries[ln-1]
+			}
+			o.R.BlockedByChannelBlockedEntries = o.R.BlockedByChannelBlockedEntries[:ln-1]
+			break
 		}
 	}
 
@@ -707,6 +1481,225 @@ func (o *Channel) RemoveComments(exec boil.Executor, related ...*Comment) error 
 				o.R.Comments[i] = o.R.Comments[ln-1]
 			}
 			o.R.Comments = o.R.Comments[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddModChannelModeratorsG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelModerators.
+// Sets related.R.ModChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddModChannelModeratorsG(insert bool, related ...*Moderator) error {
+	return o.AddModChannelModerators(boil.GetDB(), insert, related...)
+}
+
+// AddModChannelModeratorsP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelModerators.
+// Sets related.R.ModChannel appropriately.
+// Panics on error.
+func (o *Channel) AddModChannelModeratorsP(exec boil.Executor, insert bool, related ...*Moderator) {
+	if err := o.AddModChannelModerators(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddModChannelModeratorsGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelModerators.
+// Sets related.R.ModChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddModChannelModeratorsGP(insert bool, related ...*Moderator) {
+	if err := o.AddModChannelModerators(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddModChannelModerators adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelModerators.
+// Sets related.R.ModChannel appropriately.
+func (o *Channel) AddModChannelModerators(exec boil.Executor, insert bool, related ...*Moderator) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.ModChannelID, o.ClaimID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `moderator` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"mod_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, moderatorPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.ModChannelID, o.ClaimID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			ModChannelModerators: related,
+		}
+	} else {
+		o.R.ModChannelModerators = append(o.R.ModChannelModerators, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &moderatorR{
+				ModChannel: o,
+			}
+		} else {
+			rel.R.ModChannel = o
+		}
+	}
+	return nil
+}
+
+// SetModChannelModeratorsG removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.ModChannel's ModChannelModerators accordingly.
+// Replaces o.R.ModChannelModerators with related.
+// Sets related.R.ModChannel's ModChannelModerators accordingly.
+// Uses the global database handle.
+func (o *Channel) SetModChannelModeratorsG(insert bool, related ...*Moderator) error {
+	return o.SetModChannelModerators(boil.GetDB(), insert, related...)
+}
+
+// SetModChannelModeratorsP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.ModChannel's ModChannelModerators accordingly.
+// Replaces o.R.ModChannelModerators with related.
+// Sets related.R.ModChannel's ModChannelModerators accordingly.
+// Panics on error.
+func (o *Channel) SetModChannelModeratorsP(exec boil.Executor, insert bool, related ...*Moderator) {
+	if err := o.SetModChannelModerators(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetModChannelModeratorsGP removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.ModChannel's ModChannelModerators accordingly.
+// Replaces o.R.ModChannelModerators with related.
+// Sets related.R.ModChannel's ModChannelModerators accordingly.
+// Uses the global database handle and panics on error.
+func (o *Channel) SetModChannelModeratorsGP(insert bool, related ...*Moderator) {
+	if err := o.SetModChannelModerators(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetModChannelModerators removes all previously related items of the
+// channel replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.ModChannel's ModChannelModerators accordingly.
+// Replaces o.R.ModChannelModerators with related.
+// Sets related.R.ModChannel's ModChannelModerators accordingly.
+func (o *Channel) SetModChannelModerators(exec boil.Executor, insert bool, related ...*Moderator) error {
+	query := "update `moderator` set `mod_channel_id` = null where `mod_channel_id` = ?"
+	values := []interface{}{o.ClaimID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.ModChannelModerators {
+			queries.SetScanner(&rel.ModChannelID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.ModChannel = nil
+		}
+
+		o.R.ModChannelModerators = nil
+	}
+	return o.AddModChannelModerators(exec, insert, related...)
+}
+
+// RemoveModChannelModeratorsG relationships from objects passed in.
+// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
+// Sets related.R.ModChannel.
+// Uses the global database handle.
+func (o *Channel) RemoveModChannelModeratorsG(related ...*Moderator) error {
+	return o.RemoveModChannelModerators(boil.GetDB(), related...)
+}
+
+// RemoveModChannelModeratorsP relationships from objects passed in.
+// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
+// Sets related.R.ModChannel.
+// Panics on error.
+func (o *Channel) RemoveModChannelModeratorsP(exec boil.Executor, related ...*Moderator) {
+	if err := o.RemoveModChannelModerators(exec, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveModChannelModeratorsGP relationships from objects passed in.
+// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
+// Sets related.R.ModChannel.
+// Uses the global database handle and panics on error.
+func (o *Channel) RemoveModChannelModeratorsGP(related ...*Moderator) {
+	if err := o.RemoveModChannelModerators(boil.GetDB(), related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveModChannelModerators relationships from objects passed in.
+// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
+// Sets related.R.ModChannel.
+func (o *Channel) RemoveModChannelModerators(exec boil.Executor, related ...*Moderator) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.ModChannelID, nil)
+		if rel.R != nil {
+			rel.R.ModChannel = nil
+		}
+		if err = rel.Update(exec, boil.Whitelist("mod_channel_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.ModChannelModerators {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.ModChannelModerators)
+			if ln > 1 && i < ln-1 {
+				o.R.ModChannelModerators[i] = o.R.ModChannelModerators[ln-1]
+			}
+			o.R.ModChannelModerators = o.R.ModChannelModerators[:ln-1]
 			break
 		}
 	}

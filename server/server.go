@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/lbryio/commentron/server/services/v2/moderation"
+
 	"github.com/fatih/color"
 	"github.com/lbryio/commentron/util"
 	"github.com/lbryio/lbry.go/extras/api"
@@ -131,6 +133,7 @@ func v2RPCServer() http.Handler {
 	commentService := new(comments.Service)
 	statusService := new(status.Service)
 	reactionService := new(reactions.Service)
+	moderationService := new(moderation.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -143,6 +146,10 @@ func v2RPCServer() http.Handler {
 	err = rpcServer.RegisterService(reactionService, "reaction")
 	if err != nil {
 		logrus.Panicf("Error registering v2 reaction service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(moderationService, "moderation")
+	if err != nil {
+		logrus.Panicf("Error registering v2 moderation service: %s", errors.FullTrace(err))
 	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)

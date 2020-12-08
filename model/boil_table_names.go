@@ -4,15 +4,19 @@
 package model
 
 var TableNames = struct {
+	BlockedEntry   string
 	Channel        string
 	Comment        string
 	GorpMigrations string
+	Moderator      string
 	Reaction       string
 	ReactionType   string
 }{
+	BlockedEntry:   "blocked_entry",
 	Channel:        "channel",
 	Comment:        "comment",
 	GorpMigrations: "gorp_migrations",
+	Moderator:      "moderator",
 	Reaction:       "reaction",
 	ReactionType:   "reaction_type",
 }
