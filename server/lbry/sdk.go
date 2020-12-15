@@ -35,8 +35,6 @@ func GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error) {
 	if claimChannel == nil {
 		if claim.ValueType == "channel" {
 			claimChannel = claim
-		} else {
-			return nil, errors.Err("claim does not have a signing channel")
 		}
 	}
 	return claimChannel, nil
