@@ -10,6 +10,7 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
+// FindOrCreateChannel gets the channel from commentron database or creates it and returns it
 func FindOrCreateChannel(channelClaimID, channelName string) (*model.Channel, error) {
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(channelClaimID)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
