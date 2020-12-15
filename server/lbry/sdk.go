@@ -21,3 +21,21 @@ func GetClaim(claimID string) (*jsonrpc.Claim, error) {
 	}
 	return nil, errors.Err("could not get claim from sdk with claim id %s", claimID)
 }
+
+// GetSigningChannelForClaim retrieves the claim for the channel that signed the referenced claim by claim id.
+func GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error) {
+	claim, err := GetClaim(claimID)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	if claim == nil {
+		return nil, errors.Err("could not resolve claim_id %s", claimID)
+	}
+	claimChannel := claim.SigningChannel
+	if claimChannel == nil {
+		if claim.ValueType == "channel" {
+			claimChannel = claim
+		}
+	}
+	return claimChannel, nil
+}
