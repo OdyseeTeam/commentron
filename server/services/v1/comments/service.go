@@ -57,15 +57,13 @@ func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *co
 		}
 	}
 	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFromPtr(args.ChannelID))).OneG()
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
 	if blockedEntry != nil {
 		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
 	}
-	if err != nil {
-		return errors.Err(err)
-	}
+
 	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFromPtr(args.ChannelID).String)
 	if err != nil {
 		return errors.Err(err)
@@ -85,7 +83,7 @@ func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *co
 	}
 	if signingChannel != nil {
 		blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFromPtr(args.ChannelID))).OneG()
-		if err != nil {
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
 		if blockedEntry != nil {
