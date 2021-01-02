@@ -106,7 +106,7 @@ func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *co
 	if err != nil {
 		return errors.Err(err)
 	}
-	item := populateItem(comment, channel)
+	item := populateItem(comment, channel, 0)
 	reply.CommentItem = &item
 
 	go lbry.Notify(lbry.NotifyOptions{
@@ -180,7 +180,11 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 		if comment.R != nil {
 			channel = comment.R.Channel
 			if channel != nil && channel.Name != "" {
-				items = append(items, populateItem(comment, channel))
+				replies, err := comment.ParentComments().CountG()
+				if err != nil && errors.Is(err, sql.ErrNoRows) {
+					return errors.Err(err)
+				}
+				items = append(items, populateItem(comment, channel, int(replies)))
 			}
 		}
 	}

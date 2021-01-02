@@ -1,6 +1,7 @@
 package comments
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
@@ -19,5 +20,9 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, e
 	if comment == nil {
 		return commentapi.CommentItem{}, api.StatusError{Err: errors.Err("comment for id %s could not be found", args.CommentID), Status: http.StatusBadRequest}
 	}
-	return populateItem(comment, nil), nil
+	replies, err := comment.ParentComments().CountG()
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return commentapi.CommentItem{}, errors.Err(err)
+	}
+	return populateItem(comment, nil, int(replies)), nil
 }

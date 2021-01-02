@@ -14,6 +14,7 @@ type CommentItem struct {
 	ChannelID   string `json:"channel_id,omitempty"`
 	ChannelName string `json:"channel_name,omitempty"`
 	ChannelURL  string `json:"channel_url,omitempty"`
+	Replies     int    `json:"replies,omitempty"`
 }
 
 // ChannelArgs arguments to the comment.GetChannelForCommentID call

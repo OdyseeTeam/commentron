@@ -25,7 +25,7 @@ type CommentItem struct {
 	ChannelURL  string `json:"channel_url,omitempty"`
 }
 
-func populateItem(comment *m.Comment, channel *m.Channel) commentapi.CommentItem {
+func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentapi.CommentItem {
 	var channelName null.String
 	var channelURL null.String
 	if channel != nil {
@@ -46,6 +46,7 @@ func populateItem(comment *m.Comment, channel *m.Channel) commentapi.CommentItem
 		ChannelID:   comment.ChannelID.String,
 		ChannelName: channelName.String,
 		ChannelURL:  channelURL.String,
+		Replies:     replies,
 	}
 
 	return item

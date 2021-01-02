@@ -57,5 +57,5 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	if err != nil {
 		return item, errors.Err(err)
 	}
-	return populateItem(comment, channel), nil
+	return populateItem(comment, channel, 0), nil
 }

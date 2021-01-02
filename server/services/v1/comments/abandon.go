@@ -21,7 +21,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	item := populateItem(comment, channel)
+	item := populateItem(comment, channel, 0)
 	err = comment.DeleteG()
 	if err != nil {
 		return nil, errors.Err(err)
