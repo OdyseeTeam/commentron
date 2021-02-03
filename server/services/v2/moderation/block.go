@@ -2,7 +2,6 @@ package moderation
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
@@ -22,7 +21,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, hex.EncodeToString([]byte(args.ModChannelName)))
+	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
 	if err != nil {
 		return err
 	}
