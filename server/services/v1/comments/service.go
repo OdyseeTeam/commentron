@@ -174,6 +174,20 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 		return errors.Err(err)
 	}
 
+	items, blockedCommentCnt, err := getItems(comments)
+
+	totalItems = totalItems - blockedCommentCnt
+	reply.Items = items
+	reply.Page = args.Page
+	reply.PageSize = args.PageSize
+	reply.TotalItems = totalItems
+	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
+	reply.HasHiddenComments = hasHiddenComments
+
+	return nil
+}
+
+func getItems(comments m.CommentSlice) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
 Comments:
@@ -183,7 +197,7 @@ Comments:
 			if len(blockedFrom) > 0 {
 				channel, err := lbry.GetSigningChannelForClaim(comment.LbryClaimID)
 				if err != nil {
-					return errors.Err(err)
+					return items, blockedCommentCnt, errors.Err(err)
 				}
 				for _, entry := range blockedFrom {
 					if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
@@ -199,21 +213,13 @@ Comments:
 			if channel != nil && channel.Name != "" {
 				replies, err := comment.ParentComments().CountG()
 				if err != nil && errors.Is(err, sql.ErrNoRows) {
-					return errors.Err(err)
+					return items, blockedCommentCnt, errors.Err(err)
 				}
 				items = append(items, populateItem(comment, channel, int(replies)))
 			}
 		}
 	}
-	totalItems = totalItems - blockedCommentCnt
-	reply.Items = items
-	reply.Page = args.Page
-	reply.PageSize = args.PageSize
-	reply.TotalItems = totalItems
-	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
-	reply.HasHiddenComments = hasHiddenComments
-
-	return nil
+	return items, blockedCommentCnt, nil
 }
 
 // GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
