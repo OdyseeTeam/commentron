@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/justinas/alice"
+	"github.com/rs/cors"
+
 	"github.com/lbryio/commentron/server/services/v2/moderation"
 
 	"github.com/fatih/color"
@@ -39,12 +42,12 @@ var RPCPort int
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
-
+	chain := alice.New(cors.Default().Handler)
 	router := mux.NewRouter()
 	router.Handle("/", state())
 	router.Handle("/api", v1RPCServer())
 	router.Handle("/api/v1", v1RPCServer())
-	router.Handle("/api/v2", v2RPCServer())
+	router.Handle("/api/v2", chain.Then(v2RPCServer()))
 	logrus.Infof("Running RPC Server @ http://%s:%d/api", RPCHost, RPCPort)
 	address := fmt.Sprintf("%s:%d", RPCHost, RPCPort)
 	logrus.Fatal(http.ListenAndServe(address, router))
