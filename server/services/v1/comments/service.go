@@ -123,7 +123,7 @@ func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *co
 // List lists comments based on filters and arguments passed. The returned result is dynamic based on the args passed
 func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
-	loadChannels := qm.Load("Channel")
+	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
 	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
@@ -175,7 +175,24 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 	}
 
 	var items []commentapi.CommentItem
+	var blockedCommentCnt int64
+Comments:
 	for _, comment := range comments {
+		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
+			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
+			if len(blockedFrom) > 0 {
+				channel, err := lbry.GetSigningChannelForClaim(comment.LbryClaimID)
+				if err != nil {
+					return errors.Err(err)
+				}
+				for _, entry := range blockedFrom {
+					if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
+						blockedCommentCnt++
+						continue Comments
+					}
+				}
+			}
+		}
 		var channel *m.Channel
 		if comment.R != nil {
 			channel = comment.R.Channel
@@ -188,7 +205,7 @@ func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commen
 			}
 		}
 	}
-
+	totalItems = totalItems - blockedCommentCnt
 	reply.Items = items
 	reply.Page = args.Page
 	reply.PageSize = args.PageSize

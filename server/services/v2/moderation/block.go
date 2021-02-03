@@ -39,6 +39,10 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 			BlockedChannelID:   null.StringFrom(bannedChannel.ClaimID),
 			BlockedByChannelID: null.StringFrom(modChannel.ClaimID),
 		}
+		err := blockedEntry.InsertG(boil.Infer())
+		if err != nil {
+			return errors.Err(err)
+		}
 	}
 	isMod, err := modChannel.ModChannelModerators().ExistsG()
 	if err != nil {
@@ -55,7 +59,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		reply.BannedFrom = &modChannel.ClaimID
 	}
 
-	err = blockedEntry.UpsertG(boil.Infer(), boil.Infer())
+	err = blockedEntry.UpdateG(boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -64,6 +68,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		if !isMod {
 			return api.StatusError{Err: errors.Err("cannot delete all comments of user without admin priviledges"), Status: http.StatusForbidden}
 		}
+
 		comments, err := model.Comments(model.CommentWhere.ChannelID.EQ(null.StringFrom(bannedChannel.ClaimID))).AllG()
 		if err != nil {
 			return errors.Err(err)
