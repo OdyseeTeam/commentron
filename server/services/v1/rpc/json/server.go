@@ -10,8 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/commentron/util"
-
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/server/services/v1/rpc"
 )
 
@@ -119,7 +118,7 @@ func newCodecRequest(r *http.Request, encoder rpc.Encoder, errorMapper func(erro
 		}
 	}
 
-	util.CloseBody(r.Body)
+	helper.CloseBody(r.Body)
 	return &CodecRequest{request: req, err: err, encoder: encoder, errorMapper: errorMapper}
 }
 

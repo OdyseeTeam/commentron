@@ -6,8 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/lbryio/commentron/util"
-
+	"github.com/lbryio/commentron/helper"
 	"github.com/spf13/cast"
 )
 
@@ -17,7 +16,7 @@ func createCommentID(comment, channelID string) (string, int64, error) {
 	timestamp := time.Now().Unix()
 	nearestMinute := math.Floor(float64(timestamp) / 60.0)
 
-	c := sha256.Sum256(util.CreateDigest(
+	c := sha256.Sum256(helper.CreateDigest(
 		[]byte(":"),
 		[]byte(comment),
 		[]byte(channelID),

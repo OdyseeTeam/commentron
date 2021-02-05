@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
-	"github.com/lbryio/commentron/util"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -17,7 +17,7 @@ import (
 )
 
 func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
-	modChannel, err := util.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -26,7 +26,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		return err
 	}
 
-	bannedChannel, err := util.FindOrCreateChannel(args.BannedChannelID, args.BannedChannelName)
+	bannedChannel, err := helper.FindOrCreateChannel(args.BannedChannelID, args.BannedChannelName)
 	if err != nil {
 		return errors.Err(err)
 	}

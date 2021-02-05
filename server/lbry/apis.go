@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/lbryio/commentron/util"
-
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/sirupsen/logrus"
@@ -68,7 +67,7 @@ func notify(options NotifyOptions) error {
 	if err != nil {
 		return errors.Err(err)
 	}
-	defer util.CloseBody(response.Body)
+	defer helper.CloseBody(response.Body)
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return errors.Err(err)

@@ -3,8 +3,8 @@ package config
 import (
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/env"
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/server/lbry"
-	"github.com/lbryio/commentron/util"
 
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"
@@ -18,17 +18,17 @@ func InitializeConfiguration() {
 		logrus.Panic(err)
 	}
 	if viper.GetBool("debugmode") {
-		util.Debugging = true
+		helper.Debugging = true
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 	if viper.GetBool("tracemode") {
-		util.Debugging = true
+		helper.Debugging = true
 		logrus.SetLevel(logrus.TraceLevel)
 	}
 	lbry.SDKURL = conf.SDKUrl
 	lbry.APIToken = conf.APIToken
 	lbry.APIURL = conf.APIURL
-	err = db.Init(conf.MySQLDsn, util.Debugging)
+	err = db.Init(conf.MySQLDsn, helper.Debugging)
 	if err != nil {
 		logrus.Panic(err)
 	}

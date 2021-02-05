@@ -95,9 +95,11 @@ type ListArgs struct {
 
 // AbandonArgs are the arguments passed to comment.Abandon RPC call
 type AbandonArgs struct {
-	CommentID string `json:"comment_id"`
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
+	CommentID          string  `json:"comment_id"`
+	Signature          string  `json:"signature"`
+	SigningTS          string  `json:"signing_ts"`
+	CreatorChannelID   *string `json:"creator_channel_id"`
+	CreatorChannelName *string `json:"creator_channel_name"`
 }
 
 // AbandonResponse the response to the abandon call

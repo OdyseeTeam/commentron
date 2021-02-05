@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lbryio/commentron/util"
-
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/lbryio/commentron/helper"
 )
 
 func TestValidateSignature1(t *testing.T) {
@@ -54,7 +53,7 @@ func TestCommentSignAndVerify(t *testing.T) {
 
 	comment := "sign this shit"
 	strconv.FormatInt(time.Now().Unix(), 10)
-	digest := sha256.Sum256(util.CreateDigest(
+	digest := sha256.Sum256(helper.CreateDigest(
 		unhelixifyAndReverse(channelClaimID),
 		[]byte(comment),
 		[]byte(strconv.FormatInt(time.Now().Unix(), 10))))

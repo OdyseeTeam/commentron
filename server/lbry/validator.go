@@ -8,8 +8,7 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	"github.com/lbryio/commentron/util"
-
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 
@@ -49,7 +48,7 @@ func validateSignature(channelClaimID, signature, signingTS, data string, pubkey
 		return errors.Err(err)
 	}
 	injest := sha256.Sum256(
-		util.CreateDigest(
+		helper.CreateDigest(
 			[]byte(signingTS),
 			unhelixifyAndReverse(channelClaimID),
 			[]byte(data),

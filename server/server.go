@@ -11,10 +11,10 @@ import (
 	"github.com/justinas/alice"
 	"github.com/rs/cors"
 
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/server/services/v2/moderation"
 
 	"github.com/fatih/color"
-	"github.com/lbryio/commentron/util"
 	"github.com/lbryio/lbry.go/extras/api"
 
 	"github.com/lbryio/commentron/server/services/v2/reactions"
@@ -119,7 +119,7 @@ func v1RPCServer() http.Handler {
 			} else {
 				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
 			}
-		} else if util.Debugging {
+		} else if helper.Debugging {
 			logrus.Debug(color.GreenString(consoleText))
 		}
 	})
@@ -169,7 +169,7 @@ func v2RPCServer() http.Handler {
 			} else {
 				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
 			}
-		} else if util.Debugging {
+		} else if helper.Debugging {
 			logrus.Debug(color.GreenString(consoleText))
 		}
 	})
