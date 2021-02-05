@@ -18,7 +18,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	}
 	var channel *model.Channel
 	if args.CreatorChannelID != nil && args.CreatorChannelName != nil {
-		channel, err = helper.FindOrCreateChannel(util.StrFromPtr(args.CreatorChannelName), util.StrFromPtr(args.CreatorChannelID))
+		channel, err = helper.FindOrCreateChannel(util.StrFromPtr(args.CreatorChannelID), util.StrFromPtr(args.CreatorChannelName))
 		if err != nil {
 			return nil, errors.Err(err)
 		}
