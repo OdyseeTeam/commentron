@@ -93,7 +93,9 @@ type ListArgs struct {
 	Hidden        bool    `json:"hidden"`
 }
 
-// AbandonArgs are the arguments passed to comment.Abandon RPC call
+// AbandonArgs are the arguments passed to comment.Abandon RPC call. If creator args are passed
+// the signing channel of the content of the comment is checked these args and signature
+// verification happens against the creators public key for authorization.
 type AbandonArgs struct {
 	CommentID          string  `json:"comment_id"`
 	Signature          string  `json:"signature"`
