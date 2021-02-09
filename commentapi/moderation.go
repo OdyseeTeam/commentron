@@ -24,3 +24,19 @@ type BlockResponse struct {
 	//Publisher banned from if not universally banned
 	BannedFrom *string `json:"banned_from"`
 }
+
+// AmIArgs Arguments to check whether a user is a moderator or not
+type AmIArgs struct {
+	ChannelName string `json:"channel_name"`
+	ChannelID   string `json:"channel_id"`
+	Signature   string `json:"signature"`
+	SigningTS   string `json:"signing_ts"`
+}
+
+// AmIResponse for the moderation.AmI rpc call
+type AmIResponse struct {
+	ChannelName        string            `json:"channel_name"`
+	ChannelID          string            `json:"channel_id"`
+	Type               string            `json:"type"`
+	AuthorizedChannels map[string]string `json:"authorized_channels"`
+}

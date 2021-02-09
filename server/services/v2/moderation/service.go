@@ -13,3 +13,8 @@ type Service struct{}
 func (s Service) Block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
 	return block(r, args, reply)
 }
+
+// AmI return whether or not the users is a moderator and the type. Also the channels they moderate
+func (s Service) AmI(r *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIResponse) error {
+	return amI(r, args, reply)
+}
