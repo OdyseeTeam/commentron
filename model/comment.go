@@ -33,6 +33,7 @@ type Comment struct {
 	Timestamp   int         `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
 	IsHidden    null.Bool   `boil:"is_hidden" json:"is_hidden,omitempty" toml:"is_hidden" yaml:"is_hidden,omitempty"`
 	IsPinned    bool        `boil:"is_pinned" json:"is_pinned" toml:"is_pinned" yaml:"is_pinned"`
+	IsFlagged   bool        `boil:"is_flagged" json:"is_flagged" toml:"is_flagged" yaml:"is_flagged"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,6 +50,7 @@ var CommentColumns = struct {
 	Timestamp   string
 	IsHidden    string
 	IsPinned    string
+	IsFlagged   string
 }{
 	CommentID:   "comment_id",
 	LbryClaimID: "lbry_claim_id",
@@ -60,6 +62,7 @@ var CommentColumns = struct {
 	Timestamp:   "timestamp",
 	IsHidden:    "is_hidden",
 	IsPinned:    "is_pinned",
+	IsFlagged:   "is_flagged",
 }
 
 // Generated where
@@ -93,6 +96,7 @@ var CommentWhere = struct {
 	Timestamp   whereHelperint
 	IsHidden    whereHelpernull_Bool
 	IsPinned    whereHelperbool
+	IsFlagged   whereHelperbool
 }{
 	CommentID:   whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID: whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -104,6 +108,7 @@ var CommentWhere = struct {
 	Timestamp:   whereHelperint{field: "`comment`.`timestamp`"},
 	IsHidden:    whereHelpernull_Bool{field: "`comment`.`is_hidden`"},
 	IsPinned:    whereHelperbool{field: "`comment`.`is_pinned`"},
+	IsFlagged:   whereHelperbool{field: "`comment`.`is_flagged`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -136,9 +141,9 @@ func (*commentR) NewStruct() *commentR {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged"}
 	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp"}
-	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned"}
+	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 )
 
