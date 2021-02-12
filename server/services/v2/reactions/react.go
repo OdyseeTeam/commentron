@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lbryio/commentron/flags"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
@@ -108,7 +110,11 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 		}
 		for _, p := range comments {
 			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID}
-			err := newReaction.Insert(tx, boil.Infer())
+			err := flags.CheckReaction(newReaction)
+			if err != nil {
+				return err
+			}
+			err = newReaction.Insert(tx, boil.Infer())
 			if err != nil {
 				if strings.Contains(err.Error(), "Duplicate entry") {
 					return api.StatusError{Err: errors.Err("reaction already acknowledged!"), Status: http.StatusBadRequest}

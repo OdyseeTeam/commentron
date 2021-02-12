@@ -4,6 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 APP_DIR="$DIR"
 
 (
+  source "$DIR/scripts/setup.sh"
   touch -a .env && set -o allexport
   source ./.env; set +o allexport
 

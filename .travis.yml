@@ -12,11 +12,11 @@ services:
   - docker
 
 before_install:
-  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS lbry;'
-  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS lbrytest;'
+  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS commentron;'
+  - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS social;'
   - mysql -u root -e "CREATE USER 'lbry'@'localhost' IDENTIFIED BY 'lbry';"
-  - mysql -u root -e "GRANT ALL ON lbry.* TO 'lbry'@'localhost';"
-  - mysql -u root -e "GRANT ALL ON lbrytest.* TO 'lbry'@'localhost';"
+  - mysql -u root -e "GRANT ALL ON commentron.* TO 'lbry'@'localhost';"
+  - mysql -u root -e "GRANT ALL ON social.* TO 'lbry'@'localhost';"
   - sudo service mysql restart
 
 cache:
@@ -28,7 +28,13 @@ script:
   - ./scripts/build.sh
   - go test ./...
   - ./scripts/lint.sh
+  - source ./scripts/setup.sh
+  - ./bin/commentron serve &
+  - sleep 5s
+  - "curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' http://localhost:5900"
   - go mod tidy
+  - git diff --exit-code
+  - ./scripts/gen_models.sh
   - git diff --exit-code
 
 deploy:

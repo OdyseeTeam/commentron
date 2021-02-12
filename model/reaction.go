@@ -30,6 +30,7 @@ type Reaction struct {
 	ReactionTypeID uint64      `boil:"reaction_type_id" json:"reaction_type_id" toml:"reaction_type_id" yaml:"reaction_type_id"`
 	CreatedAt      time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt      time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	IsFlagged      bool        `boil:"is_flagged" json:"is_flagged" toml:"is_flagged" yaml:"is_flagged"`
 
 	R *reactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,6 +44,7 @@ var ReactionColumns = struct {
 	ReactionTypeID string
 	CreatedAt      string
 	UpdatedAt      string
+	IsFlagged      string
 }{
 	ID:             "id",
 	CommentID:      "comment_id",
@@ -51,6 +53,7 @@ var ReactionColumns = struct {
 	ReactionTypeID: "reaction_type_id",
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
+	IsFlagged:      "is_flagged",
 }
 
 // Generated where
@@ -63,6 +66,7 @@ var ReactionWhere = struct {
 	ReactionTypeID whereHelperuint64
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
+	IsFlagged      whereHelperbool
 }{
 	ID:             whereHelperuint64{field: "`reaction`.`id`"},
 	CommentID:      whereHelperstring{field: "`reaction`.`comment_id`"},
@@ -71,6 +75,7 @@ var ReactionWhere = struct {
 	ReactionTypeID: whereHelperuint64{field: "`reaction`.`reaction_type_id`"},
 	CreatedAt:      whereHelpertime_Time{field: "`reaction`.`created_at`"},
 	UpdatedAt:      whereHelpertime_Time{field: "`reaction`.`updated_at`"},
+	IsFlagged:      whereHelperbool{field: "`reaction`.`is_flagged`"},
 }
 
 // ReactionRels is where relationship names are stored.
@@ -100,9 +105,9 @@ func (*reactionR) NewStruct() *reactionR {
 type reactionL struct{}
 
 var (
-	reactionAllColumns            = []string{"id", "comment_id", "channel_id", "claim_id", "reaction_type_id", "created_at", "updated_at"}
+	reactionAllColumns            = []string{"id", "comment_id", "channel_id", "claim_id", "reaction_type_id", "created_at", "updated_at", "is_flagged"}
 	reactionColumnsWithoutDefault = []string{"comment_id", "channel_id", "claim_id", "reaction_type_id"}
-	reactionColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
+	reactionColumnsWithDefault    = []string{"id", "created_at", "updated_at", "is_flagged"}
 	reactionPrimaryKeyColumns     = []string{"id"}
 )
 

@@ -5,6 +5,8 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/lbryio/commentron/flags"
+
 	"github.com/lbryio/commentron/commentapi"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -100,6 +102,11 @@ func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *co
 		Signature:   null.StringFromPtr(args.Signature),
 		Signingts:   null.StringFromPtr(args.SigningTS),
 		Timestamp:   int(timestamp),
+	}
+
+	err = flags.CheckComment(comment)
+	if err != nil {
+		return err
 	}
 
 	err = errors.Err(comment.InsertG(boil.Infer()))
