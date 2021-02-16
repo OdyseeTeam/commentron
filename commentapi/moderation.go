@@ -55,7 +55,7 @@ type UnBlockArgs struct {
 	SigningTS     string `json:"signing_ts"`
 }
 
-// BlockResponse for the moderation.UnBlock rpc call
+// UnBlockResponse for the moderation.UnBlock rpc call
 type UnBlockResponse struct {
 	UnBlockedChannelID string `json:"un_blocked_channel_id"`
 	GlobalUnBlock      bool   `json:"global_un_block"`
