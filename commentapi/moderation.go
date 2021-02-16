@@ -40,3 +40,25 @@ type AmIResponse struct {
 	Type               string            `json:"type"`
 	AuthorizedChannels map[string]string `json:"authorized_channels"`
 }
+
+// UnBlockArgs Arguments to un-block identities from commenting for both publisher and moderators
+type UnBlockArgs struct {
+	//Publisher or Commentron Admin
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+	//Offender being unblocked
+	UnBlockedChannelID   string `json:"un_blocked_channel_id"`
+	UnBlockedChannelName string `json:"un_blocked_channel_name"`
+	// Unblocks identity from commenting universally, requires Admin rights on commentron instance
+	GlobalUnBlock bool   `json:"global_un_block"`
+	Signature     string `json:"signature"`
+	SigningTS     string `json:"signing_ts"`
+}
+
+// BlockResponse for the moderation.UnBlock rpc call
+type UnBlockResponse struct {
+	UnBlockedChannelID string `json:"un_blocked_channel_id"`
+	GlobalUnBlock      bool   `json:"global_un_block"`
+	//Publisher ban removed from if not universally unblocked
+	UnBlockedFrom *string `json:"un_blocked_from"`
+}
