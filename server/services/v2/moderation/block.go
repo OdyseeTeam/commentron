@@ -14,9 +14,10 @@ import (
 
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
+func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
 	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -85,5 +86,33 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 
 	reply.BannedChannelID = bannedChannel.ClaimID
 
+	return nil
+}
+
+func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
+	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	if err != nil {
+		return errors.Err(err)
+	}
+	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
+	if err != nil {
+		return err
+	}
+
+	blockedByMod, err := modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	for _, b := range blockedByMod {
+		if b.R != nil && b.R.BlockedChannel != nil {
+			reply.BlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
+				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
+				BlockedChannelName:   b.R.BlockedChannel.Name,
+				BlockedByChannelID:   modChannel.ClaimID,
+				BlockedByChannelName: modChannel.Name,
+			})
+		}
+	}
 	return nil
 }

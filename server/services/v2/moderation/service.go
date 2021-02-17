@@ -23,3 +23,8 @@ func (s Service) AmI(r *http.Request, args *commentapi.AmIArgs, reply *commentap
 func (s Service) UnBlock(r *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
 	return unBlock(r, args, reply)
 }
+
+// BlockedList return the list of blocked channels for a moderator
+func (s Service) BlockedList(r *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
+	return blockedList(r, args, reply)
+}

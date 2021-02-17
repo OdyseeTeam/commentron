@@ -62,3 +62,26 @@ type UnBlockResponse struct {
 	//Publisher ban removed from if not universally unblocked
 	UnBlockedFrom *string `json:"un_blocked_from"`
 }
+
+// BlockedListArgs Arguments to block identities from commenting for both publisher and moderators
+type BlockedListArgs struct {
+	//Publisher or Commentron Admin
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+	Signature      string `json:"signature"`
+	SigningTS      string `json:"signing_ts"`
+}
+
+// BlockedListResponse for the moderation.Block rpc call
+type BlockedListResponse struct {
+	BlockedChannels []BlockedChannel `json:"blocked_channels"`
+}
+
+// BlockedChannel contains information about the blockee blocked by the creator
+type BlockedChannel struct {
+	BlockedChannelID   string `json:"blocked_channel_id"`
+	BlockedChannelName string `json:"blocked_channel_name"`
+	//In cases of moderation delegation this could be "other than" the creator
+	BlockedByChannelID   string `json:"blocked_by_channel_id"`
+	BlockedByChannelName string `json:"blocked_by_channel_name"`
+}
