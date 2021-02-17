@@ -49,7 +49,7 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	}
 	err = lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
 	if err != nil {
-		return errors.Prefix("could not authenticate channel signature: %s", err)
+		return errors.Prefix("could not authenticate channel signature:", err)
 	}
 	modifiedReactions, err := updateReactions(channel, args, commentIDs, comments)
 	if err != nil {
