@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -22,19 +23,22 @@ import (
 
 // Channel is an object representing the database table.
 type Channel struct {
-	ClaimID string `boil:"claim_id" json:"claim_id" toml:"claim_id" yaml:"claim_id"`
-	Name    string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ClaimID   string    `boil:"claim_id" json:"claim_id" toml:"claim_id" yaml:"claim_id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	IsSpammer null.Bool `boil:"is_spammer" json:"is_spammer,omitempty" toml:"is_spammer" yaml:"is_spammer,omitempty"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L channelL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ChannelColumns = struct {
-	ClaimID string
-	Name    string
+	ClaimID   string
+	Name      string
+	IsSpammer string
 }{
-	ClaimID: "claim_id",
-	Name:    "name",
+	ClaimID:   "claim_id",
+	Name:      "name",
+	IsSpammer: "is_spammer",
 }
 
 // Generated where
@@ -49,35 +53,46 @@ func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.f
 func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 var ChannelWhere = struct {
-	ClaimID whereHelperstring
-	Name    whereHelperstring
+	ClaimID   whereHelperstring
+	Name      whereHelperstring
+	IsSpammer whereHelpernull_Bool
 }{
-	ClaimID: whereHelperstring{field: "`channel`.`claim_id`"},
-	Name:    whereHelperstring{field: "`channel`.`name`"},
+	ClaimID:   whereHelperstring{field: "`channel`.`claim_id`"},
+	Name:      whereHelperstring{field: "`channel`.`name`"},
+	IsSpammer: whereHelpernull_Bool{field: "`channel`.`is_spammer`"},
 }
 
 // ChannelRels is where relationship names are stored.
 var ChannelRels = struct {
-	BlockedChannelBlockedEntries   string
-	BlockedByChannelBlockedEntries string
-	Comments                       string
-	ModChannelModerators           string
-	Reactions                      string
+	BlockedChannelBlockedEntries      string
+	BlockedByChannelBlockedEntries    string
+	Comments                          string
+	CreatorChannelCreatorSettings     string
+	ModChannelDelegatedModerators     string
+	CreatorChannelDelegatedModerators string
+	ModChannelModerators              string
+	Reactions                         string
 }{
-	BlockedChannelBlockedEntries:   "BlockedChannelBlockedEntries",
-	BlockedByChannelBlockedEntries: "BlockedByChannelBlockedEntries",
-	Comments:                       "Comments",
-	ModChannelModerators:           "ModChannelModerators",
-	Reactions:                      "Reactions",
+	BlockedChannelBlockedEntries:      "BlockedChannelBlockedEntries",
+	BlockedByChannelBlockedEntries:    "BlockedByChannelBlockedEntries",
+	Comments:                          "Comments",
+	CreatorChannelCreatorSettings:     "CreatorChannelCreatorSettings",
+	ModChannelDelegatedModerators:     "ModChannelDelegatedModerators",
+	CreatorChannelDelegatedModerators: "CreatorChannelDelegatedModerators",
+	ModChannelModerators:              "ModChannelModerators",
+	Reactions:                         "Reactions",
 }
 
 // channelR is where relationships are stored.
 type channelR struct {
-	BlockedChannelBlockedEntries   BlockedEntrySlice
-	BlockedByChannelBlockedEntries BlockedEntrySlice
-	Comments                       CommentSlice
-	ModChannelModerators           ModeratorSlice
-	Reactions                      ReactionSlice
+	BlockedChannelBlockedEntries      BlockedEntrySlice
+	BlockedByChannelBlockedEntries    BlockedEntrySlice
+	Comments                          CommentSlice
+	CreatorChannelCreatorSettings     CreatorSettingSlice
+	ModChannelDelegatedModerators     DelegatedModeratorSlice
+	CreatorChannelDelegatedModerators DelegatedModeratorSlice
+	ModChannelModerators              ModeratorSlice
+	Reactions                         ReactionSlice
 }
 
 // NewStruct creates a new relationship struct
@@ -89,9 +104,9 @@ func (*channelR) NewStruct() *channelR {
 type channelL struct{}
 
 var (
-	channelAllColumns            = []string{"claim_id", "name"}
+	channelAllColumns            = []string{"claim_id", "name", "is_spammer"}
 	channelColumnsWithoutDefault = []string{"claim_id", "name"}
-	channelColumnsWithDefault    = []string{}
+	channelColumnsWithDefault    = []string{"is_spammer"}
 	channelPrimaryKeyColumns     = []string{"claim_id"}
 )
 
@@ -344,6 +359,69 @@ func (o *Channel) Comments(mods ...qm.QueryMod) commentQuery {
 
 	if len(queries.GetSelect(query.Query)) == 0 {
 		queries.SetSelect(query.Query, []string{"`comment`.*"})
+	}
+
+	return query
+}
+
+// CreatorChannelCreatorSettings retrieves all the creator_setting's CreatorSettings with an executor via creator_channel_id column.
+func (o *Channel) CreatorChannelCreatorSettings(mods ...qm.QueryMod) creatorSettingQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`creator_setting`.`creator_channel_id`=?", o.ClaimID),
+	)
+
+	query := CreatorSettings(queryMods...)
+	queries.SetFrom(query.Query, "`creator_setting`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`creator_setting`.*"})
+	}
+
+	return query
+}
+
+// ModChannelDelegatedModerators retrieves all the delegated_moderator's DelegatedModerators with an executor via mod_channel_id column.
+func (o *Channel) ModChannelDelegatedModerators(mods ...qm.QueryMod) delegatedModeratorQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`delegated_moderator`.`mod_channel_id`=?", o.ClaimID),
+	)
+
+	query := DelegatedModerators(queryMods...)
+	queries.SetFrom(query.Query, "`delegated_moderator`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`delegated_moderator`.*"})
+	}
+
+	return query
+}
+
+// CreatorChannelDelegatedModerators retrieves all the delegated_moderator's DelegatedModerators with an executor via creator_channel_id column.
+func (o *Channel) CreatorChannelDelegatedModerators(mods ...qm.QueryMod) delegatedModeratorQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`delegated_moderator`.`creator_channel_id`=?", o.ClaimID),
+	)
+
+	query := DelegatedModerators(queryMods...)
+	queries.SetFrom(query.Query, "`delegated_moderator`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`delegated_moderator`.*"})
 	}
 
 	return query
@@ -647,6 +725,270 @@ func (channelL) LoadComments(e boil.Executor, singular bool, maybeChannel interf
 					foreign.R = &commentR{}
 				}
 				foreign.R.Channel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatorChannelCreatorSettings allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadCreatorChannelCreatorSettings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClaimID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`creator_setting`), qm.WhereIn(`creator_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load creator_setting")
+	}
+
+	var resultSlice []*CreatorSetting
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice creator_setting")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on creator_setting")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for creator_setting")
+	}
+
+	if singular {
+		object.R.CreatorChannelCreatorSettings = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &creatorSettingR{}
+			}
+			foreign.R.CreatorChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClaimID == foreign.CreatorChannelID {
+				local.R.CreatorChannelCreatorSettings = append(local.R.CreatorChannelCreatorSettings, foreign)
+				if foreign.R == nil {
+					foreign.R = &creatorSettingR{}
+				}
+				foreign.R.CreatorChannel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadModChannelDelegatedModerators allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadModChannelDelegatedModerators(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClaimID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`delegated_moderator`), qm.WhereIn(`mod_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load delegated_moderator")
+	}
+
+	var resultSlice []*DelegatedModerator
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice delegated_moderator")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on delegated_moderator")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for delegated_moderator")
+	}
+
+	if singular {
+		object.R.ModChannelDelegatedModerators = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &delegatedModeratorR{}
+			}
+			foreign.R.ModChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClaimID == foreign.ModChannelID {
+				local.R.ModChannelDelegatedModerators = append(local.R.ModChannelDelegatedModerators, foreign)
+				if foreign.R == nil {
+					foreign.R = &delegatedModeratorR{}
+				}
+				foreign.R.ModChannel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatorChannelDelegatedModerators allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadCreatorChannelDelegatedModerators(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		object = maybeChannel.(*Channel)
+	} else {
+		slice = *maybeChannel.(*[]*Channel)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args = append(args, object.ClaimID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClaimID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClaimID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`delegated_moderator`), qm.WhereIn(`creator_channel_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load delegated_moderator")
+	}
+
+	var resultSlice []*DelegatedModerator
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice delegated_moderator")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on delegated_moderator")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for delegated_moderator")
+	}
+
+	if singular {
+		object.R.CreatorChannelDelegatedModerators = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &delegatedModeratorR{}
+			}
+			foreign.R.CreatorChannel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClaimID == foreign.CreatorChannelID {
+				local.R.CreatorChannelDelegatedModerators = append(local.R.CreatorChannelDelegatedModerators, foreign)
+				if foreign.R == nil {
+					foreign.R = &delegatedModeratorR{}
+				}
+				foreign.R.CreatorChannel = local
 				break
 			}
 		}
@@ -1485,6 +1827,258 @@ func (o *Channel) RemoveComments(exec boil.Executor, related ...*Comment) error 
 		}
 	}
 
+	return nil
+}
+
+// AddCreatorChannelCreatorSettingsG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelCreatorSettings.
+// Sets related.R.CreatorChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddCreatorChannelCreatorSettingsG(insert bool, related ...*CreatorSetting) error {
+	return o.AddCreatorChannelCreatorSettings(boil.GetDB(), insert, related...)
+}
+
+// AddCreatorChannelCreatorSettingsP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelCreatorSettings.
+// Sets related.R.CreatorChannel appropriately.
+// Panics on error.
+func (o *Channel) AddCreatorChannelCreatorSettingsP(exec boil.Executor, insert bool, related ...*CreatorSetting) {
+	if err := o.AddCreatorChannelCreatorSettings(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddCreatorChannelCreatorSettingsGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelCreatorSettings.
+// Sets related.R.CreatorChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddCreatorChannelCreatorSettingsGP(insert bool, related ...*CreatorSetting) {
+	if err := o.AddCreatorChannelCreatorSettings(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddCreatorChannelCreatorSettings adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelCreatorSettings.
+// Sets related.R.CreatorChannel appropriately.
+func (o *Channel) AddCreatorChannelCreatorSettings(exec boil.Executor, insert bool, related ...*CreatorSetting) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.CreatorChannelID = o.ClaimID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `creator_setting` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"creator_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, creatorSettingPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.CreatorChannelID = o.ClaimID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			CreatorChannelCreatorSettings: related,
+		}
+	} else {
+		o.R.CreatorChannelCreatorSettings = append(o.R.CreatorChannelCreatorSettings, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &creatorSettingR{
+				CreatorChannel: o,
+			}
+		} else {
+			rel.R.CreatorChannel = o
+		}
+	}
+	return nil
+}
+
+// AddModChannelDelegatedModeratorsG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelDelegatedModerators.
+// Sets related.R.ModChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddModChannelDelegatedModeratorsG(insert bool, related ...*DelegatedModerator) error {
+	return o.AddModChannelDelegatedModerators(boil.GetDB(), insert, related...)
+}
+
+// AddModChannelDelegatedModeratorsP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelDelegatedModerators.
+// Sets related.R.ModChannel appropriately.
+// Panics on error.
+func (o *Channel) AddModChannelDelegatedModeratorsP(exec boil.Executor, insert bool, related ...*DelegatedModerator) {
+	if err := o.AddModChannelDelegatedModerators(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddModChannelDelegatedModeratorsGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelDelegatedModerators.
+// Sets related.R.ModChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddModChannelDelegatedModeratorsGP(insert bool, related ...*DelegatedModerator) {
+	if err := o.AddModChannelDelegatedModerators(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddModChannelDelegatedModerators adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.ModChannelDelegatedModerators.
+// Sets related.R.ModChannel appropriately.
+func (o *Channel) AddModChannelDelegatedModerators(exec boil.Executor, insert bool, related ...*DelegatedModerator) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ModChannelID = o.ClaimID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `delegated_moderator` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"mod_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, delegatedModeratorPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ModChannelID = o.ClaimID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			ModChannelDelegatedModerators: related,
+		}
+	} else {
+		o.R.ModChannelDelegatedModerators = append(o.R.ModChannelDelegatedModerators, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &delegatedModeratorR{
+				ModChannel: o,
+			}
+		} else {
+			rel.R.ModChannel = o
+		}
+	}
+	return nil
+}
+
+// AddCreatorChannelDelegatedModeratorsG adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelDelegatedModerators.
+// Sets related.R.CreatorChannel appropriately.
+// Uses the global database handle.
+func (o *Channel) AddCreatorChannelDelegatedModeratorsG(insert bool, related ...*DelegatedModerator) error {
+	return o.AddCreatorChannelDelegatedModerators(boil.GetDB(), insert, related...)
+}
+
+// AddCreatorChannelDelegatedModeratorsP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelDelegatedModerators.
+// Sets related.R.CreatorChannel appropriately.
+// Panics on error.
+func (o *Channel) AddCreatorChannelDelegatedModeratorsP(exec boil.Executor, insert bool, related ...*DelegatedModerator) {
+	if err := o.AddCreatorChannelDelegatedModerators(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddCreatorChannelDelegatedModeratorsGP adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelDelegatedModerators.
+// Sets related.R.CreatorChannel appropriately.
+// Uses the global database handle and panics on error.
+func (o *Channel) AddCreatorChannelDelegatedModeratorsGP(insert bool, related ...*DelegatedModerator) {
+	if err := o.AddCreatorChannelDelegatedModerators(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddCreatorChannelDelegatedModerators adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.CreatorChannelDelegatedModerators.
+// Sets related.R.CreatorChannel appropriately.
+func (o *Channel) AddCreatorChannelDelegatedModerators(exec boil.Executor, insert bool, related ...*DelegatedModerator) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.CreatorChannelID = o.ClaimID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `delegated_moderator` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"creator_channel_id"}),
+				strmangle.WhereClause("`", "`", 0, delegatedModeratorPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClaimID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.CreatorChannelID = o.ClaimID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			CreatorChannelDelegatedModerators: related,
+		}
+	} else {
+		o.R.CreatorChannelDelegatedModerators = append(o.R.CreatorChannelDelegatedModerators, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &delegatedModeratorR{
+				CreatorChannel: o,
+			}
+		} else {
+			rel.R.CreatorChannel = o
+		}
+	}
 	return nil
 }
 
