@@ -2,10 +2,7 @@ package comments
 
 import (
 	"database/sql"
-	"math"
 	"net/http"
-
-	"github.com/lbryio/commentron/flags"
 
 	"github.com/lbryio/commentron/commentapi"
 	m "github.com/lbryio/commentron/model"
@@ -13,11 +10,6 @@ import (
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/lbry.go/v2/extras/util"
-	v "github.com/lbryio/ozzo-validation"
-
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -40,193 +32,13 @@ page for comment ( params: page, [size], order-by )
 type Service struct{}
 
 // Create creates a comment
-func (c *Service) Create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
-	err := v.ValidateStruct(args,
-		v.Field(&args.ClaimID, v.Required))
-	if err != nil {
-		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
-	}
-	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFromPtr(args.ChannelID).String)).OneG()
-	if errors.Is(err, sql.ErrNoRows) {
-		channel = &m.Channel{
-			ClaimID: null.StringFromPtr(args.ChannelID).String,
-			Name:    null.StringFromPtr(args.ChannelName).String,
-		}
-		err = nil
-		err := channel.InsertG(boil.Infer())
-		if err != nil {
-			return errors.Err(err)
-		}
-	}
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFromPtr(args.ChannelID))).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
-	if blockedEntry != nil {
-		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
-	}
-
-	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFromPtr(args.ChannelID).String)
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
-
-	if comment != nil {
-		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
-	}
-	signingChannel, err := lbry.GetSigningChannelForClaim(args.ClaimID)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if signingChannel != nil {
-		blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFromPtr(args.ChannelID))).OneG()
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
-		}
-		if blockedEntry != nil {
-			return api.StatusError{Err: errors.Err("channel %s is blocked by publisher %s", args.ChannelID, signingChannel.Name)}
-		}
-	}
-
-	comment = &m.Comment{
-		CommentID:   commentID,
-		LbryClaimID: args.ClaimID,
-		ChannelID:   null.StringFromPtr(args.ChannelID),
-		Body:        args.CommentText,
-		ParentID:    null.StringFromPtr(args.ParentID),
-		Signature:   null.StringFromPtr(args.Signature),
-		Signingts:   null.StringFromPtr(args.SigningTS),
-		Timestamp:   int(timestamp),
-	}
-
-	err = flags.CheckComment(comment)
-	if err != nil {
-		return err
-	}
-
-	err = errors.Err(comment.InsertG(boil.Infer()))
-	if err != nil {
-		return errors.Err(err)
-	}
-	item := populateItem(comment, channel, 0)
-	reply.CommentItem = &item
-
-	go lbry.Notify(lbry.NotifyOptions{
-		ActionType: "C",
-		CommentID:  item.CommentID,
-		ChannelID:  &item.ChannelID,
-		ParentID:   &item.ParentID,
-		Comment:    &item.Comment,
-		ClaimID:    item.ClaimID,
-	})
-	return nil
+func (c *Service) Create(r *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
+	return create(r, args, reply)
 }
 
 // List lists comments based on filters and arguments passed. The returned result is dynamic based on the args passed
-func (c *Service) List(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
-	args.ApplyDefaults()
-	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
-	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
-	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
-	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
-	filterTopLevel := m.CommentWhere.ParentID.IsNull()
-	filterParent := m.CommentWhere.ParentID.EQ(null.StringFrom(util.StrFromPtr(args.ParentID)))
-
-	totalCommentsQuery := make([]qm.QueryMod, 0)
-	offset := (args.Page - 1) * args.PageSize
-	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
-	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
-
-	if args.AuthorClaimID != nil {
-		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
-		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
-		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
-	}
-
-	if args.ClaimID != nil {
-		getCommentsQuery = append(getCommentsQuery, filterClaimID)
-		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
-		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
-	}
-
-	if args.TopLevel {
-		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
-		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
-		totalCommentsQuery = append(totalCommentsQuery, filterTopLevel)
-	}
-
-	if args.ParentID != nil {
-		getCommentsQuery = append(getCommentsQuery, filterParent)
-		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
-		totalCommentsQuery = append(totalCommentsQuery, filterParent)
-	}
-
-	totalItems, err := m.Comments(totalCommentsQuery...).CountG()
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).ExistsG()
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	comments, err := m.Comments(getCommentsQuery...).AllG()
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	items, blockedCommentCnt, err := getItems(comments)
-
-	totalItems = totalItems - blockedCommentCnt
-	reply.Items = items
-	reply.Page = args.Page
-	reply.PageSize = args.PageSize
-	reply.TotalItems = totalItems
-	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
-	reply.HasHiddenComments = hasHiddenComments
-
-	return nil
-}
-
-func getItems(comments m.CommentSlice) ([]commentapi.CommentItem, int64, error) {
-	var items []commentapi.CommentItem
-	var blockedCommentCnt int64
-Comments:
-	for _, comment := range comments {
-		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
-			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
-			if len(blockedFrom) > 0 {
-				channel, err := lbry.GetSigningChannelForClaim(comment.LbryClaimID)
-				if err != nil {
-					return items, blockedCommentCnt, errors.Err(err)
-				}
-				for _, entry := range blockedFrom {
-					if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
-						blockedCommentCnt++
-						continue Comments
-					}
-				}
-			}
-		}
-		var channel *m.Channel
-		if comment.R != nil {
-			channel = comment.R.Channel
-			if channel != nil && channel.Name != "" {
-				replies, err := comment.ParentComments().CountG()
-				if err != nil && errors.Is(err, sql.ErrNoRows) {
-					return items, blockedCommentCnt, errors.Err(err)
-				}
-				items = append(items, populateItem(comment, channel, int(replies)))
-			}
-		}
-	}
-	return items, blockedCommentCnt, nil
+func (c *Service) List(r *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
+	return list(r, args, reply)
 }
 
 // GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
