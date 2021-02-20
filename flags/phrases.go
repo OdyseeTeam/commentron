@@ -35,7 +35,6 @@ var flaggedPhrases = []string{
 	`.*Do you want to make money on your phone?.*`,
 	`.*sigo a todos los que.*`,
 	`.*Comentá para seguir comentando tu publicación.*`,
-	`.*\$/invite/.*`,
 	`.*BRASILemEVID.*`,
 	`.*Sígueme de vuelta.*`,
 	`.*Necessito de seguidores.*`,
