@@ -8,9 +8,11 @@ import (
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/validator"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	v "github.com/lbryio/ozzo-validation"
 
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -18,6 +20,15 @@ import (
 )
 
 func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
+	err := v.ValidateStruct(args,
+		v.Field(&args.BannedChannelID, validator.ClaimID, v.Required),
+		v.Field(&args.BannedChannelName, v.Required),
+		v.Field(&args.ModChannelID, validator.ClaimID, v.Required),
+		v.Field(&args.ModChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
 	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	if err != nil {
 		return errors.Err(err)
