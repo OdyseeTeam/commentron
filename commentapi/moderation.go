@@ -6,8 +6,8 @@ type BlockArgs struct {
 	ModChannelID   string `json:"mod_channel_id"`
 	ModChannelName string `json:"mod_channel_name"`
 	//Offender being blocked
-	BannedChannelID   string `json:"banned_channel_id"`
-	BannedChannelName string `json:"banned_channel_name"`
+	BlockedChannelID   string `json:"blocked_channel_id"`
+	BlockedChannelName string `json:"blocked_channel_name"`
 	// Blocks identity from comment universally, requires Admin rights on commentron instance
 	BlockAll bool `json:"block_all"`
 	// If true will delete all comments of the offender, requires Admin rights on commentron for universal delete

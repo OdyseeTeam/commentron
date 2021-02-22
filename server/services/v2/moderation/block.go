@@ -21,8 +21,8 @@ import (
 
 func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
 	err := v.ValidateStruct(args,
-		v.Field(&args.BannedChannelID, validator.ClaimID, v.Required),
-		v.Field(&args.BannedChannelName, v.Required),
+		v.Field(&args.BlockedChannelID, validator.ClaimID, v.Required),
+		v.Field(&args.BlockedChannelName, v.Required),
 		v.Field(&args.ModChannelID, validator.ClaimID, v.Required),
 		v.Field(&args.ModChannelName, v.Required),
 	)
@@ -38,11 +38,13 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		return err
 	}
 
-	bannedChannel, err := helper.FindOrCreateChannel(args.BannedChannelID, args.BannedChannelName)
+	bannedChannel, err := helper.FindOrCreateChannel(args.BlockedChannelID, args.BlockedChannelName)
 	if err != nil {
 		return errors.Err(err)
 	}
-	blockedEntry, err := model.BlockedEntries(model.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.BannedChannelID))).OneG()
+	blockedEntry, err := model.BlockedEntries(
+		model.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.BlockedChannelID)),
+		model.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(args.ModChannelID))).OneG()
 	if err != nil && err != sql.ErrNoRows {
 		return errors.Err(err)
 	}
