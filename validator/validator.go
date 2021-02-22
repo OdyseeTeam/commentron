@@ -7,12 +7,17 @@ import (
 )
 
 var (
+	// TransactionIDRegex regex for lbry transaction id
 	TransactionIDRegex = `^[A-Za-z0-9]{64}$`
-	TransactionID      = v.NewStringRule(func(str string) bool {
+	//
+	// TransactionID validator to validate a parameter
+	TransactionID = v.NewStringRule(func(str string) bool {
 		return matchesRegex(TransactionIDRegex, str)
 	}, "Invalid transaction id")
+	// ClaimIDRegex regex for lbry claim ids
 	ClaimIDRegex = `^[A-Za-z0-9]{40}$`
-	ClaimID      = v.NewStringRule(func(str string) bool {
+	// ClaimID validator to validate a claim id paramter
+	ClaimID = v.NewStringRule(func(str string) bool {
 		return matchesRegex(ClaimIDRegex, str)
 	}, "Invalid claim id")
 )
