@@ -44,6 +44,13 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
 	}
 
+	if args.ParentID != nil {
+		err = allowedToPostReply(util.StrFromPtr(args.ParentID), util.StrFromPtr(args.ChannelID))
+		if err != nil {
+			return err
+		}
+	}
+
 	err = lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), util.StrFromPtr(args.Signature), util.StrFromPtr(args.SigningTS), args.CommentText)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
@@ -107,5 +114,31 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		Comment:    &item.Comment,
 		ClaimID:    item.ClaimID,
 	})
+	return nil
+}
+
+func allowedToPostReply(parentID, commenterClaimID string) error {
+	parentComment, err := m.Comments(m.CommentWhere.CommentID.EQ(parentID)).OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+	if parentComment != nil {
+		parentChannel, err := parentComment.Channel().OneG()
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+		if parentChannel != nil {
+
+			blockedEntry, err := m.BlockedEntries(
+				m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
+				m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).OneG()
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return errors.Err(err)
+			}
+			if blockedEntry != nil {
+				return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+			}
+		}
+	}
 	return nil
 }
