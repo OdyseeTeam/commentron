@@ -3,9 +3,11 @@ package comments
 import (
 	"database/sql"
 	"net/http"
+	"strings"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/flags"
+	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
@@ -69,7 +71,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if comment != nil {
 		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
 	}
-	err = blockedByCreator(args.ClaimID, util.StrFromPtr(args.ChannelID))
+	err = blockedByCreator(args.ClaimID, util.StrFromPtr(args.ChannelID), args.CommentText)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -108,7 +110,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	return nil
 }
 
-func blockedByCreator(contentClaimID, commenterChannelID string) error {
+func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
 	signingChannel, err := lbry.GetSigningChannelForClaim(contentClaimID)
 	if err != nil {
 		return errors.Err(err)
@@ -120,6 +122,22 @@ func blockedByCreator(contentClaimID, commenterChannelID string) error {
 		}
 		if blockedEntry != nil {
 			return api.StatusError{Err: errors.Err("channel %s is blocked by publisher %s", commenterChannelID, signingChannel.Name)}
+		}
+	}
+	creatorChannel, err := helper.FindOrCreateChannel(signingChannel.ClaimID, signingChannel.Name)
+	if err != nil {
+		return err
+	}
+	settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+	if settings != nil && !settings.MutedWords.IsZero() {
+		blockedWords := strings.Split(settings.MutedWords.String, ",")
+		for _, blockedWord := range blockedWords {
+			if strings.Contains(comment, blockedWord) {
+				return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", signingChannel.Name)}
+			}
 		}
 	}
 	return nil

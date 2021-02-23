@@ -69,7 +69,7 @@ func (b UnBlockWordArgs) Validate() api.StatusError {
 	return api.StatusError{}
 }
 
-// ListBlockedWordsArgs
+// ListBlockedWordsArgs lists all the blocked words for the channel
 type ListBlockedWordsArgs struct {
 	ChannelName string `json:"channel_name"`
 	ChannelID   string `json:"channel_id"`

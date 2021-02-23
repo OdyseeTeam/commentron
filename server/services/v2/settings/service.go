@@ -83,6 +83,7 @@ skip:
 	return nil
 }
 
+// ListBlockedWords returns a list of all the current blocked words for a channel.
 func (s *Service) ListBlockedWords(r *http.Request, args *commentapi.ListBlockedWordsArgs, reply *commentapi.BlockWordRespose) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
