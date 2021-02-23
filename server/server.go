@@ -8,28 +8,25 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/justinas/alice"
-	"github.com/rs/cors"
-
+	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/server/services/v2/moderation"
-
-	"github.com/fatih/color"
-	"github.com/lbryio/lbry.go/extras/api"
-
-	"github.com/lbryio/commentron/server/services/v2/reactions"
-
 	"github.com/lbryio/commentron/server/services/v1/comments"
 	rpcHack "github.com/lbryio/commentron/server/services/v1/rpc"
 	jsonHack "github.com/lbryio/commentron/server/services/v1/rpc/json"
 	"github.com/lbryio/commentron/server/services/v1/status"
+	"github.com/lbryio/commentron/server/services/v2/moderation"
+	"github.com/lbryio/commentron/server/services/v2/reactions"
+	"github.com/lbryio/commentron/server/services/v2/settings"
 
+	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
+	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
-
+	"github.com/justinas/alice"
+	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -137,6 +134,7 @@ func v2RPCServer() http.Handler {
 	statusService := new(status.Service)
 	reactionService := new(reactions.Service)
 	moderationService := new(moderation.Service)
+	settingService := new(settings.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -153,6 +151,10 @@ func v2RPCServer() http.Handler {
 	err = rpcServer.RegisterService(moderationService, "moderation")
 	if err != nil {
 		logrus.Panicf("Error registering v2 moderation service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(settingService, "setting")
+	if err != nil {
+		logrus.Panicf("Error registering v2 setting service: %s", errors.FullTrace(err))
 	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
@@ -172,6 +174,17 @@ func v2RPCServer() http.Handler {
 		} else if helper.Debugging {
 			logrus.Debug(color.GreenString(consoleText))
 		}
+	})
+
+	rpcServer.RegisterValidateRequestFunc(func(r *rpc.RequestInfo, i interface{}) error {
+		v, ok := i.(commentapi.Validator)
+		if ok {
+			err := v.Validate()
+			if err.Err != nil {
+				return errors.Err(err)
+			}
+		}
+		return nil
 	})
 
 	return rpcServer

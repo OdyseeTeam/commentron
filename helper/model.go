@@ -26,3 +26,17 @@ func FindOrCreateChannel(channelClaimID, channelName string) (*model.Channel, er
 	}
 	return channel, errors.Err(err)
 }
+
+// FindOrCreateSettings gets the settings for the creator from commentron database or creates it and returns it
+func FindOrCreateSettings(creatorChannel *model.Channel) (*model.CreatorSetting, error) {
+	settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
+	if errors.Is(err, sql.ErrNoRows) {
+		settings = &model.CreatorSetting{CreatorChannelID: creatorChannel.ClaimID}
+		err = nil
+		err := settings.InsertG(boil.Infer())
+		if err != nil {
+			return nil, errors.Err(err)
+		}
+	}
+	return settings, errors.Err(err)
+}
