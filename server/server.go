@@ -39,7 +39,7 @@ var RPCPort int
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
-	chain := alice.New(cors.Default().Handler)
+	chain := alice.New(cors.AllowAll().Handler)
 	router := mux.NewRouter()
 	router.Handle("/", state())
 	router.Handle("/api", v1RPCServer())
