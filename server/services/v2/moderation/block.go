@@ -124,6 +124,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 				BlockedChannelName:   b.R.BlockedChannel.Name,
 				BlockedByChannelID:   modChannel.ClaimID,
 				BlockedByChannelName: modChannel.Name,
+				BlockedAt:            b.CreatedAt,
 			})
 		}
 	}
