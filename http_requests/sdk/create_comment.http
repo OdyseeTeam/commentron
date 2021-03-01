@@ -5,5 +5,5 @@ Content-Type: application/json
   "jsonrpc": "2.0",
   "id": 1,
   "method": "comment_create",
-  "params": {"comment": "Testing comments","claim_id": "e0a2e8130451ce371b8fdab6e2c7abf615097615","channel_name": "@dtrdtr"}
+  "params": {"comment": "Testing comments","claim_id": "e0a2e8130451ce371b8fdab6e2c7abf615097615","channel_name": "@🌹❤️😍Amirul😍❤️🌹"}
 }

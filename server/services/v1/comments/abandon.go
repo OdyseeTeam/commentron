@@ -26,7 +26,11 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if err != nil {
 			return nil, errors.Err(err)
 		}
-		if content.SigningChannel.ClaimID != channel.ClaimID {
+		signingChannelClaimID := content.ClaimID
+		if content.SigningChannel != nil {
+			signingChannelClaimID = content.SigningChannel.ClaimID
+		}
+		if signingChannelClaimID != channel.ClaimID {
 			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID)}
 		}
 	} else {
