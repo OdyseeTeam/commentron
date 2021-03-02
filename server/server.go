@@ -17,6 +17,7 @@ import (
 	"github.com/lbryio/commentron/server/services/v2/moderation"
 	"github.com/lbryio/commentron/server/services/v2/reactions"
 	"github.com/lbryio/commentron/server/services/v2/settings"
+	"github.com/lbryio/commentron/server/services/v2/verify"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -135,6 +136,7 @@ func v2RPCServer() http.Handler {
 	reactionService := new(reactions.Service)
 	moderationService := new(moderation.Service)
 	settingService := new(settings.Service)
+	verifyService := new(verify.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -155,6 +157,10 @@ func v2RPCServer() http.Handler {
 	err = rpcServer.RegisterService(settingService, "setting")
 	if err != nil {
 		logrus.Panicf("Error registering v2 setting service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(verifyService, "verify")
+	if err != nil {
+		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
