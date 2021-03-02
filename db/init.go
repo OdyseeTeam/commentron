@@ -16,6 +16,7 @@ import (
 func Init(dsn string, debug bool) error {
 	dsn += "?parseTime=1&collation=utf8mb4_unicode_ci"
 	dbConn, err := sqlx.Connect("mysql", dsn)
+	dbConn.SetMaxOpenConns(300)
 	if err != nil {
 		return errors.Err(err)
 	}
