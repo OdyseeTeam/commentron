@@ -13,7 +13,7 @@ import (
 // Service is the service struct defined for the comment package for rpc service "moderation.*"
 type Service struct{}
 
-// Block returns a list of reactions for the comments requested
+// Signature returns a list of reactions for the comments requested
 func (s Service) Signature(r *http.Request, args *commentapi.SignatureArgs, reply *commentapi.SignatureResponse) error {
 	bytes, err := hex.DecodeString(args.DataHex)
 	if err != nil {
