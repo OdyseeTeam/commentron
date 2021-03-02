@@ -121,7 +121,7 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 			return errors.Err(err)
 		}
 		if blockedEntry != nil {
-			return api.StatusError{Err: errors.Err("channel %s is blocked by publisher %s", commenterChannelID, signingChannel.Name)}
+			return api.StatusError{Err: errors.Err("channel is blocked by publisher")}
 		}
 	}
 	creatorChannel, err := helper.FindOrCreateChannel(signingChannel.ClaimID, signingChannel.Name)
