@@ -6,7 +6,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/lbryio/commentron/metrics"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/lbryio/commentron/server/websocket"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/helper"
@@ -37,6 +44,8 @@ var RPCHost string
 // RPCPort specifies the port the rpc server listens on
 var RPCPort int
 
+const promPath = "/metrics"
+
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
@@ -46,9 +55,52 @@ func Start() {
 	router.Handle("/api", v1RPCServer())
 	router.Handle("/api/v1", v1RPCServer())
 	router.Handle("/api/v2", chain.Then(v2RPCServer()))
+	router.Handle("/api/v2/live-chat/subscribe", websocket.SubscribeLiveChat())
+	router.Handle(promPath, promBasicAuthWrapper(promhttp.Handler()))
+
+	mux := http.Handler(router)
+	for _, middleware := range []func(h http.Handler) http.Handler{
+		promRequestHandler,
+	} {
+		mux = middleware(mux)
+	}
+
 	logrus.Infof("Running RPC Server @ http://%s:%d/api", RPCHost, RPCPort)
 	address := fmt.Sprintf("%s:%d", RPCHost, RPCPort)
-	logrus.Fatal(http.ListenAndServe(address, router))
+	logrus.Fatal(http.ListenAndServe(address, mux))
+}
+
+func promRequestHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimLeft(r.URL.Path, "/")
+		if path != strings.TrimLeft(promPath, "/") {
+			metrics.UserLoadOverall.Inc()
+			defer metrics.UserLoadOverall.Dec()
+			metrics.UserLoadByAPI.WithLabelValues(path).Inc()
+			defer metrics.UserLoadByAPI.WithLabelValues(path).Dec()
+			apiStart := time.Now()
+			h.ServeHTTP(w, r)
+			duration := time.Since(apiStart).Seconds()
+			metrics.Durations.WithLabelValues(path).Observe(duration)
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	})
+}
+
+func promBasicAuthWrapper(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, pass, ok := r.BasicAuth()
+		if !ok {
+			http.Error(w, "authentication required", http.StatusBadRequest)
+			return
+		}
+		if user == "prom" && pass == "prom-commentron-access" {
+			h.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "invalid username or password", http.StatusForbidden)
+		}
+	})
 }
 
 func state() http.Handler {

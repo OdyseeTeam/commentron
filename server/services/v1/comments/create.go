@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lbryio/commentron/server/websocket"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
@@ -99,6 +101,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	item := populateItem(comment, channel, 0)
 	reply.CommentItem = &item
 
+	go pushItem(item, args.ClaimID)
 	go lbry.Notify(lbry.NotifyOptions{
 		ActionType: "C",
 		CommentID:  item.CommentID,
@@ -108,6 +111,13 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		ClaimID:    item.ClaimID,
 	})
 	return nil
+}
+
+func pushItem(item commentapi.CommentItem, claimID string) {
+	websocket.PushTo(&websocket.PushNotification{
+		Type: "delta",
+		Data: map[string]interface{}{"comment": item},
+	}, claimID)
 }
 
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {

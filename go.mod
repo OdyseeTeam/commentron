@@ -12,6 +12,7 @@ require (
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/rpc v1.2.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/johntdyer/slack-go v0.0.0-20180213144715-95fac1160b22 // indirect
 	github.com/johntdyer/slackrus v0.0.0-20180518184837-f7aae3243a07
@@ -28,6 +29,7 @@ require (
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
+	github.com/prometheus/client_golang v1.3.0
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/sirupsen/logrus v1.4.2
