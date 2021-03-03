@@ -49,7 +49,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if args.ParentID != nil {
-		err = allowedToPostReply(util.StrFromPtr(args.ParentID), util.StrFromPtr(args.ChannelID))
+		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), util.StrFromPtr(args.ChannelID))
 		if err != nil {
 			return err
 		}

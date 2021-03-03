@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lbryio/commentron/helper"
+
 	"github.com/lbryio/commentron/flags"
 
 	"github.com/lbryio/commentron/commentapi"
@@ -35,6 +37,9 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	for _, p := range comments {
 		commentIDs = append(commentIDs, p.CommentID)
 	}
+	if len(commentIDs) > 1 {
+		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
+	}
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(util.StrFromPtr(args.ChannelID))).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
@@ -51,6 +56,7 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}
+
 	modifiedReactions, err := updateReactions(channel, args, commentIDs, comments)
 	if err != nil {
 		return errors.Err(err)
@@ -109,6 +115,10 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			return errors.Err(err)
 		}
 		for _, p := range comments {
+			err = helper.AllowedToRespond(p.CommentID, channel.ClaimID)
+			if err != nil {
+				return err
+			}
 			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID}
 			err := flags.CheckReaction(newReaction)
 			if err != nil {
