@@ -12,6 +12,7 @@ import (
 	"github.com/volatiletech/null"
 )
 
+// AllowedToRespond checks if the creator of the comment will allow a response from the respondent
 func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 	parentComment, err := m.Comments(m.CommentWhere.CommentID.EQ(parentCommentID)).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
