@@ -49,7 +49,20 @@ const promPath = "/metrics"
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
-	chain := alice.New(cors.AllowAll().Handler)
+	chain := alice.New(cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: false,
+	}).Handler)
 	router := mux.NewRouter()
 	router.Handle("/", state())
 	router.Handle("/api", v1RPCServer())
