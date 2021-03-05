@@ -28,7 +28,7 @@ var (
 		Subsystem: "apis",
 		Name:      "api_load",
 		Help:      "Number of active calls by api",
-	}, []string{"path"})
+	}, []string{"version", "service", "method"})
 
 	// Durations The durations of the individual api calls
 	Durations = promauto.NewHistogramVec(prometheus.HistogramOpts{

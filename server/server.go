@@ -1,8 +1,10 @@
 package server
 
 import (
+	"bytes"
 	jsonmarshall "encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -73,16 +75,20 @@ func Start() {
 func promRequestHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimLeft(r.URL.Path, "/")
-		method := r.FormValue("m")
-		if path != strings.TrimLeft(promPath, "/") && method != "" {
+		body, _ := ioutil.ReadAll(r.Body)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		codecRequest := json.NewCodec().NewRequest(r)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		if method, err := codecRequest.Method(); err == nil {
+			version, service, method := getCallDetails(path, method)
 			metrics.UserLoadOverall.Inc()
 			defer metrics.UserLoadOverall.Dec()
-			metrics.UserLoadByAPI.WithLabelValues(path + method).Inc()
-			defer metrics.UserLoadByAPI.WithLabelValues(path + method).Dec()
+			metrics.UserLoadByAPI.WithLabelValues(version, service, method).Inc()
+			defer metrics.UserLoadByAPI.WithLabelValues(version, service, method).Dec()
 			apiStart := time.Now()
 			h.ServeHTTP(w, r)
 			duration := time.Since(apiStart).Seconds()
-			metrics.Durations.WithLabelValues(path + method).Observe(duration)
+			metrics.Durations.WithLabelValues(version, service, method).Observe(duration)
 		} else {
 			h.ServeHTTP(w, r)
 		}
@@ -257,4 +263,17 @@ func getIP(r *http.Request) string {
 		return forwarded
 	}
 	return r.RemoteAddr
+}
+
+func getCallDetails(path, method string) (string, string, string) {
+	version := strings.TrimPrefix(path, "api/")
+	method = strings.ToLower(method)
+	parts := strings.Split(method, ".")
+	if len(parts) == 0 {
+		return version, "", ""
+	}
+	if len(parts) < 2 {
+		return version, parts[0], ""
+	}
+	return version, parts[0], parts[1]
 }

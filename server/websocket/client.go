@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -80,7 +81,7 @@ func (c *Client) read() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure) {
 				logrus.Error(errors.FullTrace(errors.Err(fmt.Sprintf("error: %v", err))))
 			}
 			break
@@ -100,20 +101,20 @@ func (c *Client) write() {
 	defer func() {
 		ticker.Stop()
 		err := c.conn.Close()
-		if err != nil {
-			logrus.Error(err)
+		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
+			logrus.Error(errors.FullTrace(err))
 		}
 	}()
 	for {
 		select {
 		case message, ok := <-c.send:
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				logrus.Error(err)
+				logrus.Error(errors.FullTrace(err))
 			}
 			if !ok {
 				// The hub closed the channel.
-				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
-					logrus.Error(err)
+				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); !errors.Is(err, websocket.ErrCloseSent) {
+					logrus.Error(errors.FullTrace(err))
 				}
 				return
 			}
@@ -123,28 +124,30 @@ func (c *Client) write() {
 				return
 			}
 			if _, err = w.Write(message); err != nil {
-				logrus.Error(err)
+				logrus.Error(errors.FullTrace(err))
 			}
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
 			for i := 0; i < n; i++ {
 				if _, err = w.Write(newline); err != nil {
-					logrus.Error(err)
+					logrus.Error(errors.FullTrace(err))
 				}
 				if _, err = w.Write(<-c.send); err != nil {
-					logrus.Error(err)
+					logrus.Error(errors.FullTrace(err))
 				}
 			}
 
 			if err := w.Close(); err != nil {
+				logrus.Error(errors.FullTrace(err))
 				return
 			}
 		case <-ticker.C:
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				logrus.Error(err)
+				logrus.Error(errors.FullTrace(err))
 			}
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				logrus.Error(errors.FullTrace(err))
 				return
 			}
 		}
