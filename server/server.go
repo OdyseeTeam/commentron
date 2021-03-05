@@ -73,15 +73,16 @@ func Start() {
 func promRequestHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimLeft(r.URL.Path, "/")
-		if path != strings.TrimLeft(promPath, "/") {
+		method := r.FormValue("m")
+		if path != strings.TrimLeft(promPath, "/") && method != "" {
 			metrics.UserLoadOverall.Inc()
 			defer metrics.UserLoadOverall.Dec()
-			metrics.UserLoadByAPI.WithLabelValues(path).Inc()
-			defer metrics.UserLoadByAPI.WithLabelValues(path).Dec()
+			metrics.UserLoadByAPI.WithLabelValues(path + method).Inc()
+			defer metrics.UserLoadByAPI.WithLabelValues(path + method).Dec()
 			apiStart := time.Now()
 			h.ServeHTTP(w, r)
 			duration := time.Since(apiStart).Seconds()
-			metrics.Durations.WithLabelValues(path).Observe(duration)
+			metrics.Durations.WithLabelValues(path + method).Observe(duration)
 		} else {
 			h.ServeHTTP(w, r)
 		}
