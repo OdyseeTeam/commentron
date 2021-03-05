@@ -36,5 +36,5 @@ var (
 		Subsystem: "apis",
 		Name:      "duration",
 		Help:      "The durations of the individual api calls",
-	}, []string{"path"})
+	}, []string{"version", "service", "method"})
 )
