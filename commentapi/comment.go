@@ -2,19 +2,20 @@ package commentapi
 
 // CommentItem is the data structure of a comment returned from commentron
 type CommentItem struct {
-	Comment     string `json:"comment"`
-	CommentID   string `json:"comment_id"`
-	ClaimID     string `json:"claim_id"`
-	Timestamp   int    `json:"timestamp"`
-	ParentID    string `json:"parent_id,omitempty"`
-	Signature   string `json:"signature,omitempty"`
-	SigningTs   string `json:"signing_ts,omitempty"`
-	IsHidden    bool   `json:"is_hidden"`
-	IsPinned    bool   `json:"is_pinned"`
-	ChannelID   string `json:"channel_id,omitempty"`
-	ChannelName string `json:"channel_name,omitempty"`
-	ChannelURL  string `json:"channel_url,omitempty"`
-	Replies     int    `json:"replies,omitempty"`
+	Comment       string  `json:"comment"`
+	CommentID     string  `json:"comment_id"`
+	ClaimID       string  `json:"claim_id"`
+	Timestamp     int     `json:"timestamp"`
+	ParentID      string  `json:"parent_id,omitempty"`
+	Signature     string  `json:"signature,omitempty"`
+	SigningTs     string  `json:"signing_ts,omitempty"`
+	IsHidden      bool    `json:"is_hidden"`
+	IsPinned      bool    `json:"is_pinned"`
+	ChannelID     string  `json:"channel_id,omitempty"`
+	ChannelName   string  `json:"channel_name,omitempty"`
+	ChannelURL    string  `json:"channel_url,omitempty"`
+	Replies       int     `json:"replies,omitempty"`
+	SupportAmount float64 `json:"support_amount"`
 }
 
 // ChannelArgs arguments to the comment.GetChannelForCommentID call
@@ -48,6 +49,8 @@ type CreateArgs struct {
 	ParentID    *string `json:"parent_id"`
 	ChannelID   *string `json:"channel_id"`
 	ChannelName *string `json:"channel_name"`
+	SupportTxID *string `json:"support_tx_id"`
+	SupportVout int     `json:"support_vout"`
 	Signature   *string `json:"signature"`
 	SigningTS   *string `json:"signing_ts"`
 }
