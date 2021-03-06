@@ -37,4 +37,20 @@ var (
 		Name:      "duration",
 		Help:      "The durations of the individual api calls",
 	}, []string{"version", "service", "method"})
+
+	// SDKDurations The durations of the individual api calls
+	SDKDurations = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "commentron",
+		Subsystem: "sdk",
+		Name:      "duration",
+		Help:      "The durations of the individual sdk api calls",
+	}, []string{"method"})
+
+	// SDKClaimCache is a metric to show the miss hit ration of the claim cache
+	SDKClaimCache = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "commentron",
+		Subsystem: "cache",
+		Name:      "sdk_claim",
+		Help:      "SDK claim cache miss/hit",
+	}, []string{"type"})
 )

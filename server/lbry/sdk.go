@@ -3,6 +3,8 @@ package lbry
 import (
 	"time"
 
+	"github.com/lbryio/commentron/metrics"
+
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 
@@ -16,6 +18,7 @@ var claimCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(10000))
 
 // GetClaim retrieves the channel claim information from the sdk.
 func GetClaim(claimID string) (*jsonrpc.Claim, error) {
+	metrics.SDKClaimCache.WithLabelValues("hit").Add(1)
 	cachedValue, err := claimCache.Fetch(claimID, 30*time.Minute, getClaim(claimID))
 	if err != nil {
 		return nil, err
@@ -29,6 +32,10 @@ func GetClaim(claimID string) (*jsonrpc.Claim, error) {
 
 func getClaim(claimID string) func() (interface{}, error) {
 	return func() (interface{}, error) {
+		metrics.SDKClaimCache.WithLabelValues("miss").Add(1)
+		metrics.SDKClaimCache.WithLabelValues("hit").Sub(1)
+		start := time.Now()
+		defer metrics.SDKDurations.WithLabelValues("claim-search").Observe(time.Since(start).Seconds())
 		c := jsonrpc.NewClient(SDKURL)
 		claimSearchResp, err := c.ClaimSearch(nil, &claimID, nil, nil, 1, 1)
 		if err != nil {
