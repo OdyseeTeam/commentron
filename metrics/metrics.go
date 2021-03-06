@@ -57,6 +57,7 @@ var (
 	}, []string{"type"})
 )
 
+// SDKCall helper function for observing the duration
 func SDKCall(start time.Time, callType string) {
 	duration := time.Since(start).Seconds()
 	SDKDurations.WithLabelValues(callType).Observe(duration)
