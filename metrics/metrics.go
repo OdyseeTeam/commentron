@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -54,3 +56,8 @@ var (
 		Help:      "SDK claim cache miss/hit",
 	}, []string{"type"})
 )
+
+func SDKCall(start time.Time, callType string) {
+	duration := time.Since(start).Seconds()
+	SDKDurations.WithLabelValues(callType).Observe(duration)
+}

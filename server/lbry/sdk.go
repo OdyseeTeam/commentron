@@ -34,8 +34,7 @@ func getClaim(claimID string) func() (interface{}, error) {
 	return func() (interface{}, error) {
 		metrics.SDKClaimCache.WithLabelValues("miss").Add(1)
 		metrics.SDKClaimCache.WithLabelValues("hit").Sub(1)
-		start := time.Now()
-		defer metrics.SDKDurations.WithLabelValues("claim-search").Observe(time.Since(start).Seconds())
+		defer metrics.SDKCall(time.Now(), "claim-search")
 		c := jsonrpc.NewClient(SDKURL)
 		claimSearchResp, err := c.ClaimSearch(nil, &claimID, nil, nil, 1, 1)
 		if err != nil {
