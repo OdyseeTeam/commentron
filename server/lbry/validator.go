@@ -6,11 +6,13 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/hex"
+	"encoding/pem"
 	"math/big"
 
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
+	"github.com/lbryio/lbry.go/v2/schema/keys"
 
 	"github.com/btcsuite/btcd/btcec"
 )
@@ -20,7 +22,7 @@ var ValidateSignatures bool
 
 // ValidateSignature validates the signature was signed by the channel reference.
 func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
-	channel, err := GetClaim(channelClaimID)
+	channel, err := SDK.GetClaim(channelClaimID)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -40,6 +42,21 @@ func ValidateSignatureFromClaim(channel *jsonrpc.Claim, signature, signingTS, da
 	pk := channel.Value.GetChannel().GetPublicKey()
 	return validateSignature(channel.ClaimID, signature, signingTS, data, pk)
 
+}
+
+// encodePrivateKey encodes an ECDSA private key to PEM format.
+func encodePrivateKey(key *btcec.PrivateKey) ([]byte, error) {
+	derPrivKey, err := keys.PrivateKeyToDER(key)
+	if err != nil {
+		return nil, err
+	}
+
+	keyBlock := &pem.Block{
+		Type:  "EC PRIVATE KEY",
+		Bytes: derPrivKey,
+	}
+
+	return pem.EncodeToMemory(keyBlock), nil
 }
 
 func validateSignature(channelClaimID, signature, signingTS, data string, pubkey []byte) error {

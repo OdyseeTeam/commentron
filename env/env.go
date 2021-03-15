@@ -14,6 +14,8 @@ type Config struct {
 	SlackChannel string `env:"SLACKCHANNEL"`
 	APIURL       string `env:"APIURL" envDefault:"https://api.lbry.com/event/comment"`
 	APIToken     string `env:"APITOKEN"`
+	TestChannel  string `env:"TEST_CHANNEL"`
+	TestURL      string `env:"TEST_URL" envDefault:"http://localhost:5900/api/v2"`
 }
 
 // NewWithEnvVars creates an Config from environment variables

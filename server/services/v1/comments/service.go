@@ -67,7 +67,7 @@ func (c *Service) Abandon(_ *http.Request, args *commentapi.AbandonArgs, reply *
 	reply.CommentItem = item
 	reply.Abandoned = true
 
-	go lbry.Notify(lbry.NotifyOptions{
+	go lbry.API.Notify(lbry.NotifyOptions{
 		ActionType: "D",
 		CommentID:  item.CommentID,
 		ChannelID:  &item.ChannelID,
@@ -87,7 +87,7 @@ func (c *Service) Edit(_ *http.Request, args *commentapi.EditArgs, reply *commen
 	}
 	reply.CommentItem = item
 
-	go lbry.Notify(lbry.NotifyOptions{
+	go lbry.API.Notify(lbry.NotifyOptions{
 		ActionType: "U",
 		CommentID:  item.CommentID,
 		ChannelID:  &item.ChannelID,

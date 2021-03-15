@@ -22,7 +22,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if err != nil {
 			return nil, errors.Err(err)
 		}
-		content, err := lbry.GetClaim(comment.LbryClaimID)
+		content, err := lbry.SDK.GetClaim(comment.LbryClaimID)
 		if err != nil {
 			return nil, errors.Err(err)
 		}

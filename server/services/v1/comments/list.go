@@ -90,7 +90,7 @@ Comments:
 		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
 			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
 			if len(blockedFrom) > 0 {
-				channel, err := lbry.GetSigningChannelForClaim(comment.LbryClaimID)
+				channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
 				if err != nil {
 					return items, blockedCommentCnt, errors.Err(err)
 				}

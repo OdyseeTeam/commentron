@@ -19,7 +19,7 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 		return item, errors.Err(err)
 	}
 
-	claim, err := lbry.GetClaim(comment.LbryClaimID)
+	claim, err := lbry.SDK.GetClaim(comment.LbryClaimID)
 	if err != nil {
 		return item, errors.Err(err)
 	}

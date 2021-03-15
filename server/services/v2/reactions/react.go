@@ -40,11 +40,11 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	if len(commentIDs) > 1 {
 		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
 	}
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(util.StrFromPtr(args.ChannelID))).OneG()
+	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
-			ClaimID: util.StrFromPtr(args.ChannelID),
-			Name:    util.StrFromPtr(args.ChannelName),
+			ClaimID: args.ChannelID,
+			Name:    args.ChannelName,
 		}
 		err = nil
 		err := channel.InsertG(boil.Infer())
@@ -52,7 +52,7 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 			return errors.Err(err)
 		}
 	}
-	err = lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
+	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}

@@ -12,11 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// APIToken is the token allowed to access the api used for internal-apis
-var APIToken string
+var apiToken string
+var apiURL string
 
-// APIURL is the url for internal-apis to be used by commentron
-var APIURL string
+type apiClient struct{}
 
 // CommentResponse is the response structure from internal-apis for the comment event api
 type CommentResponse struct {
@@ -25,18 +24,8 @@ type CommentResponse struct {
 	Data    string      `json:"data"`
 }
 
-// NotifyOptions Are the options used to construct the comment event api signature.
-type NotifyOptions struct {
-	ActionType string
-	CommentID  string
-	ChannelID  *string
-	ParentID   *string
-	Comment    *string
-	ClaimID    string
-}
-
 // Notify notifies internal-apis of a new comment when one is recieved.
-func Notify(options NotifyOptions) {
+func (c apiClient) Notify(options NotifyOptions) {
 	err := notify(options)
 	if err != nil {
 		logrus.Error("API Notification: ", err)
@@ -46,7 +35,7 @@ func Notify(options NotifyOptions) {
 func notify(options NotifyOptions) error {
 	c := http.Client{}
 	form := make(url.Values)
-	form.Set("auth_token", APIToken)
+	form.Set("auth_token", apiToken)
 	form.Set("action_type", options.ActionType)
 	form.Set("comment_id", options.CommentID)
 	form.Set("claim_id", options.ClaimID)
@@ -63,7 +52,7 @@ func notify(options NotifyOptions) error {
 		form.Set("parent_id", *options.ParentID)
 	}
 
-	response, err := c.PostForm(APIURL, form)
+	response, err := c.PostForm(apiURL, form)
 	if err != nil {
 		return errors.Err(err)
 	}

@@ -2,14 +2,14 @@ package commentapi
 
 // ReactArgs are the arguments passed to comment.Abandon RPC call
 type ReactArgs struct {
-	CommentIDs  string  `json:"comment_ids"`
-	Signature   string  `json:"signature"`
-	SigningTS   string  `json:"signing_ts"`
-	Remove      bool    `json:"remove"`
-	ClearTypes  string  `json:"clear_types"`
-	Type        string  `json:"type"`
-	ChannelID   *string `json:"channel_id"`
-	ChannelName *string `json:"channel_name"`
+	CommentIDs  string `json:"comment_ids"`
+	Signature   string `json:"signature"`
+	SigningTS   string `json:"signing_ts"`
+	Remove      bool   `json:"remove"`
+	ClearTypes  string `json:"clear_types"`
+	Type        string `json:"type"`
+	ChannelID   string `json:"channel_id"`
+	ChannelName string `json:"channel_name"`
 }
 
 // ReactResponse the response to the abandon call
