@@ -210,6 +210,7 @@ var commentSpammers = []string{
 	"d4d1e9131125a6b7be058e173e0065bab31de658",
 	"d80887bcba5cebddd944ae2912cc962eb6dc5373",
 	"016146bd4816dc84e777af26c53534220383aca7",
+	"60778ff90eba147075bb5d07784e7918d4df3aa0",
 }
 
 var reactionSpammers = []string{
