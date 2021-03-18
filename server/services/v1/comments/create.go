@@ -28,11 +28,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFromPtr(args.ChannelID).String)).OneG()
+	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFrom(args.ChannelID).String)).OneG()
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &m.Channel{
-			ClaimID: null.StringFromPtr(args.ChannelID).String,
-			Name:    null.StringFromPtr(args.ChannelName).String,
+			ClaimID: null.StringFrom(args.ChannelID).String,
+			Name:    null.StringFrom(args.ChannelName).String,
 		}
 		err = nil
 		err := channel.InsertG(boil.Infer())
@@ -40,7 +40,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			return errors.Err(err)
 		}
 	}
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFromPtr(args.ChannelID))).OneG()
+	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -49,18 +49,18 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if args.ParentID != nil {
-		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), util.StrFromPtr(args.ChannelID))
+		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), args.ChannelID)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), util.StrFromPtr(args.Signature), util.StrFromPtr(args.SigningTS), args.CommentText)
+	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}
 
-	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFromPtr(args.ChannelID).String)
+	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFrom(args.ChannelID).String)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -73,7 +73,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if comment != nil {
 		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
 	}
-	err = blockedByCreator(args.ClaimID, util.StrFromPtr(args.ChannelID), args.CommentText)
+	err = blockedByCreator(args.ClaimID, args.ChannelID, args.CommentText)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -81,11 +81,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	comment = &m.Comment{
 		CommentID:   commentID,
 		LbryClaimID: args.ClaimID,
-		ChannelID:   null.StringFromPtr(args.ChannelID),
+		ChannelID:   null.StringFrom(args.ChannelID),
 		Body:        args.CommentText,
 		ParentID:    null.StringFromPtr(args.ParentID),
-		Signature:   null.StringFromPtr(args.Signature),
-		Signingts:   null.StringFromPtr(args.SigningTS),
+		Signature:   null.StringFrom(args.Signature),
+		Signingts:   null.StringFrom(args.SigningTS),
 		Timestamp:   int(timestamp),
 	}
 
@@ -102,7 +102,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	reply.CommentItem = &item
 
 	go pushItem(item, args.ClaimID)
-	go lbry.Notify(lbry.NotifyOptions{
+	go lbry.API.Notify(lbry.NotifyOptions{
 		ActionType: "C",
 		CommentID:  item.CommentID,
 		ChannelID:  &item.ChannelID,
@@ -121,19 +121,23 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 }
 
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
-	signingChannel, err := lbry.GetSigningChannelForClaim(contentClaimID)
+	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(contentClaimID)
 	if err != nil {
 		return errors.Err(err)
 	}
-	if signingChannel != nil {
-		blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterChannelID))).OneG()
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
-		}
-		if blockedEntry != nil {
-			return api.StatusError{Err: errors.Err("channel is blocked by publisher")}
-		}
+	if signingChannel == nil {
+		return nil
 	}
+
+	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterChannelID))).OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if blockedEntry != nil {
+		return api.StatusError{Err: errors.Err("channel is blocked by publisher")}
+	}
+
 	creatorChannel, err := helper.FindOrCreateChannel(signingChannel.ClaimID, signingChannel.Name)
 	if err != nil {
 		return err

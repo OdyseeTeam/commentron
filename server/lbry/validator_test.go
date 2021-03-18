@@ -8,8 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/lbryio/commentron/helper"
+
+	"github.com/lbryio/lbry.go/v2/schema/keys"
+
+	"github.com/btcsuite/btcd/btcec"
 )
 
 func TestValidateSignature1(t *testing.T) {
@@ -54,17 +57,35 @@ func TestCommentSignAndVerify(t *testing.T) {
 	comment := "sign this shit"
 	strconv.FormatInt(time.Now().Unix(), 10)
 	digest := sha256.Sum256(helper.CreateDigest(
+		[]byte(strconv.FormatInt(time.Now().Unix(), 10)),
 		unhelixifyAndReverse(channelClaimID),
-		[]byte(comment),
-		[]byte(strconv.FormatInt(time.Now().Unix(), 10))))
+		[]byte(comment)))
 	sig, err := private.Sign(digest[:])
-	if err != nil {
-		t.Error(err)
-	}
-
 	valid := ecdsa.Verify(private.PubKey().ToECDSA(), digest[:], sig.R, sig.S)
 	if !valid {
 		t.Error("sig not valid")
+	}
+}
+
+func TestCommentSignAndVerifyNew(t *testing.T) {
+	private, err := btcec.NewPrivateKey(btcec.S256())
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubkeyBytes, err := keys.PublicKeyToDER(private.PubKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+	channel, err := newChannel("@MyTestChannel", "9cb713f01bf247a0e03170b5ed00d5161340c486", private)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	comment := "sign this shit"
+	signature, timestamp, err := channel.Sign([]byte(comment))
+	err = validateSignature(channel.ChannelID, signature, timestamp, comment, pubkeyBytes)
+	if err != nil {
+		t.Error(err)
 	}
 }
 

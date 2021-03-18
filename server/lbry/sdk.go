@@ -11,15 +11,16 @@ import (
 	"github.com/karlseguin/ccache"
 )
 
-// SDKURL is the url the client should use to connect the sdk
-var SDKURL string
+var sdkURL string
 
 var claimCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(10000))
 
+type sdkClient struct{}
+
 // GetClaim retrieves the channel claim information from the sdk.
-func GetClaim(claimID string) (*jsonrpc.Claim, error) {
+func (sdk *sdkClient) GetClaim(claimID string) (*jsonrpc.Claim, error) {
 	metrics.SDKClaimCache.WithLabelValues("hit").Add(1)
-	cachedValue, err := claimCache.Fetch(claimID, 30*time.Minute, getClaim(claimID))
+	cachedValue, err := claimCache.Fetch(claimID, 30*time.Minute, sdk.getClaim(claimID))
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +31,12 @@ func GetClaim(claimID string) (*jsonrpc.Claim, error) {
 	return cachedValue.Value().(*jsonrpc.Claim), nil
 }
 
-func getClaim(claimID string) func() (interface{}, error) {
+func (sdk *sdkClient) getClaim(claimID string) func() (interface{}, error) {
 	return func() (interface{}, error) {
 		metrics.SDKClaimCache.WithLabelValues("miss").Add(1)
 		metrics.SDKClaimCache.WithLabelValues("hit").Sub(1)
 		defer metrics.SDKCall(time.Now(), "claim-search")
-		c := jsonrpc.NewClient(SDKURL)
+		c := jsonrpc.NewClient(sdkURL)
 		claimSearchResp, err := c.ClaimSearch(nil, &claimID, nil, nil, 1, 1)
 		if err != nil {
 			return nil, errors.Err(err)
@@ -49,8 +50,8 @@ func getClaim(claimID string) func() (interface{}, error) {
 }
 
 // GetSigningChannelForClaim retrieves the claim for the channel that signed the referenced claim by claim id.
-func GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error) {
-	claim, err := GetClaim(claimID)
+func (sdk *sdkClient) GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error) {
+	claim, err := sdk.GetClaim(claimID)
 	if err != nil {
 		return nil, errors.Err(err)
 	}

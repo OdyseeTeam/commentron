@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/fatih/structs"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/mitchellh/mapstructure"
@@ -23,6 +25,7 @@ const DefaultPort = 5900
 type Client struct {
 	conn    jsonrpc.RPCClient
 	address string
+	Channel *lbry.Channel
 }
 
 // NewClient init for creating a commentron client
@@ -37,6 +40,23 @@ func NewClient(address string) *Client {
 	d.address = address
 
 	return &d
+}
+
+// Sign will sign arguments if a channel has been loaded into the client to sign with. It will also overwrite channel
+// name and channel claim id argument parameters if they exist with the channel info being signed with.
+func (d *Client) Sign(args interface{}) interface{} {
+	if d.Channel == nil {
+		return args
+	}
+	return sign(d, args)
+}
+
+// WithSigning allows for a client to be used with identity priviledges handling the signing of APIs requiring
+// user authorization. It requires the channel export string `./lbrynet channel export <channel_id>` as well as
+// an authorized apiKey from the comment server owner.
+func (d *Client) WithSigning(export string) *Client {
+	d.Channel = lbry.ImportChannel(export)
+	return d
 }
 
 ///////////////////////
@@ -86,7 +106,7 @@ func (d *Client) CommentAbandon(args AbandonArgs) (*AbandonResponse, error) {
 func (d *Client) CommentCreate(args CreateArgs) (*CreateResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(CreateResponse)
-	return response, d.call(response, "comment.Create", structs.Map(args))
+	return response, d.call(response, "comment.Create", structs.Map(d.Sign(args)))
 }
 
 // CommentEdit edits a comment

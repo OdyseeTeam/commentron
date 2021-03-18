@@ -1,9 +1,10 @@
 module github.com/lbryio/commentron
 
-go 1.14
+go 1.15
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
+	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/fatih/structs v1.1.0
@@ -22,7 +23,7 @@ require (
 	github.com/karlseguin/expect v1.0.7 // indirect
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
-	github.com/lbryio/lbry.go/v2 v2.6.1-0.20200901183659-29574578c1c1
+	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210316000044-988178df5011
 	github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.0
