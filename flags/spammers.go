@@ -211,6 +211,8 @@ var commentSpammers = []string{
 	"d80887bcba5cebddd944ae2912cc962eb6dc5373",
 	"016146bd4816dc84e777af26c53534220383aca7",
 	"60778ff90eba147075bb5d07784e7918d4df3aa0",
+	"2291aad6b197b6415260048eee8a4dff30a308ba",
+	"193298333e22318a23dbb4552bc624c50a4b2f0f",
 }
 
 var reactionSpammers = []string{
