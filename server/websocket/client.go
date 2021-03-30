@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -114,6 +115,11 @@ func (c *Client) write() {
 			if !ok {
 				// The hub closed the channel.
 				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); !errors.Is(err, websocket.ErrCloseSent) {
+					opErr, ok := err.(*net.OpError)
+					if ok && strings.Contains(opErr.Err.Error(), "use of closed network connection") {
+						// Skip logging when using a closed network connection
+						return
+					}
 					logrus.Error(errors.FullTrace(err))
 				}
 				return
