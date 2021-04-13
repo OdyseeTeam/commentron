@@ -56,6 +56,9 @@ func notify(options NotifyOptions) error {
 	if err != nil {
 		return errors.Err(err)
 	}
+	if response == nil {
+		return errors.Err("No response from internal APIs")
+	}
 	defer helper.CloseBody(response.Body)
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -68,9 +71,9 @@ func notify(options NotifyOptions) error {
 	}
 	if response.StatusCode > 200 {
 		if response.StatusCode <= 300 {
-			logrus.Warning("Notification Failure[Status - ", response.StatusCode, "] : ", me.Error)
+			logrus.Warning("Notification Failure[Status - ", response.StatusCode, "] : ")
 		} else {
-			logrus.Error("Notification Failure[Status - ", response.StatusCode, "] : ", me.Error)
+			logrus.Error("Notification Failure[Status - ", response.StatusCode, "] : ")
 		}
 	}
 	return nil
