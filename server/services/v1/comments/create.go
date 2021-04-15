@@ -3,7 +3,11 @@ package comments
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/btcsuite/btcutil"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 
 	"github.com/lbryio/commentron/server/websocket"
 
@@ -90,7 +94,10 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if args.SupportTxID != nil {
-		comment.TXID.SetValid(util.StrFromPtr(args.SupportTxID))
+		err := updateSupportInfo(comment, args.SupportTxID, args.SupportVout)
+		if err != nil {
+			return errors.Err(err)
+		}
 	}
 
 	err = flags.CheckComment(comment)
@@ -98,7 +105,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return err
 	}
 
-	err = errors.Err(comment.InsertG(boil.Infer()))
+	err = comment.InsertG(boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -185,4 +192,45 @@ func allowedToPostReply(parentID, commenterClaimID string) error {
 		}
 	}
 	return nil
+}
+
+func updateSupportInfo(comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+	comment.TXID.SetValid(util.StrFromPtr(supportTxID))
+	txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if txSummary == nil {
+		return errors.Err("transaction not found for txid %s", comment.TXID.String)
+	}
+	var vout uint64
+	if supportVout != nil {
+		vout = *supportVout
+	}
+	amount, err := getVoutAmount(txSummary, vout)
+	if err != nil {
+		return errors.Err(err)
+	}
+	comment.Amount.SetValid(amount)
+	return nil
+}
+
+func getVoutAmount(summary *jsonrpc.TransactionSummary, vout uint64) (uint64, error) {
+	if summary == nil {
+		return 0, errors.Err("transaction summary missing")
+	}
+
+	if len(summary.Outputs) < int(vout) {
+		return 0, errors.Err("there are not enough outputs on the transaction to for position %d", vout)
+	}
+	amountStr := summary.Outputs[int(vout)].Amount
+	amountFloat, err := strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		return 0, errors.Err(err)
+	}
+	amount, err := btcutil.NewAmount(amountFloat)
+	if err != nil {
+		return 0, errors.Err(err)
+	}
+	return uint64(amount), nil
 }

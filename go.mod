@@ -23,7 +23,7 @@ require (
 	github.com/karlseguin/expect v1.0.7 // indirect
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
-	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210316000044-988178df5011
+	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210415200345-3027fb9b98f6
 	github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.0

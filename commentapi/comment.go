@@ -50,7 +50,7 @@ type CreateArgs struct {
 	ChannelID   string  `json:"channel_id"`
 	ChannelName string  `json:"channel_name"`
 	SupportTxID *string `json:"support_tx_id"`
-	SupportVout int     `json:"support_vout"`
+	SupportVout *uint64 `json:"support_vout"`
 	Signature   string  `json:"signature"`
 	SigningTS   string  `json:"signing_ts"`
 }

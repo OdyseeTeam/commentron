@@ -14,6 +14,7 @@ var API APIClient
 
 // SDKClient is the interface type for SDK call
 type SDKClient interface {
+	GetTx(string) (*jsonrpc.TransactionSummary, error)
 	GetClaim(string) (*jsonrpc.Claim, error)
 	GetSigningChannelForClaim(string) (*jsonrpc.Claim, error)
 }
@@ -62,6 +63,10 @@ func (m *mockSDK) GetClaim(claimID string) (*jsonrpc.Claim, error) {
 }
 
 func (m *mockSDK) GetSigningChannelForClaim(channelClaimID string) (*jsonrpc.Claim, error) {
+	return nil, nil
+}
+
+func (m *mockSDK) GetTx(txid string) (*jsonrpc.TransactionSummary, error) {
 	return nil, nil
 }
 

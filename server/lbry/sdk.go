@@ -66,3 +66,13 @@ func (sdk *sdkClient) GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim,
 	}
 	return claimChannel, nil
 }
+
+// GetTx retrieves the transaction details
+func (sdk *sdkClient) GetTx(txid string) (*jsonrpc.TransactionSummary, error) {
+	c := jsonrpc.NewClient(sdkURL)
+	summary, err := c.TransactionShow(txid)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	return summary, nil
+}
