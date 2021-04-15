@@ -11,6 +11,27 @@ import (
 	"github.com/lbryio/ozzo-validation/is"
 )
 
+// ListSettingsArgs arguments passed to settings.List api
+type ListSettingsArgs struct {
+	ChannelName string `json:"channel_name"`
+	ChannelID   string `json:"channel_id"`
+	Signature   string `json:"signature"`
+	SigningTS   string `json:"signing_ts"`
+}
+
+// ListSettingsResponse returns all the settings for creator/user
+type ListSettingsResponse struct {
+	ChannelName string `json:"channel_name"`
+	ChannelID   string `json:"channel_id"`
+	// CSV list of containing words to block comment on content
+	Words                 string  `json:"words"`
+	CommentsEnabled       bool    `json:"comments_enabled"`
+	MinTipAmountComment   float64 `json:"min_tip_amount_comment"`
+	MinTipAmountSuperChat float64 `json:"min_tip_amount_super_chat"`
+	Signature             string  `json:"signature"`
+	SigningTS             string  `json:"signing_ts"`
+}
+
 // BlockWordArgs arguments passed to settings.BlockWord. Appends to list
 type BlockWordArgs struct {
 	ChannelName string `json:"channel_name"`

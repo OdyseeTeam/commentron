@@ -89,6 +89,10 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		Timestamp:   int(timestamp),
 	}
 
+	if args.SupportTxID != nil {
+		comment.TXID.SetValid(util.StrFromPtr(args.SupportTxID))
+	}
+
 	err = flags.CheckComment(comment)
 	if err != nil {
 		return err

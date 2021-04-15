@@ -23,82 +23,64 @@ import (
 
 // CreatorSetting is an object representing the database table.
 type CreatorSetting struct {
-	ID                     uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatorChannelID       string      `boil:"creator_channel_id" json:"creator_channel_id" toml:"creator_channel_id" yaml:"creator_channel_id"`
-	CommentsEnabled        null.Bool   `boil:"comments_enabled" json:"comments_enabled,omitempty" toml:"comments_enabled" yaml:"comments_enabled,omitempty"`
-	MinTipAmmountComment   null.Uint64 `boil:"min_tip_ammount_comment" json:"min_tip_ammount_comment,omitempty" toml:"min_tip_ammount_comment" yaml:"min_tip_ammount_comment,omitempty"`
-	MinTipAmmountSuperChat null.Uint64 `boil:"min_tip_ammount_super_chat" json:"min_tip_ammount_super_chat,omitempty" toml:"min_tip_ammount_super_chat" yaml:"min_tip_ammount_super_chat,omitempty"`
-	MutedWords             null.String `boil:"muted_words" json:"muted_words,omitempty" toml:"muted_words" yaml:"muted_words,omitempty"`
-	CreatedAt              time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt              time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID                    uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatorChannelID      string      `boil:"creator_channel_id" json:"creator_channel_id" toml:"creator_channel_id" yaml:"creator_channel_id"`
+	CommentsEnabled       null.Bool   `boil:"comments_enabled" json:"comments_enabled,omitempty" toml:"comments_enabled" yaml:"comments_enabled,omitempty"`
+	MinTipAmountComment   null.Uint64 `boil:"min_tip_amount_comment" json:"min_tip_amount_comment,omitempty" toml:"min_tip_amount_comment" yaml:"min_tip_amount_comment,omitempty"`
+	MinTipAmountSuperChat null.Uint64 `boil:"min_tip_amount_super_chat" json:"min_tip_amount_super_chat,omitempty" toml:"min_tip_amount_super_chat" yaml:"min_tip_amount_super_chat,omitempty"`
+	MutedWords            null.String `boil:"muted_words" json:"muted_words,omitempty" toml:"muted_words" yaml:"muted_words,omitempty"`
+	CreatedAt             time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt             time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	SlowModeMinGap        null.Uint64 `boil:"slow_mode_min_gap" json:"slow_mode_min_gap,omitempty" toml:"slow_mode_min_gap" yaml:"slow_mode_min_gap,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CreatorSettingColumns = struct {
-	ID                     string
-	CreatorChannelID       string
-	CommentsEnabled        string
-	MinTipAmmountComment   string
-	MinTipAmmountSuperChat string
-	MutedWords             string
-	CreatedAt              string
-	UpdatedAt              string
+	ID                    string
+	CreatorChannelID      string
+	CommentsEnabled       string
+	MinTipAmountComment   string
+	MinTipAmountSuperChat string
+	MutedWords            string
+	CreatedAt             string
+	UpdatedAt             string
+	SlowModeMinGap        string
 }{
-	ID:                     "id",
-	CreatorChannelID:       "creator_channel_id",
-	CommentsEnabled:        "comments_enabled",
-	MinTipAmmountComment:   "min_tip_ammount_comment",
-	MinTipAmmountSuperChat: "min_tip_ammount_super_chat",
-	MutedWords:             "muted_words",
-	CreatedAt:              "created_at",
-	UpdatedAt:              "updated_at",
+	ID:                    "id",
+	CreatorChannelID:      "creator_channel_id",
+	CommentsEnabled:       "comments_enabled",
+	MinTipAmountComment:   "min_tip_amount_comment",
+	MinTipAmountSuperChat: "min_tip_amount_super_chat",
+	MutedWords:            "muted_words",
+	CreatedAt:             "created_at",
+	UpdatedAt:             "updated_at",
+	SlowModeMinGap:        "slow_mode_min_gap",
 }
 
 // Generated where
 
-type whereHelpernull_Uint64 struct{ field string }
-
-func (w whereHelpernull_Uint64) EQ(x null.Uint64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Uint64) NEQ(x null.Uint64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Uint64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Uint64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_Uint64) LT(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Uint64) LTE(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Uint64) GT(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Uint64) GTE(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var CreatorSettingWhere = struct {
-	ID                     whereHelperuint64
-	CreatorChannelID       whereHelperstring
-	CommentsEnabled        whereHelpernull_Bool
-	MinTipAmmountComment   whereHelpernull_Uint64
-	MinTipAmmountSuperChat whereHelpernull_Uint64
-	MutedWords             whereHelpernull_String
-	CreatedAt              whereHelpertime_Time
-	UpdatedAt              whereHelpertime_Time
+	ID                    whereHelperuint64
+	CreatorChannelID      whereHelperstring
+	CommentsEnabled       whereHelpernull_Bool
+	MinTipAmountComment   whereHelpernull_Uint64
+	MinTipAmountSuperChat whereHelpernull_Uint64
+	MutedWords            whereHelpernull_String
+	CreatedAt             whereHelpertime_Time
+	UpdatedAt             whereHelpertime_Time
+	SlowModeMinGap        whereHelpernull_Uint64
 }{
-	ID:                     whereHelperuint64{field: "`creator_setting`.`id`"},
-	CreatorChannelID:       whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
-	CommentsEnabled:        whereHelpernull_Bool{field: "`creator_setting`.`comments_enabled`"},
-	MinTipAmmountComment:   whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_ammount_comment`"},
-	MinTipAmmountSuperChat: whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_ammount_super_chat`"},
-	MutedWords:             whereHelpernull_String{field: "`creator_setting`.`muted_words`"},
-	CreatedAt:              whereHelpertime_Time{field: "`creator_setting`.`created_at`"},
-	UpdatedAt:              whereHelpertime_Time{field: "`creator_setting`.`updated_at`"},
+	ID:                    whereHelperuint64{field: "`creator_setting`.`id`"},
+	CreatorChannelID:      whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
+	CommentsEnabled:       whereHelpernull_Bool{field: "`creator_setting`.`comments_enabled`"},
+	MinTipAmountComment:   whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_comment`"},
+	MinTipAmountSuperChat: whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_super_chat`"},
+	MutedWords:            whereHelpernull_String{field: "`creator_setting`.`muted_words`"},
+	CreatedAt:             whereHelpertime_Time{field: "`creator_setting`.`created_at`"},
+	UpdatedAt:             whereHelpertime_Time{field: "`creator_setting`.`updated_at`"},
+	SlowModeMinGap:        whereHelpernull_Uint64{field: "`creator_setting`.`slow_mode_min_gap`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -122,8 +104,8 @@ func (*creatorSettingR) NewStruct() *creatorSettingR {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_ammount_comment", "min_tip_ammount_super_chat", "muted_words", "created_at", "updated_at"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_ammount_comment", "min_tip_ammount_super_chat", "muted_words"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 )

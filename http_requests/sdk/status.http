@@ -1,9 +1,11 @@
-POST http://localhost:5279/
+POST https://api.lbry.tv/api/v1/proxy
 Content-Type: application/json
 
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "wallet_balance",
-  "params": {}
+  "method": "transaction_show",
+  "params": {
+    "txid": "e2fdcaa2d0e95d90354245e740dfeab537c86624943027a6755b6ddb62efb3cf"
+  }
 }

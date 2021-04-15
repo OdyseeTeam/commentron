@@ -34,6 +34,8 @@ type Comment struct {
 	IsHidden    null.Bool   `boil:"is_hidden" json:"is_hidden,omitempty" toml:"is_hidden" yaml:"is_hidden,omitempty"`
 	IsPinned    bool        `boil:"is_pinned" json:"is_pinned" toml:"is_pinned" yaml:"is_pinned"`
 	IsFlagged   bool        `boil:"is_flagged" json:"is_flagged" toml:"is_flagged" yaml:"is_flagged"`
+	Amount      null.Uint64 `boil:"amount" json:"amount,omitempty" toml:"amount" yaml:"amount,omitempty"`
+	TXID        null.String `boil:"tx_id" json:"tx_id,omitempty" toml:"tx_id" yaml:"tx_id,omitempty"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -51,6 +53,8 @@ var CommentColumns = struct {
 	IsHidden    string
 	IsPinned    string
 	IsFlagged   string
+	Amount      string
+	TXID        string
 }{
 	CommentID:   "comment_id",
 	LbryClaimID: "lbry_claim_id",
@@ -63,6 +67,8 @@ var CommentColumns = struct {
 	IsHidden:    "is_hidden",
 	IsPinned:    "is_pinned",
 	IsFlagged:   "is_flagged",
+	Amount:      "amount",
+	TXID:        "tx_id",
 }
 
 // Generated where
@@ -85,6 +91,29 @@ func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
+type whereHelpernull_Uint64 struct{ field string }
+
+func (w whereHelpernull_Uint64) EQ(x null.Uint64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Uint64) NEQ(x null.Uint64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Uint64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Uint64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Uint64) LT(x null.Uint64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Uint64) LTE(x null.Uint64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Uint64) GT(x null.Uint64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Uint64) GTE(x null.Uint64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var CommentWhere = struct {
 	CommentID   whereHelperstring
 	LbryClaimID whereHelperstring
@@ -97,6 +126,8 @@ var CommentWhere = struct {
 	IsHidden    whereHelpernull_Bool
 	IsPinned    whereHelperbool
 	IsFlagged   whereHelperbool
+	Amount      whereHelpernull_Uint64
+	TXID        whereHelpernull_String
 }{
 	CommentID:   whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID: whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -109,6 +140,8 @@ var CommentWhere = struct {
 	IsHidden:    whereHelpernull_Bool{field: "`comment`.`is_hidden`"},
 	IsPinned:    whereHelperbool{field: "`comment`.`is_pinned`"},
 	IsFlagged:   whereHelperbool{field: "`comment`.`is_flagged`"},
+	Amount:      whereHelpernull_Uint64{field: "`comment`.`amount`"},
+	TXID:        whereHelpernull_String{field: "`comment`.`tx_id`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -141,8 +174,8 @@ func (*commentR) NewStruct() *commentR {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged"}
-	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id"}
+	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id"}
 	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 )
