@@ -19,6 +19,7 @@ import (
 // Service is the service struct defined for the comment package for rpc service "moderation.*"
 type Service struct{}
 
+// List returns the list of user settings applicable to them.
 func (s *Service) List(r *http.Request, args *commentapi.ListSettingsArgs, reply *commentapi.ListSettingsResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
