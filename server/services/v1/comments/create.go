@@ -6,22 +6,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/btcsuite/btcutil"
-	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
-
-	"github.com/lbryio/commentron/server/websocket"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/server/websocket"
 
-	"github.com/lbryio/lbry.go/extras/api"
-	"github.com/lbryio/lbry.go/extras/util"
+	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
+	"github.com/lbryio/lbry.go/v2/extras/util"
 	v "github.com/lbryio/ozzo-validation"
 
+	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
@@ -94,7 +92,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if args.SupportTxID != nil {
-		err := updateSupportInfo(comment, args.SupportTxID, args.SupportVout)
+		err := updateSupportInfo(channel.ClaimID, comment, args.SupportTxID, args.SupportVout)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -194,7 +192,7 @@ func allowedToPostReply(parentID, commenterClaimID string) error {
 	return nil
 }
 
-func updateSupportInfo(comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
 	comment.TXID.SetValid(util.StrFromPtr(supportTxID))
 	txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
 	if err != nil {
@@ -207,7 +205,7 @@ func updateSupportInfo(comment *m.Comment, supportTxID *string, supportVout *uin
 	if supportVout != nil {
 		vout = *supportVout
 	}
-	amount, err := getVoutAmount(txSummary, vout)
+	amount, err := getVoutAmount(channelID, txSummary, vout)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -215,7 +213,7 @@ func updateSupportInfo(comment *m.Comment, supportTxID *string, supportVout *uin
 	return nil
 }
 
-func getVoutAmount(summary *jsonrpc.TransactionSummary, vout uint64) (uint64, error) {
+func getVoutAmount(channelID string, summary *jsonrpc.TransactionSummary, vout uint64) (uint64, error) {
 	if summary == nil {
 		return 0, errors.Err("transaction summary missing")
 	}
@@ -223,7 +221,16 @@ func getVoutAmount(summary *jsonrpc.TransactionSummary, vout uint64) (uint64, er
 	if len(summary.Outputs) < int(vout) {
 		return 0, errors.Err("there are not enough outputs on the transaction to for position %d", vout)
 	}
-	amountStr := summary.Outputs[int(vout)].Amount
+	output := summary.Outputs[int(vout)]
+
+	if output.SigningChannel == nil {
+		return 0, errors.Err("Expected signed support for %s in transaction %s", channelID, summary.Txid)
+	}
+
+	if output.SigningChannel.ChannelID != channelID {
+		return 0, errors.Err("The support was not signed by %s, but was instead signed by channel %s", channelID, output.SigningChannel.ChannelID)
+	}
+	amountStr := output.Amount
 	amountFloat, err := strconv.ParseFloat(amountStr, 64)
 	if err != nil {
 		return 0, errors.Err(err)

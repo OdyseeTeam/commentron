@@ -286,8 +286,8 @@ github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c h1:BhdcWGsuKif/Xo
 github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c/go.mod h1:muH7wpUqE8hRA3OrYYosw9+Sl681BF9cwcjzE+OCNK8=
 github.com/lbryio/lbry.go v1.1.2 h1:Dyxc+glT/rVWJwHfIf7vjlPYYbjzrQz5ARmJd5Hp69c=
 github.com/lbryio/lbry.go v1.1.2/go.mod h1:JtyI30bU51rm0LZ/po3mQuzf++14OWb6kR/6mMRAmKU=
-github.com/lbryio/lbry.go/v2 v2.7.2-0.20210415200345-3027fb9b98f6 h1:VQtQ8NdDUxQFV+cwn28xcTtZ2mi4g4bU+OMa6HFBFi8=
-github.com/lbryio/lbry.go/v2 v2.7.2-0.20210415200345-3027fb9b98f6/go.mod h1:I1q8W9fwU+t0IWNiprPgE1SorWQwcO6ser0nzP3L5Pk=
+github.com/lbryio/lbry.go/v2 v2.7.2-0.20210416195322-6516df1418e3 h1:hkVViG8qbOKJMf/M6mN+Hrtns4j55IU2dRavpJZWbxw=
+github.com/lbryio/lbry.go/v2 v2.7.2-0.20210416195322-6516df1418e3/go.mod h1:I1q8W9fwU+t0IWNiprPgE1SorWQwcO6ser0nzP3L5Pk=
 github.com/lbryio/lbryschema.go v0.0.0-20190428231007-c54836bca002/go.mod h1:dAzPCBj3CKKWBGYBZxK6tKBP5SCgY2tqd9SnQd/OyKo=
 github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04 h1:Nze+C2HbeKvhjI/kVn+9Poj/UuEW5sOQxcsxqO7L3GI=
 github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04/go.mod h1:fbG/dzobG8r95KzMwckXiLMHfFjZaBRQqC9hPs2XAQ4=
