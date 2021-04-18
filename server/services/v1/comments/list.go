@@ -94,10 +94,12 @@ Comments:
 				if err != nil {
 					return items, blockedCommentCnt, errors.Err(err)
 				}
-				for _, entry := range blockedFrom {
-					if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
-						blockedCommentCnt++
-						continue Comments
+				if channel != nil {
+					for _, entry := range blockedFrom {
+						if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
+							blockedCommentCnt++
+							continue Comments
+						}
 					}
 				}
 			}
