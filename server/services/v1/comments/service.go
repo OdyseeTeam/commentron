@@ -117,3 +117,8 @@ func (c *Service) Pin(r *http.Request, args *commentapi.PinArgs, reply *commenta
 	reply.Item = item
 	return nil
 }
+
+// SuperChatList returns comments that are super chat only.
+func (c *Service) SuperChatList(r *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
+	return superChatList(r, args, reply)
+}
