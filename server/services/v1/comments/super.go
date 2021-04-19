@@ -76,7 +76,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	items, blockedCommentCnt, err := getItems(comments)
 
 	sort.SliceStable(items, func(i, j int) bool {
-		return items[i].SupportAmount <= items[j].SupportAmount
+		return items[j].SupportAmount <= items[i].SupportAmount
 	})
 
 	totalItems = totalItems - blockedCommentCnt
