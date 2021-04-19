@@ -46,8 +46,6 @@ func newHub() *Hub {
 }
 
 func (h *Hub) getClients(id string) []*Client {
-	h.clientLock.RLock()
-	defer h.clientLock.RUnlock()
 	return h.clients[id]
 }
 
@@ -65,6 +63,8 @@ func (h *Hub) run() {
 }
 
 func (h *Hub) broadcastToClients(message []byte) {
+	h.clientLock.RLock()
+	defer h.clientLock.RUnlock()
 	for token, clients := range h.clients {
 		for _, client := range clients {
 			select {
@@ -80,9 +80,9 @@ func (h *Hub) broadcastToClients(message []byte) {
 }
 
 func (h *Hub) registerClient(client *Client) {
-	clients := h.getClients(client.subscriptionID)
 	h.clientLock.Lock()
 	defer h.clientLock.Unlock()
+	clients := h.getClients(client.subscriptionID)
 	if len(clients) > 0 {
 		h.clients[client.subscriptionID] = append(clients, client)
 	} else {
@@ -92,6 +92,8 @@ func (h *Hub) registerClient(client *Client) {
 }
 
 func (h *Hub) unRegisterClient(client *Client) {
+	h.clientLock.Lock()
+	defer h.clientLock.Unlock()
 	existingClients := h.getClients(client.subscriptionID)
 	var newClients []*Client
 	for _, c := range existingClients {
@@ -102,8 +104,6 @@ func (h *Hub) unRegisterClient(client *Client) {
 		}
 		newClients = append(newClients, c)
 	}
-	h.clientLock.Lock()
-	defer h.clientLock.Unlock()
 	if len(newClients) == 0 {
 		delete(h.clients, client.subscriptionID)
 	} else {
@@ -138,6 +138,9 @@ func pushTo(notification *PushNotification, subscriptionID string) error {
 	if hub == nil {
 		return hubNotInitialized
 	}
+
+	hub.clientLock.RLock()
+	defer hub.clientLock.RUnlock()
 	message, err := json.Marshal(notification)
 	if err != nil {
 		return errors.Err(err)
