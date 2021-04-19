@@ -113,7 +113,7 @@ func (c *Client) write() {
 			}
 			if !ok {
 				// The hub closed the channel.
-				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); !errors.Is(err, websocket.ErrCloseSent) {
+				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil && !errors.Is(err, websocket.ErrCloseSent) {
 					if !strings.Contains(err.Error(), "use of closed network connection") {
 						logrus.Error(errors.FullTrace(err))
 					}
