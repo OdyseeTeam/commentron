@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/volatiletech/sqlboiler/boil"
+
+	"github.com/btcsuite/btcutil"
+
 	"github.com/lbryio/commentron/commentapi"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/lbry.go/extras/util"
@@ -24,6 +28,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	filterSuperChats := m.CommentWhere.Amount.GTE(null.Uint64From(uint64(args.SuperChatsAmount)))
 
 	totalCommentsQuery := make([]qm.QueryMod, 0)
+	totalSuperChatAmountQuery := []qm.QueryMod{qm.Select(`SUM(` + m.CommentColumns.Amount + `)`)}
 	offset := (args.Page - 1) * args.PageSize
 	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
@@ -32,30 +37,41 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
+		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterAuthorClaimID)
 	}
 
 	if args.ClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
+		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterClaimID)
 	}
 
 	if args.TopLevel {
 		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
 		totalCommentsQuery = append(totalCommentsQuery, filterTopLevel)
+		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterTopLevel)
 	}
 
 	if args.ParentID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterParent)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
+		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterParent)
 	}
 
 	if args.SuperChatsAmount > 0 {
 		getCommentsQuery = append(getCommentsQuery, filterSuperChats)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterSuperChats)
 		totalCommentsQuery = append(totalCommentsQuery, filterSuperChats)
+		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterSuperChats)
+	}
+	var superChatAmount null.Uint64
+	result := m.Comments(totalSuperChatAmountQuery...).QueryRow(boil.GetDB())
+	err := result.Scan(&superChatAmount)
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	totalItems, err := m.Comments(totalCommentsQuery...).CountG()
@@ -86,6 +102,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	reply.TotalItems = totalItems
 	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
+	reply.TotalAmount = btcutil.Amount(superChatAmount.Uint64).ToBTC()
 
 	return nil
 }

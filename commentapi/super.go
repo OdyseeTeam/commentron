@@ -19,6 +19,7 @@ type SuperListResponse struct {
 	PageSize          int           `json:"page_size"`
 	TotalPages        int           `json:"total_pages"`
 	TotalItems        int64         `json:"total_items"`
+	TotalAmount       float64       `json:"total_amount"`
 	Items             []CommentItem `json:"items,omitempty"`
 	HasHiddenComments bool          `json:"has_hidden_comments"`
 }
