@@ -30,10 +30,10 @@ require (
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
-	github.com/prometheus/client_golang v1.3.0
+	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/afero v1.5.0 // indirect
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.1.1
@@ -43,7 +43,6 @@ require (
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.4.0+incompatible
 	github.com/ybbus/jsonrpc v0.0.0-20180411222309-2a548b7d822d
-	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
 	golang.org/x/text v0.3.4 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
