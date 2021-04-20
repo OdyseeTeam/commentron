@@ -148,7 +148,7 @@ func sendMessage(item commentapi.CommentItem, claimID string) {
 	if err != nil {
 		logrus.Error(errors.Prefix("Sockety SendTo: ", err))
 	}
-	if resp.Error != nil {
+	if resp != nil && resp.Error != nil {
 		logrus.Error(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error)))
 	}
 }
