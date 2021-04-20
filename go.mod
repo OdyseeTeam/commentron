@@ -15,7 +15,6 @@ require (
 	github.com/gorilla/rpc v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/johntdyer/slack-go v0.0.0-20180213144715-95fac1160b22 // indirect
 	github.com/johntdyer/slackrus v0.0.0-20180518184837-f7aae3243a07
 	github.com/jteeuwen/go-bindata v3.0.7+incompatible
 	github.com/justinas/alice v1.2.0
@@ -24,7 +23,8 @@ require (
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210416195322-6516df1418e3
-	github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04
+	github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec
+	github.com/lbryio/sockety v0.0.0-20210420163656-d8f3c21fd039
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.0
 	github.com/pelletier/go-toml v1.8.1 // indirect
@@ -33,7 +33,7 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.5.0 // indirect
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.1.1

@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// SocketyToken token used to communicate with Sockety
+var SocketyToken string
+
 // InitializeConfiguration inits the base configuration of commentron
 func InitializeConfiguration() {
 	conf, err := env.NewWithEnvVars()
@@ -31,6 +34,8 @@ func InitializeConfiguration() {
 		logrus.Panic(err)
 	}
 	initSlack(conf)
+	SocketyToken = conf.SocketyToken
+
 }
 
 // initSlack initializes the slack connection and posts info level or greater to the set channel.

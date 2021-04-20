@@ -6,6 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/lbryio/commentron/config"
+
+	"github.com/lbryio/sockety/socketyapi"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
@@ -127,6 +131,13 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 		Type: "delta",
 		Data: map[string]interface{}{"comment": item},
 	}, claimID)
+
+	socketyapi.NewClient("https://sockety.lbry.com", config.SocketyToken).SendNotification(socketyapi.SendNotificationArgs{
+		Service: socketyapi.Commentron,
+		Type:    "delta",
+		IDs:     []string{claimID},
+		Data:    map[string]interface{}{"comment": item},
+	})
 }
 
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
