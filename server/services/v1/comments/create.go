@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/lbryio/commentron/config"
 
 	"github.com/lbryio/sockety/socketyapi"
@@ -132,12 +134,23 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 		Data: map[string]interface{}{"comment": item},
 	}, claimID)
 
-	socketyapi.NewClient("https://sockety.lbry.com", config.SocketyToken).SendNotification(socketyapi.SendNotificationArgs{
+	go sendMessage(item, claimID)
+
+}
+
+func sendMessage(item commentapi.CommentItem, claimID string) {
+	resp, err := socketyapi.NewClient("https://sockety.lbry.com", config.SocketyToken).SendNotification(socketyapi.SendNotificationArgs{
 		Service: socketyapi.Commentron,
 		Type:    "delta",
 		IDs:     []string{claimID},
 		Data:    map[string]interface{}{"comment": item},
 	})
+	if err != nil {
+		logrus.Error(errors.Prefix("Sockety SendTo: ", err))
+	}
+	if resp.Error != nil {
+		logrus.Error(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error)))
+	}
 }
 
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
