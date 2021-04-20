@@ -24,7 +24,7 @@ require (
 	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210416195322-6516df1418e3
 	github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec
-	github.com/lbryio/sockety v0.0.0-20210420191001-840865ee4a6a
+	github.com/lbryio/sockety v0.0.0-20210420202033-b3118f701d17
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.0
 	github.com/pelletier/go-toml v1.8.1 // indirect
