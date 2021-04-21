@@ -77,7 +77,7 @@ func (s *Service) UnBlockWord(r *http.Request, args *commentapi.UnBlockWordArgs,
 		return errors.Err(err)
 	}
 	if creatorChannel == nil {
-		return api.StatusError{Err: errors.Err("could not find channel %s with channel id %s", args.ChannelName, args.ChannelID)}
+		return api.StatusError{Err: errors.Err("could not find channel %s with channel id %s", args.ChannelName, args.ChannelID), Status: http.StatusBadRequest}
 	}
 	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {

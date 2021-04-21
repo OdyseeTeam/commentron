@@ -1,6 +1,8 @@
 package comments
 
 import (
+	"net/http"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
@@ -31,7 +33,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 			signingChannelClaimID = content.SigningChannel.ClaimID
 		}
 		if signingChannelClaimID != channel.ClaimID {
-			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID)}
+			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID), Status: http.StatusBadRequest}
 		}
 	} else {
 		channel, err = model.Channels(model.ChannelWhere.ClaimID.EQ(comment.ChannelID.String)).OneG()
