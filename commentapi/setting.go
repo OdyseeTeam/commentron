@@ -44,7 +44,7 @@ type BlockWordArgs struct {
 
 // Validate validates the data in the args
 func (b BlockWordArgs) Validate() api.StatusError {
-	err := v.ValidateStruct(b,
+	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
 		v.Field(&b.Words, is.ASCII),
@@ -77,7 +77,7 @@ type UnBlockWordArgs struct {
 
 // Validate validates the data in the args
 func (b UnBlockWordArgs) Validate() api.StatusError {
-	err := v.ValidateStruct(b,
+	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
 		v.Field(&b.Words, is.ASCII),
@@ -100,7 +100,7 @@ type ListBlockedWordsArgs struct {
 
 // Validate validates the data in the args
 func (b ListBlockedWordsArgs) Validate() api.StatusError {
-	err := v.ValidateStruct(b,
+	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
 		v.Field(&b.Signature, v.Required),
