@@ -242,7 +242,7 @@ func getVoutAmount(channelID string, summary *jsonrpc.TransactionSummary, vout u
 		return 0, errors.Err("transaction summary missing")
 	}
 
-	if len(summary.Outputs) < int(vout) {
+	if len(summary.Outputs) <= int(vout) {
 		return 0, errors.Err("there are not enough outputs on the transaction to for position %d", vout)
 	}
 	output := summary.Outputs[int(vout)]
