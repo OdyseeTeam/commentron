@@ -14,6 +14,9 @@ import (
 
 // BlockWord takes a list of words to block comments containing these words. These words are added to the existing list
 func (s *Service) BlockWord(r *http.Request, args *commentapi.BlockWordArgs, reply *commentapi.BlockWordRespose) error {
+	if len(args.Words) <= 3 {
+		return api.StatusError{Err: errors.Err("words to block %s must be greater than length 3", args.Words)}
+	}
 	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -27,8 +30,12 @@ func (s *Service) BlockWord(r *http.Request, args *commentapi.BlockWordArgs, rep
 	if err != nil {
 		return err
 	}
-	existingWords := strings.Split(settings.MutedWords.String, ",")
+	var existingWords []string
+	if !settings.MutedWords.IsZero() {
+		existingWords = strings.Split(settings.MutedWords.String, ",")
+	}
 	wordsToAdd := strings.Split(args.Words, ",")
+
 	existingWords = append(existingWords, wordsToAdd...)
 	settings.MutedWords.SetValid(strings.Join(existingWords, ","))
 	err = settings.UpdateG(boil.Infer())
