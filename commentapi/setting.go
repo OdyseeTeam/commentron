@@ -28,6 +28,7 @@ type ListSettingsResponse struct {
 	CommentsEnabled       bool    `json:"comments_enabled"`
 	MinTipAmountComment   float64 `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat float64 `json:"min_tip_amount_super_chat"`
+	SlowModeMinGap        uint64  `json:"slow_mode_min_gap"`
 	Signature             string  `json:"signature"`
 	SigningTS             string  `json:"signing_ts"`
 }
