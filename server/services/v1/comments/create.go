@@ -179,11 +179,13 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
-	if settings != nil && !settings.MutedWords.IsZero() {
-		blockedWords := strings.Split(settings.MutedWords.String, ",")
-		for _, blockedWord := range blockedWords {
-			if strings.Contains(comment, blockedWord) {
-				return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", signingChannel.Name)}
+	if settings != nil {
+		if !settings.MutedWords.IsZero() {
+			blockedWords := strings.Split(settings.MutedWords.String, ",")
+			for _, blockedWord := range blockedWords {
+				if strings.Contains(comment, blockedWord) {
+					return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", signingChannel.Name)}
+				}
 			}
 		}
 	}

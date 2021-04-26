@@ -40,6 +40,7 @@ func (s *Service) List(r *http.Request, args *commentapi.ListSettingsArgs, reply
 	return nil
 }
 
+// Update updates the different settings if passed.
 func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, reply *commentapi.ListSettingsResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
