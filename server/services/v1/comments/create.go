@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -194,51 +195,38 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 	return nil
 }
 
-func allowedToPostReply(parentID, commenterClaimID string) error {
-	parentComment, err := m.Comments(m.CommentWhere.CommentID.EQ(parentID)).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
-	if parentComment != nil {
-		parentChannel, err := parentComment.Channel().OneG()
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
-		}
-		if parentChannel != nil {
-
-			blockedEntry, err := m.BlockedEntries(
-				m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
-				m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).OneG()
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+	triesLeft := 3
+	for {
+		triesLeft--
+		err := func() error {
+			comment.TXID.SetValid(util.StrFromPtr(supportTxID))
+			txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
+			if err != nil {
 				return errors.Err(err)
 			}
-			if blockedEntry != nil {
-				return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+			if txSummary == nil {
+				return errors.Err("transaction not found for txid %s", comment.TXID.String)
 			}
+			var vout uint64
+			if supportVout != nil {
+				vout = *supportVout
+			}
+			amount, err := getVoutAmount(channelID, txSummary, vout)
+			if err != nil {
+				return errors.Err(err)
+			}
+			comment.Amount.SetValid(amount)
+			return nil
+		}()
+		if err == nil {
+			return nil
 		}
+		if triesLeft == 0 {
+			return err
+		}
+		time.Sleep(1 * time.Second)
 	}
-	return nil
-}
-
-func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
-	comment.TXID.SetValid(util.StrFromPtr(supportTxID))
-	txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if txSummary == nil {
-		return errors.Err("transaction not found for txid %s", comment.TXID.String)
-	}
-	var vout uint64
-	if supportVout != nil {
-		vout = *supportVout
-	}
-	amount, err := getVoutAmount(channelID, txSummary, vout)
-	if err != nil {
-		return errors.Err(err)
-	}
-	comment.Amount.SetValid(amount)
-	return nil
 }
 
 func getVoutAmount(channelID string, summary *jsonrpc.TransactionSummary, vout uint64) (uint64, error) {
