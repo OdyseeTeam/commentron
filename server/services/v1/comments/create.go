@@ -115,16 +115,18 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 	item := populateItem(comment, channel, 0)
 	reply.CommentItem = &item
+	if !comment.IsFlagged {
+		go pushItem(item, args.ClaimID)
+		go lbry.API.Notify(lbry.NotifyOptions{
+			ActionType: "C",
+			CommentID:  item.CommentID,
+			ChannelID:  &item.ChannelID,
+			ParentID:   &item.ParentID,
+			Comment:    &item.Comment,
+			ClaimID:    item.ClaimID,
+		})
+	}
 
-	go pushItem(item, args.ClaimID)
-	go lbry.API.Notify(lbry.NotifyOptions{
-		ActionType: "C",
-		CommentID:  item.CommentID,
-		ChannelID:  &item.ChannelID,
-		ParentID:   &item.ParentID,
-		Comment:    &item.Comment,
-		ClaimID:    item.ClaimID,
-	})
 	return nil
 }
 
