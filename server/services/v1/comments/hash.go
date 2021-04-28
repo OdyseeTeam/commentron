@@ -21,5 +21,12 @@ func createCommentID(comment, channelID string) (string, int64, error) {
 		[]byte(comment),
 		[]byte(channelID),
 		[]byte(cast.ToString(nearestMinute))))
-	return hex.EncodeToString(c[:]), timestamp, nil
+	commentID := hex.EncodeToString(c[:])
+
+	err := checkForDuplicate(commentID)
+	if err != nil {
+		return commentID, timestamp, err
+	}
+
+	return commentID, timestamp, nil
 }

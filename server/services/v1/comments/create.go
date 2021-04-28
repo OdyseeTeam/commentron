@@ -74,20 +74,12 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return errors.Err(err)
 	}
 
-	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
-
-	if comment != nil {
-		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
-	}
 	err = blockedByCreator(args.ClaimID, args.ChannelID, args.CommentText)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	comment = &m.Comment{
+	comment := &m.Comment{
 		CommentID:   commentID,
 		LbryClaimID: args.ClaimID,
 		ChannelID:   null.StringFrom(args.ChannelID),
@@ -156,6 +148,18 @@ func sendMessage(item commentapi.CommentItem, claimID string) {
 	}
 }
 
+func checkForDuplicate(commentID string) error {
+	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if comment != nil {
+		return api.StatusError{Err: errors.Err("duplicate comment!"), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
 	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(contentClaimID)
 	if err != nil {
@@ -199,26 +203,7 @@ func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string
 	triesLeft := 3
 	for {
 		triesLeft--
-		err := func() error {
-			comment.TXID.SetValid(util.StrFromPtr(supportTxID))
-			txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
-			if err != nil {
-				return errors.Err(err)
-			}
-			if txSummary == nil {
-				return errors.Err("transaction not found for txid %s", comment.TXID.String)
-			}
-			var vout uint64
-			if supportVout != nil {
-				vout = *supportVout
-			}
-			amount, err := getVoutAmount(channelID, txSummary, vout)
-			if err != nil {
-				return errors.Err(err)
-			}
-			comment.Amount.SetValid(amount)
-			return nil
-		}()
+		err := updateSupportInfoAttempt(channelID, comment, supportTxID, supportVout)
 		if err == nil {
 			return nil
 		}
@@ -227,6 +212,27 @@ func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string
 		}
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func updateSupportInfoAttempt(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+	comment.TXID.SetValid(util.StrFromPtr(supportTxID))
+	txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if txSummary == nil {
+		return errors.Err("transaction not found for txid %s", comment.TXID.String)
+	}
+	var vout uint64
+	if supportVout != nil {
+		vout = *supportVout
+	}
+	amount, err := getVoutAmount(channelID, txSummary, vout)
+	if err != nil {
+		return errors.Err(err)
+	}
+	comment.Amount.SetValid(amount)
+	return nil
 }
 
 func getVoutAmount(channelID string, summary *jsonrpc.TransactionSummary, vout uint64) (uint64, error) {
