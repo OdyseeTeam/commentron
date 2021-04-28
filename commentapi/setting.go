@@ -8,7 +8,6 @@ import (
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
-	"github.com/lbryio/ozzo-validation/is"
 )
 
 // ListSettingsArgs arguments passed to settings.List api
@@ -60,7 +59,7 @@ func (b BlockWordArgs) Validate() api.StatusError {
 	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
-		v.Field(&b.Words, is.ASCII),
+		v.Field(&b.Words),
 		v.Field(&b.Signature, v.Required),
 		v.Field(&b.SigningTS, v.Required),
 	)
@@ -93,7 +92,7 @@ func (b UnBlockWordArgs) Validate() api.StatusError {
 	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
-		v.Field(&b.Words, is.ASCII),
+		v.Field(&b.Words),
 		v.Field(&b.Signature, v.Required),
 		v.Field(&b.SigningTS, v.Required),
 	)
