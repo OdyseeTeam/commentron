@@ -396,6 +396,7 @@ var commentSpammers = []string{
 	"a1b83e886f483149c78532d61dc7df15ae4ba810",
 	"c611a7745785a1ff5fe86525dde18fb222dbbbb7",
 	"78b14d2b26ab2dedf47236f0425e68ad517dde0f",
+	"5213df5587e8964ab00d4b08653eb782d9f649e9",
 }
 
 var reactionSpammers = []string{
@@ -786,4 +787,5 @@ var reactionSpammers = []string{
 	"a1b83e886f483149c78532d61dc7df15ae4ba810",
 	"c611a7745785a1ff5fe86525dde18fb222dbbbb7",
 	"78b14d2b26ab2dedf47236f0425e68ad517dde0f",
+	"5213df5587e8964ab00d4b08653eb782d9f649e9",
 }
