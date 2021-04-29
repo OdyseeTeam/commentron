@@ -108,6 +108,10 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	reply.CommentItem = &item
 	if !comment.IsFlagged {
 		go pushItem(item, args.ClaimID)
+		amount, err := btcutil.NewAmount(item.SupportAmount)
+		if err != nil {
+			return errors.Err(err)
+		}
 		go lbry.API.Notify(lbry.NotifyOptions{
 			ActionType: "C",
 			CommentID:  item.CommentID,
@@ -115,7 +119,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			ParentID:   &item.ParentID,
 			Comment:    &item.Comment,
 			ClaimID:    item.ClaimID,
-			Amount:     &item.SupportAmount,
+			Amount:     uint64(amount),
 		})
 	}
 
