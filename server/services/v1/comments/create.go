@@ -115,6 +115,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			ParentID:   &item.ParentID,
 			Comment:    &item.Comment,
 			ClaimID:    item.ClaimID,
+			Amount:     &item.SupportAmount,
 		})
 	}
 
