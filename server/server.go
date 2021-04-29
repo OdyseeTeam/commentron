@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"strconv"
 	"strings"
@@ -54,6 +55,7 @@ func Start() {
 	chain := alice.New(cors.Default().Handler)
 	router := mux.NewRouter()
 	router.Handle("/", state())
+	router.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	router.Handle("/api", v1RPCServer())
 	router.Handle("/api/v1", v1RPCServer())
 	router.Handle("/api/v2", chain.Then(v2RPCServer()))

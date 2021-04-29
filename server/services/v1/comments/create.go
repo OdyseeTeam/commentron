@@ -7,13 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/lbryio/commentron/config"
-
-	"github.com/lbryio/sockety/socketyapi"
-
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
@@ -25,8 +20,10 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 	v "github.com/lbryio/ozzo-validation"
+	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/btcsuite/btcutil"
+	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
@@ -53,6 +50,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
+
 	if blockedEntry != nil {
 		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
 	}
