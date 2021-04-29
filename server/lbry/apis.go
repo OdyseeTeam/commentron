@@ -40,9 +40,7 @@ func notify(options NotifyOptions) error {
 	form.Set("action_type", options.ActionType)
 	form.Set("comment_id", options.CommentID)
 	form.Set("claim_id", options.ClaimID)
-	if options.Amount != nil {
-		form.Set("amount", fmt.Sprintf("%f", *options.Amount))
-	}
+	form.Set("amount", fmt.Sprintf("%d", options.Amount))
 
 	if options.Comment != nil {
 		form.Set("comment", *options.Comment)
