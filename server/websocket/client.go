@@ -6,6 +6,7 @@ package websocket
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -51,7 +52,7 @@ func (c *Client) handleMessage(message []byte) {
 	rm := &PushNotification{}
 	err := json.Unmarshal(message, rm)
 	if err != nil {
-		logrus.Error(errors.FullTrace(err))
+		logrus.Error(errors.FullTrace(err), hex.EncodeToString(message))
 	}
 	err = rm.process()
 	if err != nil {
