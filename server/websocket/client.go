@@ -6,8 +6,6 @@ package websocket
 
 import (
 	"bytes"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -49,6 +47,8 @@ type Client struct {
 }
 
 func (c *Client) handleMessage(message []byte) {
+	return
+	/* We don't handle in bound messages
 	rm := &PushNotification{}
 	err := json.Unmarshal(message, rm)
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *Client) handleMessage(message []byte) {
 	err = rm.process()
 	if err != nil {
 		logrus.Error(errors.FullTrace(err))
-	}
+	}*/
 }
 
 // readPump pumps messages from the websocket connection to the hub.
