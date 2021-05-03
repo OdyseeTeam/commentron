@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lbryio/errors.go"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
@@ -41,12 +43,20 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		logrus.Error(fmt.Fprintf(w, err.Error()))
+		logrus.Error(errors.FullTrace(err))
+		_, err := fmt.Fprintf(w, err.Error())
+		if err != nil {
+			logrus.Error(errors.FullTrace(err))
+		}
 		return
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logrus.Error(fmt.Fprintf(w, err.Error()))
+		logrus.Error(errors.FullTrace(err))
+		_, err := fmt.Fprintf(w, err.Error())
+		if err != nil {
+			logrus.Error(errors.FullTrace(err))
+		}
 		return
 	}
 	client := &Client{subscriptionID: params.SubscriptionID, hub: hub, conn: conn, send: make(chan []byte, 256)}

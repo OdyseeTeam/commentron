@@ -29,7 +29,7 @@ type CommentResponse struct {
 func (c apiClient) Notify(options NotifyOptions) {
 	err := notify(options)
 	if err != nil {
-		logrus.Error("API Notification: ", err)
+		logrus.Error("API Notification: ", errors.FullTrace(err))
 	}
 }
 

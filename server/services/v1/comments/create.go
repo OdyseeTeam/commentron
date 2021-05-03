@@ -144,10 +144,10 @@ func sendMessage(item commentapi.CommentItem, claimID string) {
 		Data:    map[string]interface{}{"comment": item},
 	})
 	if err != nil {
-		logrus.Error(errors.Prefix("Sockety SendTo: ", err))
+		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendTo: ", err)))
 	}
 	if resp != nil && resp.Error != nil {
-		logrus.Error(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error)))
+		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error))))
 	}
 }
 

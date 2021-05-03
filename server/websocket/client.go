@@ -51,11 +51,11 @@ func (c *Client) handleMessage(message []byte) {
 	rm := &PushNotification{}
 	err := json.Unmarshal(message, rm)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Error(errors.FullTrace(err))
 	}
 	err = rm.process()
 	if err != nil {
-		logrus.Error(err)
+		logrus.Error(errors.FullTrace(err))
 	}
 }
 
@@ -69,7 +69,7 @@ func (c *Client) read() {
 		c.hub.unregister <- c
 		err := c.conn.Close()
 		if err != nil {
-			logrus.Error(err)
+			logrus.Error(errors.FullTrace(err))
 		}
 	}()
 	c.conn.SetReadLimit(maxMessageSize)

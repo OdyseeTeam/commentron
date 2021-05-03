@@ -129,13 +129,13 @@ func state() http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, err := w.Write([]byte(err.Error()))
 			if err != nil {
-				logrus.Error(err)
+				logrus.Error(errors.FullTrace(err))
 			}
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			_, err = w.Write(jsonBytes)
 			if err != nil {
-				logrus.Error(err)
+				logrus.Error(errors.FullTrace(err))
 			}
 		}
 	})
