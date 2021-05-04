@@ -43,10 +43,9 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		logrus.Error(errors.FullTrace(err))
-		_, err := fmt.Fprintf(w, err.Error())
+		_, writeErr := fmt.Fprintf(w, err.Error())
 		if err != nil {
-			logrus.Error(errors.FullTrace(err))
+			logrus.Error(errors.FullTrace(err), writeErr.Error())
 		}
 		return
 	}
