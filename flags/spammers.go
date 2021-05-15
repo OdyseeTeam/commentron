@@ -476,6 +476,7 @@ var commentSpammers = map[string]bool{
 	"3e769e01eb38eb839485f216f1d332ba8b777a83": true,
 	"c02c09cbc9d05034c303963511c79565a06efd82": true,
 	"6af1d69de64dded147e9e6a59ab96510a589f5f2": true,
+	"c8f654fcd16d4c9d424cb03bc36f676686160d23": true,
 }
 
 var reactionSpammers = map[string]bool{
@@ -945,4 +946,5 @@ var reactionSpammers = map[string]bool{
 	"3e769e01eb38eb839485f216f1d332ba8b777a83": true,
 	"c02c09cbc9d05034c303963511c79565a06efd82": true,
 	"6af1d69de64dded147e9e6a59ab96510a589f5f2": true,
+	"c8f654fcd16d4c9d424cb03bc36f676686160d23": true,
 }
