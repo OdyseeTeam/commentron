@@ -487,6 +487,15 @@ var commentSpammers = map[string]bool{
 	"42ef12cf42d4eab26c56dc709e0dc37f4b5fb78d": true,
 	"65cb63143f29f1dede2b86906829e44bb0bbea42": true,
 	"4db933ed0f354c32c4aa2786319ac73b3e7baa18": true,
+	"19f71f8e4a229e678d39081ef86fa97dee8f1551": true,
+	"6223240fde450ff5a2ac879216c64847a074db78": true,
+	"ea274ee11083c53bb5de9f7a77ca33b32ab31e7b": true,
+	"e1311e03c7e2f2344ec8cad065387e264406aa63": true,
+	"f45883e14d21203204e629b47f0fecf8e098b99c": true,
+	"6af7730f3dad3a6088d60e2e157caa553fc9d156": true,
+	"a40484289a654a082e717c10052137ffbac8d2f1": true,
+	"6bbfeeff6c6a7d580fdecce5b13c07417facf33f": true,
+	"877050364b7ac2d253b69941978e2f085c0cd71b": true,
 }
 
 var reactionSpammers = map[string]bool{
@@ -967,4 +976,13 @@ var reactionSpammers = map[string]bool{
 	"42ef12cf42d4eab26c56dc709e0dc37f4b5fb78d": true,
 	"65cb63143f29f1dede2b86906829e44bb0bbea42": true,
 	"4db933ed0f354c32c4aa2786319ac73b3e7baa18": true,
+	"19f71f8e4a229e678d39081ef86fa97dee8f1551": true,
+	"6223240fde450ff5a2ac879216c64847a074db78": true,
+	"ea274ee11083c53bb5de9f7a77ca33b32ab31e7b": true,
+	"e1311e03c7e2f2344ec8cad065387e264406aa63": true,
+	"f45883e14d21203204e629b47f0fecf8e098b99c": true,
+	"6af7730f3dad3a6088d60e2e157caa553fc9d156": true,
+	"a40484289a654a082e717c10052137ffbac8d2f1": true,
+	"6bbfeeff6c6a7d580fdecce5b13c07417facf33f": true,
+	"877050364b7ac2d253b69941978e2f085c0cd71b": true,
 }
