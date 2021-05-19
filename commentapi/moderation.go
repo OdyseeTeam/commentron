@@ -4,12 +4,15 @@ import "time"
 
 // BlockArgs Arguments to block identities from commenting for both publisher and moderators
 type BlockArgs struct {
-	//Publisher or Commentron Admin
+	//Publisher, Moderator, or Commentron Admin
 	ModChannelID   string `json:"mod_channel_id"`
 	ModChannelName string `json:"mod_channel_name"`
 	//Offender being blocked
 	BlockedChannelID   string `json:"blocked_channel_id"`
 	BlockedChannelName string `json:"blocked_channel_name"`
+	//Creator that Moderator is delegated from. Used for delegated moderation
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
 	// Blocks identity from comment universally, requires Admin rights on commentron instance
 	BlockAll bool `json:"block_all"`
 	// If true will delete all comments of the offender, requires Admin rights on commentron for universal delete
@@ -45,12 +48,15 @@ type AmIResponse struct {
 
 // UnBlockArgs Arguments to un-block identities from commenting for both publisher and moderators
 type UnBlockArgs struct {
-	//Publisher or Commentron Admin
+	//Publisher, Moderator, or Commentron Admin
 	ModChannelID   string `json:"mod_channel_id"`
 	ModChannelName string `json:"mod_channel_name"`
 	//Offender being unblocked
 	UnBlockedChannelID   string `json:"un_blocked_channel_id"`
 	UnBlockedChannelName string `json:"un_blocked_channel_name"`
+	//Creator that Moderator is delegated from. Used for delegated moderation
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
 	// Unblocks identity from commenting universally, requires Admin rights on commentron instance
 	GlobalUnBlock bool   `json:"global_un_block"`
 	Signature     string `json:"signature"`
@@ -67,11 +73,14 @@ type UnBlockResponse struct {
 
 // BlockedListArgs Arguments to block identities from commenting for both publisher and moderators
 type BlockedListArgs struct {
-	//Publisher or Commentron Admin
+	//Publisher, Moderator or Commentron Admin
 	ModChannelID   string `json:"mod_channel_id"`
 	ModChannelName string `json:"mod_channel_name"`
-	Signature      string `json:"signature"`
-	SigningTS      string `json:"signing_ts"`
+	//Creator that Moderator is delegated from. Used for delegated moderation
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+	Signature          string `json:"signature"`
+	SigningTS          string `json:"signing_ts"`
 }
 
 // BlockedListResponse for the moderation.Block rpc call

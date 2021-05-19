@@ -29,9 +29,9 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	modChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
 	if err != nil {
@@ -99,6 +99,32 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	reply.BannedChannelID = bannedChannel.ClaimID
 
 	return nil
+}
+
+func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannelName string) (*model.Channel, error) {
+	modChannel, err := helper.FindOrCreateChannel(modChannelID, modChannelName)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	var creatorChannel *model.Channel
+	if creatorChannelID != "" && creatorChannelName != "" {
+		creatorChannel, err = helper.FindOrCreateChannel(creatorChannelID, creatorChannelName)
+		if err != nil {
+			return nil, errors.Err(err)
+		}
+		dmRels := model.DelegatedModeratorRels
+		dmWhere := model.DelegatedModeratorWhere
+		loadCreatorChannels := qm.Load(dmRels.CreatorChannel, dmWhere.CreatorChannelID.EQ(creatorChannelID))
+		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels).ExistsG()
+		if err != nil {
+			return nil, errors.Err(err)
+		}
+		if !exists {
+			return nil, errors.Err("%s is not delegated by %s to be a moderator", modChannel.Name, creatorChannel.Name)
+		}
+		modChannel = creatorChannel
+	}
+	return modChannel, nil
 }
 
 func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {

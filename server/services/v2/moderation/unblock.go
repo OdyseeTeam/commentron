@@ -17,9 +17,10 @@ import (
 )
 
 func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
-	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+
+	modChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
 	if err != nil {
