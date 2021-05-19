@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"math/big"
+	"strconv"
 
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -26,7 +27,11 @@ func ValidateSignature(channelClaimID, signature, signingTS, data string) error 
 	if err != nil {
 		return errors.Err(err)
 	}
-	if !channel.Meta.IsControlling {
+	amount, err := strconv.ParseFloat(channel.Amount, 64)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if amount <= 0.001 {
 		return errors.Err("validation is disallowed for non controlling channels")
 	}
 	pk := channel.Value.GetChannel().GetPublicKey()
