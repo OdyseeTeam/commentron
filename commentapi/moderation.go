@@ -97,3 +97,36 @@ type BlockedChannel struct {
 	BlockedByChannelName string    `json:"blocked_by_channel_name"`
 	BlockedAt            time.Time `json:"blocked_at"`
 }
+
+// AddDelegateArgs Arguments to delagate moderation to another channel for your channel.
+type AddDelegateArgs struct {
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+	Signature      string `json:"signature"`
+	SigningTS      string `json:"signing_ts"`
+}
+
+// RemoveDelegateArgs Arguments to remove a delegated moderator.
+type RemoveDelegateArgs struct {
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+	Signature      string `json:"signature"`
+	SigningTS      string `json:"signing_ts"`
+}
+
+// ListDelegatesArgs Arguments to list delegates
+type ListDelegatesArgs struct {
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+	Signature      string `json:"signature"`
+	SigningTS      string `json:"signing_ts"`
+}
+
+type ListDelegateResponse struct {
+	Delegates []Delegate
+}
+
+type Delegate struct {
+	ChannelID   string `json:"channel_id"`
+	ChannelName string `json:"channel_name"`
+}

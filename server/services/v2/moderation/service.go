@@ -24,7 +24,17 @@ func (s Service) UnBlock(r *http.Request, args *commentapi.UnBlockArgs, reply *c
 	return unBlock(r, args, reply)
 }
 
-// BlockedList return the list of blocked channels for a moderator
-func (s Service) BlockedList(r *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
-	return blockedList(r, args, reply)
+// AddDelegate return the list of blocked channels for a moderator
+func (s Service) AddDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+	return addDelegate(r, args, reply)
+}
+
+// RemoveDelegate return the list of blocked channels for a moderator
+func (s Service) RemoveDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+	return removeDelegate(r, args, reply)
+}
+
+// ListDelegates return the list of blocked channels for a moderator
+func (s Service) ListDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
+	return listDelegates(r, args, reply)
 }
