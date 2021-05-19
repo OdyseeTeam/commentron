@@ -26,6 +26,9 @@ func ValidateSignature(channelClaimID, signature, signingTS, data string) error 
 	if err != nil {
 		return errors.Err(err)
 	}
+	if !channel.Meta.IsControlling {
+		return errors.Err("validation is disallowed for non controlling channels")
+	}
 	pk := channel.Value.GetChannel().GetPublicKey()
 	return validateSignature(channelClaimID, signature, signingTS, data, pk)
 
