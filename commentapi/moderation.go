@@ -122,10 +122,12 @@ type ListDelegatesArgs struct {
 	SigningTS      string `json:"signing_ts"`
 }
 
+// ListDelegateResponse response for modifying the delegates
 type ListDelegateResponse struct {
 	Delegates []Delegate
 }
 
+// Delegate a particular channel thats delegated moderation capabilities
 type Delegate struct {
 	ChannelID   string `json:"channel_id"`
 	ChannelName string `json:"channel_name"`
