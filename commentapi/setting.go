@@ -27,21 +27,21 @@ type ListSettingsResponse struct {
 	CommentsEnabled       bool    `json:"comments_enabled"`
 	MinTipAmountComment   float64 `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat float64 `json:"min_tip_amount_super_chat"`
-	SlowModeMinGap        int64   `json:"slow_mode_min_gap"`
+	SlowModeMinGap        uint64  `json:"slow_mode_min_gap"`
 	Signature             string  `json:"signature"`
 	SigningTS             string  `json:"signing_ts"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
 type UpdateSettingsArgs struct {
-	ChannelName           string `json:"channel_name"`
-	ChannelID             string `json:"channel_id"`
-	CommentsEnabled       *bool  `json:"comments_enabled"`
-	MinTipAmountComment   *int64 `json:"min_tip_amount_comment"`
-	MinTipAmountSuperChat *int64 `json:"min_tip_amount_super_chat"`
-	SlowModeMinGap        *int64 `json:"slow_mode_min_gap"`
-	Signature             string `json:"signature"`
-	SigningTS             string `json:"signing_ts"`
+	ChannelName           string   `json:"channel_name"`
+	ChannelID             string   `json:"channel_id"`
+	CommentsEnabled       *bool    `json:"comments_enabled"`
+	MinTipAmountComment   *float64 `json:"min_tip_amount_comment"`
+	MinTipAmountSuperChat *float64 `json:"min_tip_amount_super_chat"`
+	SlowModeMinGap        *uint64  `json:"slow_mode_min_gap"`
+	Signature             string   `json:"signature"`
+	SigningTS             string   `json:"signing_ts"`
 }
 
 // BlockWordArgs arguments passed to settings.BlockWord. Appends to list

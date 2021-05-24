@@ -65,11 +65,19 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	}
 
 	if args.MinTipAmountSuperChat != nil {
-		settings.MinTipAmountSuperChat.SetValid(*args.MinTipAmountSuperChat)
+		lbc, err := btcutil.NewAmount(*args.MinTipAmountSuperChat)
+		if err != nil {
+			return errors.Err(err)
+		}
+		settings.MinTipAmountSuperChat.SetValid(uint64(lbc.ToBTC()))
 	}
 
 	if args.MinTipAmountComment != nil {
-		settings.MinTipAmountComment.SetValid(*args.MinTipAmountComment)
+		lbc, err := btcutil.NewAmount(*args.MinTipAmountComment)
+		if err != nil {
+			return errors.Err(err)
+		}
+		settings.MinTipAmountComment.SetValid(uint64(lbc.ToBTC()))
 	}
 
 	err = settings.UpdateG(boil.Infer())

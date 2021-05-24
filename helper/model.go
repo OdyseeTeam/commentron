@@ -3,6 +3,8 @@ package helper
 import (
 	"database/sql"
 
+	"github.com/volatiletech/null"
+
 	"github.com/lbryio/commentron/model"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -31,7 +33,7 @@ func FindOrCreateChannel(channelClaimID, channelName string) (*model.Channel, er
 func FindOrCreateSettings(creatorChannel *model.Channel) (*model.CreatorSetting, error) {
 	settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
 	if errors.Is(err, sql.ErrNoRows) {
-		settings = &model.CreatorSetting{CreatorChannelID: creatorChannel.ClaimID}
+		settings = &model.CreatorSetting{CreatorChannelID: creatorChannel.ClaimID, CommentsEnabled: null.BoolFrom(true)}
 		err = nil
 		err := settings.InsertG(boil.Infer())
 		if err != nil {
