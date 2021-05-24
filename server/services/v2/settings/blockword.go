@@ -7,8 +7,11 @@ import (
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+
+	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
@@ -76,7 +79,11 @@ skip:
 		}
 		remainingWords = append(remainingWords, word)
 	}
-	settings.MutedWords.SetValid(strings.Join(remainingWords, ","))
+	settings.MutedWords = null.String{String: "", Valid: false}
+	if len(remainingWords) > 0 {
+		settings.MutedWords.SetValid(strings.Join(remainingWords, ","))
+	}
+
 	err = settings.UpdateG(boil.Infer())
 	if err != nil {
 		return errors.Err(err)
