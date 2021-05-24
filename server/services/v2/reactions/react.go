@@ -119,7 +119,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			if err != nil {
 				return err
 			}
-			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID}
+			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID, ClaimID: p.LbryClaimID}
 			err := flags.CheckReaction(newReaction)
 			if err != nil {
 				return err
