@@ -54,6 +54,11 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 		return errors.Err(err)
 	}
 
+	reply.Delegates = append(reply.Delegates, commentapi.Delegate{
+		ChannelID:   modChannel.ClaimID,
+		ChannelName: modChannel.Name,
+	})
+
 	return nil
 }
 
@@ -86,6 +91,11 @@ func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 	if err != nil {
 		return errors.Err(err)
 	}
+
+	reply.Delegates = append(reply.Delegates, commentapi.Delegate{
+		ChannelID:   modChannel.ClaimID,
+		ChannelName: modChannel.Name,
+	})
 
 	return nil
 }
