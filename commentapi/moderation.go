@@ -100,26 +100,30 @@ type BlockedChannel struct {
 
 // AddDelegateArgs Arguments to delagate moderation to another channel for your channel.
 type AddDelegateArgs struct {
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
-	Signature      string `json:"signature"`
-	SigningTS      string `json:"signing_ts"`
+	ModChannelID       string `json:"mod_channel_id"`
+	ModChannelName     string `json:"mod_channel_name"`
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+	Signature          string `json:"signature"`
+	SigningTS          string `json:"signing_ts"`
 }
 
 // RemoveDelegateArgs Arguments to remove a delegated moderator.
 type RemoveDelegateArgs struct {
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
-	Signature      string `json:"signature"`
-	SigningTS      string `json:"signing_ts"`
+	ModChannelID       string `json:"mod_channel_id"`
+	ModChannelName     string `json:"mod_channel_name"`
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+	Signature          string `json:"signature"`
+	SigningTS          string `json:"signing_ts"`
 }
 
 // ListDelegatesArgs Arguments to list delegates
 type ListDelegatesArgs struct {
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
-	Signature      string `json:"signature"`
-	SigningTS      string `json:"signing_ts"`
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+	Signature          string `json:"signature"`
+	SigningTS          string `json:"signing_ts"`
 }
 
 // ListDelegateResponse response for modifying the delegates
