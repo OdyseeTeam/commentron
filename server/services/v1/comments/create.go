@@ -190,6 +190,9 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		return errors.Err(err)
 	}
 	if settings != nil {
+		if !settings.CommentsEnabled.Bool {
+			return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+		}
 		if !settings.MutedWords.IsZero() {
 			blockedWords := strings.Split(settings.MutedWords.String, ",")
 			for _, blockedWord := range blockedWords {
