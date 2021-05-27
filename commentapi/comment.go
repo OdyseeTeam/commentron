@@ -122,8 +122,8 @@ func (c *ListArgs) ApplyDefaults() {
 	if c.PageSize == 0 {
 		c.PageSize = 50
 	}
-	if c.PageSize > 1000 {
-		c.PageSize = 1000
+	if c.PageSize > 200 {
+		c.PageSize = 200
 	}
 }
 
