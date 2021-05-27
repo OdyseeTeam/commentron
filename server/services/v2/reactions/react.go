@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/lbryio/commentron/helper"
 
 	"github.com/lbryio/commentron/flags"
@@ -24,7 +26,7 @@ import (
 )
 
 // React creates/updates a reaction to a comment
-func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactResponse) error {
+func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactResponse) error {
 
 	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).AllG()
 	if err != nil {
@@ -55,6 +57,9 @@ func react(_ *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
+	}
+	if len(comments) > 1 {
+		logrus.Warningf("%d comments reacted to in the same call from ip[%s] for channel %s[%s]", helper.GetIPAddressForRequest(r), len(comments), channel.Name, channel.ClaimID)
 	}
 
 	modifiedReactions, err := updateReactions(channel, args, commentIDs, comments)
@@ -119,7 +124,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			if err != nil {
 				return err
 			}
-			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID, ClaimID: p.LbryClaimID}
+			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID, ClaimID: p.LbryClaimID, IsFlagged: len(comments) > 1}
 			err := flags.CheckReaction(newReaction)
 			if err != nil {
 				return err
