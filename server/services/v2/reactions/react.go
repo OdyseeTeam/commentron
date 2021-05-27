@@ -59,7 +59,7 @@ func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}
 	if len(comments) > 1 {
-		logrus.Warningf("%d comments reacted to in the same call from ip[%s] for channel %s[%s]", helper.GetIPAddressForRequest(r), len(comments), channel.Name, channel.ClaimID)
+		logrus.Warningf("%d comments reacted to in the same call from ip[%s] for channel %s[%s]", len(comments), helper.GetIPAddressForRequest(r), channel.Name, channel.ClaimID)
 	}
 
 	modifiedReactions, err := updateReactions(channel, args, commentIDs, comments)
