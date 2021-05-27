@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/model"
@@ -12,6 +13,7 @@ import (
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 
+	"github.com/karlseguin/ccache"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
@@ -94,7 +96,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 func newReactions(commentIDs []string, types *string) commentapi.Reactions {
 	var reactionTypes []string
 	if types == nil {
-		rts, err := model.ReactionTypes().AllG()
+		rts, err := getReactionTypes()
 		if err == nil {
 			for _, r := range rts {
 				reactionTypes = append(reactionTypes, r.Name)
@@ -119,4 +121,24 @@ func addTo(c commentapi.CommentReaction, reactionType string) {
 		c[reactionType] = 0
 	}
 	c[reactionType] = curr + 1
+}
+
+var reactionTypeCache = ccache.New(ccache.Configure().MaxSize(100))
+
+func getReactionTypes() (model.ReactionTypeSlice, error) {
+	v, err := reactionTypeCache.Fetch("all", 30*time.Minute, func() (interface{}, error) {
+		rts, err := model.ReactionTypes().AllG()
+		if err != nil {
+			return nil, errors.Err(err)
+		}
+		return rts, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	slice, ok := v.Value().(model.ReactionTypeSlice)
+	if !ok {
+		return nil, errors.Err("could not convert cached value to ReactionTypeSlice")
+	}
+	return slice, nil
 }
