@@ -171,7 +171,6 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 	if signingChannel == nil {
 		return nil
 	}
-
 	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterChannelID))).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
@@ -190,6 +189,17 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		return errors.Err(err)
 	}
 	if settings != nil {
+		if !settings.CommentsEnabled.Valid {
+			for _, tag := range signingChannel.Value.Tags {
+				if tag == "comments-disabled" {
+					settings.CommentsEnabled.SetValid(false)
+					err := settings.UpdateG(boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
+					if err != nil {
+						return errors.Err(err)
+					}
+				}
+			}
+		}
 		if !settings.CommentsEnabled.Bool {
 			return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
 		}
