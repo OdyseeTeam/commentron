@@ -6,10 +6,12 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/extras/util"
+	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/volatiletech/null"
@@ -18,6 +20,10 @@ import (
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
+	err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
+	if err != nil {
+		return err
+	}
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
@@ -79,6 +85,25 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
 
+	return nil
+}
+
+func checkCommentsEnabled(channelName, ChannelID null.String) error {
+	if !channelName.IsZero() && !ChannelID.IsZero() {
+		creatorChannel, err := helper.FindOrCreateChannel(ChannelID.String, channelName.String)
+		if err != nil {
+			return err
+		}
+		settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+		if settings != nil {
+			if !settings.CommentsEnabled.Bool {
+				return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+			}
+		}
+	}
 	return nil
 }
 
