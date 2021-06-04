@@ -33,7 +33,9 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	if err != nil {
 		return errors.Err(err)
 	}
-	exists, err := creatorChannel.ModChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).ExistsG()
+	exists, err := creatorChannel.ModChannelDelegatedModerators(
+		model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID),
+		model.DelegatedModeratorWhere.CreatorChannelID.EQ(creatorChannel.ClaimID)).ExistsG()
 	if err != nil {
 		return errors.Err(err)
 	}
