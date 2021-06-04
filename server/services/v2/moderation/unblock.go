@@ -18,7 +18,7 @@ import (
 
 func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
 
-	modChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
+	modChannel, creatorChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 		return errors.Err(err)
 	}
 
-	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(modChannel.ClaimID))).AllG()
+	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).AllG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -55,12 +55,12 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 	} else {
 		if len(entries) > 0 {
 			for _, be := range entries {
-				if be.BlockedByChannelID.String == modChannel.ClaimID {
+				if be.BlockedByChannelID.String == creatorChannel.ClaimID {
 					err := be.DeleteG()
 					if err != nil {
 						return errors.Err(err)
 					}
-					reply.UnBlockedFrom = util.PtrToString(modChannel.ClaimID)
+					reply.UnBlockedFrom = util.PtrToString(creatorChannel.ClaimID)
 				}
 			}
 		}
