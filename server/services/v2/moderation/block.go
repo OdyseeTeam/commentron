@@ -66,6 +66,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		if !isMod {
 			return api.StatusError{Err: errors.Err("cannot block universally without admin privileges"), Status: http.StatusForbidden}
 		}
+		blockedEntry.BlockedByChannelID.SetValid(creatorChannel.ClaimID)
 		blockedEntry.UniversallyBlocked.SetValid(true)
 		reply.AllBlocked = true
 	} else {
