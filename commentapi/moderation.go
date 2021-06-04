@@ -85,7 +85,9 @@ type BlockedListArgs struct {
 
 // BlockedListResponse for the moderation.Block rpc call
 type BlockedListResponse struct {
-	BlockedChannels []BlockedChannel `json:"blocked_channels"`
+	BlockedChannels          []BlockedChannel `json:"blocked_channels"`
+	DelegatedBlockedChannels []BlockedChannel `json:"delegated_blocked_channels"`
+	GloballyBlockedChannels  []BlockedChannel `json:"globally_blocked_channels"`
 }
 
 // BlockedChannel contains information about the blockee blocked by the creator

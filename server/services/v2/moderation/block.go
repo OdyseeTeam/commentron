@@ -128,23 +128,69 @@ func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 }
 
 func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
-	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	modChannel, creatorChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
 	if err != nil {
 		return err
 	}
 
-	blockedByMod, err := modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+	isMod, err := modChannel.ModChannelModerators().ExistsG()
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	var blockedByMod model.BlockedEntrySlice
+	var blockedByCreator model.BlockedEntrySlice
+	var blockedGlobally model.BlockedEntrySlice
+
+	blockedByMod, err = modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
+	}
+	if args.CreatorChannelID != "" && args.CreatorChannelName != "" {
+		blockedByCreator, err = creatorChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+		if err != nil && errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+	}
+
+	if isMod {
+		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		if err != nil && errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
 	}
 
 	for _, b := range blockedByMod {
 		if b.R != nil && b.R.BlockedChannel != nil {
 			reply.BlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
+				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
+				BlockedChannelName:   b.R.BlockedChannel.Name,
+				BlockedByChannelID:   modChannel.ClaimID,
+				BlockedByChannelName: modChannel.Name,
+				BlockedAt:            b.CreatedAt,
+			})
+		}
+	}
+
+	for _, b := range blockedByCreator {
+		if b.R != nil && b.R.BlockedChannel != nil {
+			reply.DelegatedBlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
+				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
+				BlockedChannelName:   b.R.BlockedChannel.Name,
+				BlockedByChannelID:   modChannel.ClaimID,
+				BlockedByChannelName: modChannel.Name,
+				BlockedAt:            b.CreatedAt,
+			})
+		}
+	}
+
+	for _, b := range blockedGlobally {
+		if b.R != nil && b.R.BlockedChannel != nil {
+			reply.GloballyBlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
 				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
 				BlockedChannelName:   b.R.BlockedChannel.Name,
 				BlockedByChannelID:   modChannel.ClaimID,
