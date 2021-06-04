@@ -77,7 +77,7 @@ func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 		return errors.Err(err)
 	}
 
-	modEntry, err := creatorChannel.ModChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).OneG()
+	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -110,7 +110,7 @@ func listDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *c
 		return err
 	}
 
-	delegatedModEntries, err := creatorChannel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.ModChannel)).AllG()
+	delegatedModEntries, err := creatorChannel.CreatorChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.ModChannel)).AllG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
