@@ -33,7 +33,7 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	if err != nil {
 		return errors.Err(err)
 	}
-	exists, err := creatorChannel.ModChannelDelegatedModerators(
+	exists, err := creatorChannel.CreatorChannelDelegatedModerators(
 		model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID),
 		model.DelegatedModeratorWhere.CreatorChannelID.EQ(creatorChannel.ClaimID)).ExistsG()
 	if err != nil {
@@ -44,12 +44,11 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	}
 
 	delegatedModerator := &model.DelegatedModerator{
-		ModChannelID:     modChannel.ClaimID,
-		CreatorChannelID: creatorChannel.ClaimID,
-		Permissons:       uint64(defaultLevel),
+		ModChannelID: modChannel.ClaimID,
+		Permissons:   uint64(defaultLevel),
 	}
 
-	err = creatorChannel.AddModChannelDelegatedModeratorsG(true, delegatedModerator)
+	err = creatorChannel.AddCreatorChannelDelegatedModeratorsG(true, delegatedModerator)
 	if err != nil {
 		return errors.Err(err)
 	}

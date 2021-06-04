@@ -22,7 +22,7 @@ func amI(_ *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIRespons
 	}
 	err = lbry.ValidateSignature(channel.ClaimID, args.Signature, args.SigningTS, channel.Name)
 	if err != nil {
-		return errors.Err("%s is not authorized to make this call due to signature verfication failure", args.ChannelName)
+		return errors.Err(err)
 	}
 	moderations, err := channel.ModChannelModerators(qm.Load(model.ModeratorRels.ModChannel)).AllG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
