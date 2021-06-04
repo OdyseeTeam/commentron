@@ -24,15 +24,15 @@ func amI(_ *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIRespons
 	if err != nil {
 		return errors.Err(err)
 	}
-	moderations, err := channel.ModChannelModerators(qm.Load(model.ModeratorRels.ModChannel)).AllG()
+	moderations, err := channel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).AllG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
 	approvedChannels := make(map[string]string)
 	for _, moderation := range moderations {
-		if moderation.R != nil && moderation.R.ModChannel != nil {
+		if moderation.R != nil && moderation.R.CreatorChannel != nil {
 			reply.Type = "Channel"
-			approvedChannels[moderation.R.ModChannel.Name] = moderation.R.ModChannel.ClaimID
+			approvedChannels[moderation.R.CreatorChannel.Name] = moderation.R.CreatorChannel.ClaimID
 		}
 	}
 	reply.ChannelName = args.ChannelName
