@@ -6,15 +6,17 @@ import (
 
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
-	"github.com/volatiletech/null"
-
-	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/lbryio/commentron/commentapi"
 )
+
+type delegatedModLevel int
+
+const defaultLevel = delegatedModLevel(0)
 
 func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
@@ -38,18 +40,14 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	if exists {
 		return errors.Err("channel %s already is a moderation for %s", args.ModChannelName, args.CreatorChannelName)
 	}
-	moderator, err := model.Moderators(model.ModeratorWhere.ModChannelID.EQ(null.StringFrom(modChannel.ClaimID))).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
-	insert := moderator == nil
-	if moderator == nil {
-		moderator = &model.Moderator{
-			ModChannelID: null.StringFrom(modChannel.ClaimID),
-		}
+
+	delegatedModerator := &model.DelegatedModerator{
+		ModChannelID:     modChannel.ClaimID,
+		CreatorChannelID: creatorChannel.ClaimID,
+		Permissons:       uint64(defaultLevel),
 	}
 
-	err = creatorChannel.AddModChannelModeratorsG(insert, moderator)
+	err = creatorChannel.AddModChannelDelegatedModeratorsG(true, delegatedModerator)
 	if err != nil {
 		return errors.Err(err)
 	}
