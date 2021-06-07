@@ -158,46 +158,35 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	}
 
 	if isMod {
-		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.BlockedByChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
 	}
 
-	for _, b := range blockedByMod {
-		if b.R != nil && b.R.BlockedChannel != nil {
-			reply.BlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
-				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
-				BlockedChannelName:   b.R.BlockedChannel.Name,
-				BlockedByChannelID:   modChannel.ClaimID,
-				BlockedByChannelName: modChannel.Name,
-				BlockedAt:            b.CreatedAt,
-			})
-		}
-	}
+	reply.BlockedChannels = populateBlockedChannelsReply(modChannel, blockedByMod)
+	reply.DelegatedBlockedChannels = populateBlockedChannelsReply(creatorChannel, blockedByCreator)
+	reply.GloballyBlockedChannels = populateBlockedChannelsReply(modChannel, blockedGlobally)
 
-	for _, b := range blockedByCreator {
-		if b.R != nil && b.R.BlockedChannel != nil {
-			reply.DelegatedBlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
-				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
-				BlockedChannelName:   b.R.BlockedChannel.Name,
-				BlockedByChannelID:   modChannel.ClaimID,
-				BlockedByChannelName: modChannel.Name,
-				BlockedAt:            b.CreatedAt,
-			})
-		}
-	}
-
-	for _, b := range blockedGlobally {
-		if b.R != nil && b.R.BlockedChannel != nil {
-			reply.GloballyBlockedChannels = append(reply.BlockedChannels, commentapi.BlockedChannel{
-				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
-				BlockedChannelName:   b.R.BlockedChannel.Name,
-				BlockedByChannelID:   modChannel.ClaimID,
-				BlockedByChannelName: modChannel.Name,
-				BlockedAt:            b.CreatedAt,
-			})
-		}
-	}
 	return nil
+}
+
+func populateBlockedChannelsReply(blockedBy *model.Channel, blocked model.BlockedEntrySlice) []commentapi.BlockedChannel {
+	var blockedChannels []commentapi.BlockedChannel
+	for _, b := range blocked {
+		blockedByChannel := blockedBy
+		if b.R != nil && b.R.BlockedChannel != nil {
+			if b.R.BlockedByChannel != nil && blockedBy == nil {
+				blockedByChannel = b.R.BlockedByChannel
+			}
+			blockedChannels = append(blockedChannels, commentapi.BlockedChannel{
+				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
+				BlockedChannelName:   b.R.BlockedChannel.Name,
+				BlockedByChannelID:   blockedByChannel.ClaimID,
+				BlockedByChannelName: blockedByChannel.Name,
+				BlockedAt:            b.CreatedAt,
+			})
+		}
+	}
+	return blockedChannels
 }
