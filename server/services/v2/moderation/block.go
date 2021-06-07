@@ -150,11 +150,10 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
-	if args.CreatorChannelID != "" && args.CreatorChannelName != "" {
-		blockedByCreator, err = creatorChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
-		if err != nil && errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
-		}
+
+	blockedByCreator, err = getDelegatedEntries(modChannel)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
 	}
 
 	if isMod {
@@ -169,6 +168,23 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	reply.GloballyBlockedChannels = populateBlockedChannelsReply(modChannel, blockedGlobally)
 
 	return nil
+}
+
+func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, error) {
+	var blockedByCreator model.BlockedEntrySlice
+	moderations, err := modChannel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).AllG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Err(err)
+	}
+	var creatorIDs []interface{}
+	for _, m := range moderations {
+		creatorIDs = append(creatorIDs, m.CreatorChannelID)
+	}
+	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.BlockedByChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Err(err)
+	}
+	return blockedByCreator, nil
 }
 
 func populateBlockedChannelsReply(blockedBy *model.Channel, blocked model.BlockedEntrySlice) []commentapi.BlockedChannel {
