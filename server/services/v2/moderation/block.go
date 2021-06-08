@@ -128,7 +128,7 @@ func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 }
 
 func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
-	modChannel, creatorChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
+	modChannel, _, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	var blockedByCreator model.BlockedEntrySlice
 	var blockedGlobally model.BlockedEntrySlice
 
-	blockedByMod, err = modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+	blockedByMod, err = modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(false))).AllG()
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -164,7 +164,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	}
 
 	reply.BlockedChannels = populateBlockedChannelsReply(modChannel, blockedByMod)
-	reply.DelegatedBlockedChannels = populateBlockedChannelsReply(creatorChannel, blockedByCreator)
+	reply.DelegatedBlockedChannels = populateBlockedChannelsReply(nil, blockedByCreator)
 	reply.GloballyBlockedChannels = populateBlockedChannelsReply(modChannel, blockedGlobally)
 
 	return nil
