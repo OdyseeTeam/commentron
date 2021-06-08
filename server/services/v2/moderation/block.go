@@ -180,7 +180,7 @@ func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, er
 	for _, m := range moderations {
 		creatorIDs = append(creatorIDs, m.CreatorChannelID)
 	}
-	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.BlockedByChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel)).AllG()
+	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.BlockedByChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.BlockedByChannel)).AllG()
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Err(err)
 	}
