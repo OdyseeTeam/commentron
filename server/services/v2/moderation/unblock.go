@@ -48,7 +48,11 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 	}
 
 	if args.GlobalUnBlock {
-		err := entries.DeleteAllG()
+		entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+		err = entries.DeleteAllG()
 		if err != nil {
 			return errors.Err(err)
 		}
