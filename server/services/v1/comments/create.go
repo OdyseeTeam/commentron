@@ -22,7 +22,9 @@ import (
 	v "github.com/lbryio/ozzo-validation"
 	"github.com/lbryio/sockety/socketyapi"
 
+	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"
+	"github.com/karlseguin/ccache"
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -163,7 +165,10 @@ func checkForDuplicate(commentID string) error {
 	return nil
 }
 
+var slowModeCache = ccache.New(ccache.Configure().MaxSize(10000))
+
 func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
+
 	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(contentClaimID)
 	if err != nil {
 		return errors.Err(err)
@@ -189,6 +194,12 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		return errors.Err(err)
 	}
 	if settings != nil {
+		if !settings.SlowModeMinGap.IsZero() {
+			err := checkMinGap(commenterChannelID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+			if err != nil {
+				return err
+			}
+		}
 		if !settings.CommentsEnabled.Valid {
 			for _, tag := range signingChannel.Value.Tags {
 				if tag == "comments-disabled" {
@@ -213,6 +224,33 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		}
 	}
 	return nil
+}
+
+func checkMinGap(key string, expiration time.Duration) error {
+	counter, err := getCounter(key, expiration)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if counter.Get() > 0 {
+		return api.StatusError{Err: errors.Err("the creator has a min gap between comments set."), Status: http.StatusBadRequest}
+	}
+	counter.Add(1)
+
+	return nil
+}
+
+func getCounter(key string, expiration time.Duration) (*counter.Counter, error) {
+	v, err := slowModeCache.Fetch(key, expiration, func() (interface{}, error) {
+		return counter.New(), nil
+	})
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	counter, ok := v.Value().(*counter.Counter)
+	if !ok {
+		return nil, errors.Err("could not convert counter from cache!")
+	}
+	return counter, nil
 }
 
 func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {

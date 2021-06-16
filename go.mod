@@ -3,6 +3,7 @@ module github.com/lbryio/commentron
 go 1.15
 
 require (
+	github.com/Avalanche-io/counter v0.0.0-20180124180526-1336089e985a
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/caarlos0/env v3.5.0+incompatible
