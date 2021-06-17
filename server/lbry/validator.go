@@ -27,17 +27,17 @@ func ValidateSignature(channelClaimID, signature, signingTS, data string) error 
 	if err != nil {
 		return errors.Err(err)
 	}
-	amount, err := strconv.ParseFloat(channel.Amount, 64)
-	if err != nil {
-		return errors.Err(err)
-	}
-	supports, err := strconv.ParseFloat(channel.Meta.SupportAmount, 64)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if amount+supports < 0.001 {
-		return errors.Err("validation is disallowed for non controlling channels")
-	}
+	//	amount, err := strconv.ParseFloat(channel.Amount, 64)
+	//	if err != nil {
+	//		return errors.Err(err)
+	//	}
+	//	supports, err := strconv.ParseFloat(channel.Meta.SupportAmount, 64)
+	//	if err != nil {
+	//		return errors.Err(err)
+	//	}
+	//	if amount+supports < 0.001 {
+	//		return errors.Err("validation is disallowed for non controlling channels")
+	//	}
 	pk := channel.Value.GetChannel().GetPublicKey()
 	return validateSignature(channelClaimID, signature, signingTS, data, pk)
 
