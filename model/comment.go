@@ -23,52 +23,58 @@ import (
 
 // Comment is an object representing the database table.
 type Comment struct {
-	CommentID   string      `boil:"comment_id" json:"comment_id" toml:"comment_id" yaml:"comment_id"`
-	LbryClaimID string      `boil:"lbry_claim_id" json:"lbry_claim_id" toml:"lbry_claim_id" yaml:"lbry_claim_id"`
-	ChannelID   null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
-	Body        string      `boil:"body" json:"body" toml:"body" yaml:"body"`
-	ParentID    null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
-	Signature   null.String `boil:"signature" json:"signature,omitempty" toml:"signature" yaml:"signature,omitempty"`
-	Signingts   null.String `boil:"signingts" json:"signingts,omitempty" toml:"signingts" yaml:"signingts,omitempty"`
-	Timestamp   int         `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
-	IsHidden    null.Bool   `boil:"is_hidden" json:"is_hidden,omitempty" toml:"is_hidden" yaml:"is_hidden,omitempty"`
-	IsPinned    bool        `boil:"is_pinned" json:"is_pinned" toml:"is_pinned" yaml:"is_pinned"`
-	IsFlagged   bool        `boil:"is_flagged" json:"is_flagged" toml:"is_flagged" yaml:"is_flagged"`
-	Amount      null.Uint64 `boil:"amount" json:"amount,omitempty" toml:"amount" yaml:"amount,omitempty"`
-	TXID        null.String `boil:"tx_id" json:"tx_id,omitempty" toml:"tx_id" yaml:"tx_id,omitempty"`
+	CommentID        string      `boil:"comment_id" json:"comment_id" toml:"comment_id" yaml:"comment_id"`
+	LbryClaimID      string      `boil:"lbry_claim_id" json:"lbry_claim_id" toml:"lbry_claim_id" yaml:"lbry_claim_id"`
+	ChannelID        null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
+	Body             string      `boil:"body" json:"body" toml:"body" yaml:"body"`
+	ParentID         null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
+	Signature        null.String `boil:"signature" json:"signature,omitempty" toml:"signature" yaml:"signature,omitempty"`
+	Signingts        null.String `boil:"signingts" json:"signingts,omitempty" toml:"signingts" yaml:"signingts,omitempty"`
+	Timestamp        int         `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
+	IsHidden         null.Bool   `boil:"is_hidden" json:"is_hidden,omitempty" toml:"is_hidden" yaml:"is_hidden,omitempty"`
+	IsPinned         bool        `boil:"is_pinned" json:"is_pinned" toml:"is_pinned" yaml:"is_pinned"`
+	IsFlagged        bool        `boil:"is_flagged" json:"is_flagged" toml:"is_flagged" yaml:"is_flagged"`
+	Amount           null.Uint64 `boil:"amount" json:"amount,omitempty" toml:"amount" yaml:"amount,omitempty"`
+	TXID             null.String `boil:"tx_id" json:"tx_id,omitempty" toml:"tx_id" yaml:"tx_id,omitempty"`
+	PopularityScore  null.Int    `boil:"popularity_score" json:"popularity_score,omitempty" toml:"popularity_score" yaml:"popularity_score,omitempty"`
+	ControversyScore null.Int    `boil:"controversy_score" json:"controversy_score,omitempty" toml:"controversy_score" yaml:"controversy_score,omitempty"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CommentColumns = struct {
-	CommentID   string
-	LbryClaimID string
-	ChannelID   string
-	Body        string
-	ParentID    string
-	Signature   string
-	Signingts   string
-	Timestamp   string
-	IsHidden    string
-	IsPinned    string
-	IsFlagged   string
-	Amount      string
-	TXID        string
+	CommentID        string
+	LbryClaimID      string
+	ChannelID        string
+	Body             string
+	ParentID         string
+	Signature        string
+	Signingts        string
+	Timestamp        string
+	IsHidden         string
+	IsPinned         string
+	IsFlagged        string
+	Amount           string
+	TXID             string
+	PopularityScore  string
+	ControversyScore string
 }{
-	CommentID:   "comment_id",
-	LbryClaimID: "lbry_claim_id",
-	ChannelID:   "channel_id",
-	Body:        "body",
-	ParentID:    "parent_id",
-	Signature:   "signature",
-	Signingts:   "signingts",
-	Timestamp:   "timestamp",
-	IsHidden:    "is_hidden",
-	IsPinned:    "is_pinned",
-	IsFlagged:   "is_flagged",
-	Amount:      "amount",
-	TXID:        "tx_id",
+	CommentID:        "comment_id",
+	LbryClaimID:      "lbry_claim_id",
+	ChannelID:        "channel_id",
+	Body:             "body",
+	ParentID:         "parent_id",
+	Signature:        "signature",
+	Signingts:        "signingts",
+	Timestamp:        "timestamp",
+	IsHidden:         "is_hidden",
+	IsPinned:         "is_pinned",
+	IsFlagged:        "is_flagged",
+	Amount:           "amount",
+	TXID:             "tx_id",
+	PopularityScore:  "popularity_score",
+	ControversyScore: "controversy_score",
 }
 
 // Generated where
@@ -114,34 +120,61 @@ func (w whereHelpernull_Uint64) GTE(x null.Uint64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
+type whereHelpernull_Int struct{ field string }
+
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var CommentWhere = struct {
-	CommentID   whereHelperstring
-	LbryClaimID whereHelperstring
-	ChannelID   whereHelpernull_String
-	Body        whereHelperstring
-	ParentID    whereHelpernull_String
-	Signature   whereHelpernull_String
-	Signingts   whereHelpernull_String
-	Timestamp   whereHelperint
-	IsHidden    whereHelpernull_Bool
-	IsPinned    whereHelperbool
-	IsFlagged   whereHelperbool
-	Amount      whereHelpernull_Uint64
-	TXID        whereHelpernull_String
+	CommentID        whereHelperstring
+	LbryClaimID      whereHelperstring
+	ChannelID        whereHelpernull_String
+	Body             whereHelperstring
+	ParentID         whereHelpernull_String
+	Signature        whereHelpernull_String
+	Signingts        whereHelpernull_String
+	Timestamp        whereHelperint
+	IsHidden         whereHelpernull_Bool
+	IsPinned         whereHelperbool
+	IsFlagged        whereHelperbool
+	Amount           whereHelpernull_Uint64
+	TXID             whereHelpernull_String
+	PopularityScore  whereHelpernull_Int
+	ControversyScore whereHelpernull_Int
 }{
-	CommentID:   whereHelperstring{field: "`comment`.`comment_id`"},
-	LbryClaimID: whereHelperstring{field: "`comment`.`lbry_claim_id`"},
-	ChannelID:   whereHelpernull_String{field: "`comment`.`channel_id`"},
-	Body:        whereHelperstring{field: "`comment`.`body`"},
-	ParentID:    whereHelpernull_String{field: "`comment`.`parent_id`"},
-	Signature:   whereHelpernull_String{field: "`comment`.`signature`"},
-	Signingts:   whereHelpernull_String{field: "`comment`.`signingts`"},
-	Timestamp:   whereHelperint{field: "`comment`.`timestamp`"},
-	IsHidden:    whereHelpernull_Bool{field: "`comment`.`is_hidden`"},
-	IsPinned:    whereHelperbool{field: "`comment`.`is_pinned`"},
-	IsFlagged:   whereHelperbool{field: "`comment`.`is_flagged`"},
-	Amount:      whereHelpernull_Uint64{field: "`comment`.`amount`"},
-	TXID:        whereHelpernull_String{field: "`comment`.`tx_id`"},
+	CommentID:        whereHelperstring{field: "`comment`.`comment_id`"},
+	LbryClaimID:      whereHelperstring{field: "`comment`.`lbry_claim_id`"},
+	ChannelID:        whereHelpernull_String{field: "`comment`.`channel_id`"},
+	Body:             whereHelperstring{field: "`comment`.`body`"},
+	ParentID:         whereHelpernull_String{field: "`comment`.`parent_id`"},
+	Signature:        whereHelpernull_String{field: "`comment`.`signature`"},
+	Signingts:        whereHelpernull_String{field: "`comment`.`signingts`"},
+	Timestamp:        whereHelperint{field: "`comment`.`timestamp`"},
+	IsHidden:         whereHelpernull_Bool{field: "`comment`.`is_hidden`"},
+	IsPinned:         whereHelperbool{field: "`comment`.`is_pinned`"},
+	IsFlagged:        whereHelperbool{field: "`comment`.`is_flagged`"},
+	Amount:           whereHelpernull_Uint64{field: "`comment`.`amount`"},
+	TXID:             whereHelpernull_String{field: "`comment`.`tx_id`"},
+	PopularityScore:  whereHelpernull_Int{field: "`comment`.`popularity_score`"},
+	ControversyScore: whereHelpernull_Int{field: "`comment`.`controversy_score`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -174,8 +207,8 @@ func (*commentR) NewStruct() *commentR {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id"}
-	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score"}
+	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score"}
 	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 )
