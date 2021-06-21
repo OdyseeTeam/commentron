@@ -85,11 +85,15 @@ type PinResponse struct {
 	Item CommentItem `json:"items,omitempty"`
 }
 
+// Sort defines the type of sort for the comment.List api
 type Sort int
 
 const (
+	// Newest sorts the comments by newest first
 	Newest Sort = iota
+	// Controversy sorts the comments by controversy
 	Controversy
+	// Popularity sorts the comments by how popular it is
 	Popularity
 )
 
