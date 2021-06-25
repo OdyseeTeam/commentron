@@ -91,6 +91,8 @@ type Sort int
 const (
 	// Newest sorts the comments by newest first
 	Newest Sort = iota
+	// Oldest sorts the comments from first to last
+	Oldest
 	// Controversy sorts the comments by controversy
 	Controversy
 	// Popularity sorts the comments by how popular it is
