@@ -85,6 +85,20 @@ type PinResponse struct {
 	Item CommentItem `json:"items,omitempty"`
 }
 
+// Sort defines the type of sort for the comment.List api
+type Sort int
+
+const (
+	// Newest sorts the comments by newest first
+	Newest Sort = iota
+	// Oldest sorts the comments from first to last
+	Oldest
+	// Controversy sorts the comments by controversy
+	Controversy
+	// Popularity sorts the comments by how popular it is
+	Popularity
+)
+
 // ListArgs arguments for the comment.List rpc call
 type ListArgs struct {
 	ChannelName   *string `json:"channel_name"`    // signing channel name of claim
@@ -96,6 +110,7 @@ type ListArgs struct {
 	PageSize      int     `json:"page_size"`       // pagination: nr of comments to show in a page (max 200)
 	TopLevel      bool    `json:"top_level"`       // filters to only top level comments
 	Hidden        bool    `json:"hidden"`          // if true will show hidden comments as well
+	SortBy        Sort    `json:"sort_by"`         // can be popularity, controversy, default is time (newest)
 }
 
 // AbandonArgs are the arguments passed to comment.Abandon RPC call. If creator args are passed

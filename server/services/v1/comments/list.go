@@ -33,7 +33,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 
 	totalCommentsQuery := make([]qm.QueryMod, 0)
 	offset := (args.Page - 1) * args.PageSize
-	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
+	getCommentsQuery := applySorting(args.SortBy, []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize)})
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {
@@ -86,6 +86,22 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	reply.HasHiddenComments = hasHiddenComments
 
 	return nil
+}
+
+func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
+	if sort != commentapi.Newest {
+		if sort == commentapi.Popularity {
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.PopularityScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
+		} else if sort == commentapi.Controversy {
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
+		} else if sort == commentapi.Oldest {
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" ASC"))
+		}
+	} else {
+		queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" DESC"))
+	}
+
+	return queryMods
 }
 
 func checkCommentsEnabled(channelName, ChannelID null.String) error {

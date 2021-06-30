@@ -2,6 +2,8 @@ package reactions
 
 import (
 	"database/sql"
+	"fmt"
+	"math"
 	"net/http"
 	"strings"
 
@@ -114,6 +116,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 				return api.StatusError{Err: errors.Err("there are no reactions for the claim(s) to remove"), Status: http.StatusBadRequest}
 			}
 			for _, r := range existingReactions {
+				go updateCommentScoring(reactionType, false, r.R.Comment)
 				addTo(modifiedReactions[r.R.Comment.CommentID], args.Type)
 			}
 			err = existingReactions.DeleteAll(tx)
@@ -136,6 +139,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 				}
 				return errors.Err(err)
 			}
+			go updateCommentScoring(reactionType, true, p)
 			addTo(modifiedReactions[p.CommentID], reactionType.Name)
 		}
 		return nil
@@ -144,4 +148,45 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 		return nil, errors.Err(err)
 	}
 	return modifiedReactions, nil
+}
+
+const likeRT = uint64(4)
+const disLikeRT = uint64(8)
+
+func updateCommentScoring(reactionType *model.ReactionType, added bool, comment *model.Comment) {
+	if reactionType.ID != likeRT && reactionType.ID != disLikeRT {
+		return
+	}
+	// Update Popularity Score
+	newValue := comment.PopularityScore.Int + 1
+	if (reactionType.ID == disLikeRT && added) || (reactionType.ID == likeRT && !added) {
+		newValue--
+	}
+	comment.PopularityScore.SetValid(newValue)
+	err := comment.UpdateG(boil.Whitelist(model.CommentColumns.PopularityScore))
+	if err != nil {
+		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] popularity scoring:", comment.CommentID), err))
+	}
+	// Update Controversy Score
+	likes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(likeRT)).CountG()
+	if err != nil {
+		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] likes:", comment.CommentID), err))
+		return
+	}
+	dislikes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(disLikeRT)).CountG()
+	if err != nil {
+		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] dislikes:", comment.CommentID), err))
+		return
+	}
+	absValue := math.Abs(float64(likes - dislikes))
+	if absValue == 0 {
+		absValue = 1
+	}
+	//IF(ABS(likes-dislikes) = 0, 1, ABS(likes-dislikes))/(likes+dislikes+1)
+	score := absValue / float64(likes+dislikes+1) * 10000
+	comment.ControversyScore.SetValid(int(score))
+	err = comment.UpdateG(boil.Whitelist(model.CommentColumns.ControversyScore))
+	if err != nil {
+		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] controversy scoring:", comment.CommentID), err))
+	}
 }
