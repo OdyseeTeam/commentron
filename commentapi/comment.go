@@ -146,10 +146,11 @@ func (c *ListArgs) ApplyDefaults() {
 
 // ListResponse response for the comment.List rpc call
 type ListResponse struct {
-	Page              int           `json:"page"`
-	PageSize          int           `json:"page_size"`
-	TotalPages        int           `json:"total_pages"`
-	TotalItems        int64         `json:"total_items"`
-	Items             []CommentItem `json:"items,omitempty"`
-	HasHiddenComments bool          `json:"has_hidden_comments"`
+	Page               int           `json:"page"`
+	PageSize           int           `json:"page_size"`
+	TotalPages         int           `json:"total_pages"`
+	TotalItems         int64         `json:"total_items"`
+	TotalFilteredItems int64         `json:"total_filtered_items"`
+	Items              []CommentItem `json:"items,omitempty"`
+	HasHiddenComments  bool          `json:"has_hidden_comments"`
 }

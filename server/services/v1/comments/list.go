@@ -18,6 +18,8 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
+const maxPinnedComments = 5
+
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
 	err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
@@ -31,33 +33,47 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
 	filterParent := m.CommentWhere.ParentID.EQ(null.StringFrom(util.StrFromPtr(args.ParentID)))
 
+	totalFilteredCommentsQuery := make([]qm.QueryMod, 0)
 	totalCommentsQuery := make([]qm.QueryMod, 0)
 	offset := (args.Page - 1) * args.PageSize
+	pinnedCommentsQuery := []qm.QueryMod{loadChannels, m.CommentWhere.IsPinned.EQ(true), qm.Limit(maxPinnedComments)}
 	getCommentsQuery := applySorting(args.SortBy, []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize)})
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
+		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterAuthorClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
+		pinnedCommentsQuery = append(pinnedCommentsQuery, filterAuthorClaimID)
 	}
 
 	if args.ClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
+		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
+		pinnedCommentsQuery = append(pinnedCommentsQuery, filterClaimID)
 	}
 
 	if args.TopLevel {
 		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
-		totalCommentsQuery = append(totalCommentsQuery, filterTopLevel)
+		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterTopLevel)
+		pinnedCommentsQuery = append(pinnedCommentsQuery, filterTopLevel)
 	}
 
 	if args.ParentID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterParent)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
+		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
+		pinnedCommentsQuery = append(pinnedCommentsQuery, filterParent)
+	}
+
+	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).CountG()
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	totalItems, err := m.Comments(totalCommentsQuery...).CountG()
@@ -75,14 +91,23 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return errors.Err(err)
 	}
 
+	if args.Page == 1 {
+		pinnedComments, err := m.Comments(pinnedCommentsQuery...).AllG()
+		if err != nil {
+			return errors.Err(err)
+		}
+		comments = append(pinnedComments, comments...)
+	}
+
 	items, blockedCommentCnt, err := getItems(comments)
 
-	totalItems = totalItems - blockedCommentCnt
+	totalFilteredItems = totalFilteredItems - blockedCommentCnt
 	reply.Items = items
 	reply.Page = args.Page
 	reply.PageSize = args.PageSize
+	reply.TotalFilteredItems = totalFilteredItems
 	reply.TotalItems = totalItems
-	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
+	reply.TotalPages = int(math.Ceil(float64(totalFilteredItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
 
 	return nil
