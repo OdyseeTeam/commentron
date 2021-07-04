@@ -194,32 +194,37 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		return errors.Err(err)
 	}
 	if settings != nil {
-		if !settings.SlowModeMinGap.IsZero() {
-			err := checkMinGap(commenterChannelID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
-			if err != nil {
-				return err
-			}
+		return checkSettings(settings, comment, commenterChannelID, creatorChannel, signingChannel)
+	}
+	return nil
+}
+
+func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim) error {
+	if !settings.SlowModeMinGap.IsZero() {
+		err := checkMinGap(commenterChannelClaimID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+		if err != nil {
+			return err
 		}
-		if !settings.CommentsEnabled.Valid {
-			for _, tag := range signingChannel.Value.Tags {
-				if tag == "comments-disabled" {
-					settings.CommentsEnabled.SetValid(false)
-					err := settings.UpdateG(boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
-					if err != nil {
-						return errors.Err(err)
-					}
+	}
+	if !settings.CommentsEnabled.Valid {
+		for _, tag := range signingChannel.Value.Tags {
+			if tag == "comments-disabled" {
+				settings.CommentsEnabled.SetValid(false)
+				err := settings.UpdateG(boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
+				if err != nil {
+					return errors.Err(err)
 				}
 			}
 		}
-		if !settings.CommentsEnabled.Bool {
-			return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
-		}
-		if !settings.MutedWords.IsZero() {
-			blockedWords := strings.Split(settings.MutedWords.String, ",")
-			for _, blockedWord := range blockedWords {
-				if strings.Contains(comment, blockedWord) {
-					return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", signingChannel.Name)}
-				}
+	}
+	if !settings.CommentsEnabled.Bool {
+		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+	}
+	if !settings.MutedWords.IsZero() {
+		blockedWords := strings.Split(settings.MutedWords.String, ",")
+		for _, blockedWord := range blockedWords {
+			if strings.Contains(comment, blockedWord) {
+				return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", signingChannel.Name)}
 			}
 		}
 	}
