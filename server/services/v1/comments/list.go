@@ -178,7 +178,9 @@ Comments:
 				if err != nil && errors.Is(err, sql.ErrNoRows) {
 					return items, blockedCommentCnt, errors.Err(err)
 				}
-				items = append(items, populateItem(comment, channel, int(replies)))
+				if !comment.IsPinned {
+					items = append(items, populateItem(comment, channel, int(replies)))
+				}
 			}
 		}
 	}
