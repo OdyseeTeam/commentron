@@ -1,5 +1,14 @@
 package commentapi
 
+import (
+	"net/http"
+
+	"github.com/lbryio/commentron/validator"
+	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
+	v "github.com/lbryio/ozzo-validation"
+)
+
 // CommentItem is the data structure of a comment returned from commentron
 type CommentItem struct {
 	Comment       string  `json:"comment"`
@@ -153,4 +162,16 @@ type ListResponse struct {
 	TotalFilteredItems int64         `json:"total_filtered_items"`
 	Items              []CommentItem `json:"items,omitempty"`
 	HasHiddenComments  bool          `json:"has_hidden_comments"`
+}
+
+// Validate validates the data in the list args
+func (b ListArgs) Validate() api.StatusError {
+	err := v.ValidateStruct(&b,
+		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
+		v.Field(&b.ChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+	return api.StatusError{}
 }

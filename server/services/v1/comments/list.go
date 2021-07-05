@@ -151,6 +151,7 @@ func checkCommentsEnabled(channelName, ChannelID null.String) error {
 func getItems(comments m.CommentSlice) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
+	var alreadyInSet = map[string]bool{}
 Comments:
 	for _, comment := range comments {
 		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
@@ -174,11 +175,12 @@ Comments:
 		if comment.R != nil {
 			channel = comment.R.Channel
 			if channel != nil && channel.Name != "" {
-				replies, err := comment.ParentComments().CountG()
-				if err != nil && errors.Is(err, sql.ErrNoRows) {
-					return items, blockedCommentCnt, errors.Err(err)
-				}
-				if !comment.IsPinned {
+				if !alreadyInSet[comment.CommentID] {
+					replies, err := comment.ParentComments().CountG()
+					if err != nil && errors.Is(err, sql.ErrNoRows) {
+						return items, blockedCommentCnt, errors.Err(err)
+					}
+					alreadyInSet[comment.CommentID] = true
 					items = append(items, populateItem(comment, channel, int(replies)))
 				}
 			}
