@@ -71,12 +71,14 @@ type CreateResponse struct {
 
 // ByIDArgs arguments for the comment.List rpc call
 type ByIDArgs struct {
-	CommentID string `json:"comment_id"`
+	CommentID     string `json:"comment_id"`
+	WithAncestors bool   `json:"with_ancestors"`
 }
 
 // ByIDResponse response for the comment.ByID rpc call
 type ByIDResponse struct {
-	Item CommentItem `json:"items,omitempty"`
+	Item      CommentItem   `json:"items,omitempty"`
+	Ancestors []CommentItem `json:"ancestors,omitempty"`
 }
 
 // PinArgs arguments for the comment.Pin rpc call. The comment id must be signed with a timestamp for authentication.
