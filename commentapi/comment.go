@@ -166,9 +166,9 @@ type ListResponse struct {
 
 // Validate validates the data in the list args
 func (c ListArgs) Validate() api.StatusError {
-	err := v.ValidateStruct(&b,
-		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
-		v.Field(&b.ChannelName, v.Required),
+	err := v.ValidateStruct(&c,
+		v.Field(&c.ChannelID, validator.ClaimID, v.Required),
+		v.Field(&c.ChannelName, v.Required),
 	)
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
