@@ -12,7 +12,8 @@ Content-Type: application/json
   "id": 1,
   "method": "comment.List",
   "params": {
-    "comment_id": "16b55ecafb338dab63ef0819339d5070b06f227a18caedf843d0752003368ed4"
+    "claim_id": "0671a386089113c200050aef29fe5604ded0e362",
+    "top_level": true
   }
 }
 

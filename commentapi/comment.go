@@ -165,7 +165,7 @@ type ListResponse struct {
 }
 
 // Validate validates the data in the list args
-func (b ListArgs) Validate() api.StatusError {
+func (c ListArgs) Validate() api.StatusError {
 	err := v.ValidateStruct(&b,
 		v.Field(&b.ChannelID, validator.ClaimID, v.Required),
 		v.Field(&b.ChannelName, v.Required),
