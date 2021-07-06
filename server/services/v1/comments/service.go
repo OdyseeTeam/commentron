@@ -100,11 +100,12 @@ func (c *Service) Edit(_ *http.Request, args *commentapi.EditArgs, reply *commen
 
 // ByID returns the comment from the comment id passed in
 func (c *Service) ByID(r *http.Request, args *commentapi.ByIDArgs, reply *commentapi.ByIDResponse) error {
-	item, err := byID(r, args)
+	item, ancestors, err := byID(r, args)
 	if err != nil {
 		return err
 	}
 	reply.Item = item
+	reply.Ancestors = ancestors
 	return nil
 }
 
