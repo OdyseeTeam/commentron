@@ -7,6 +7,7 @@ import (
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/server/websocket"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -57,5 +58,18 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	if err != nil {
 		return item, errors.Err(err)
 	}
-	return populateItem(comment, channel, 0), nil
+
+	item = populateItem(comment, channel, 0)
+	go pushPinnedItem(item, comment.LbryClaimID)
+	return item, nil
+}
+
+func pushPinnedItem(item commentapi.CommentItem, claimID string) {
+	websocket.PushTo(&websocket.PushNotification{
+		Type: "pinned",
+		Data: map[string]interface{}{"comment": item},
+	}, claimID)
+
+	go sendMessage(item, claimID)
+
 }
