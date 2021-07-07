@@ -206,7 +206,7 @@ func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID 
 		if err != nil {
 			return errors.Err(err)
 		}
-		if !isMod || commenterChannelClaimID != creatorChannel.ClaimID {
+		if !isMod && commenterChannelClaimID != creatorChannel.ClaimID {
 			err := checkMinGap(commenterChannelClaimID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
 			if err != nil {
 				return err
