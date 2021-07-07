@@ -201,9 +201,15 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 
 func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim) error {
 	if !settings.SlowModeMinGap.IsZero() {
-		err := checkMinGap(commenterChannelClaimID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+		isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(commenterChannelClaimID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)).ExistsG()
 		if err != nil {
-			return err
+			return errors.Err(err)
+		}
+		if !isMod || commenterChannelClaimID != creatorChannel.ClaimID {
+			err := checkMinGap(commenterChannelClaimID+creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if !settings.CommentsEnabled.Valid {
