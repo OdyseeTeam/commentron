@@ -18,8 +18,6 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-const maxPinnedComments = 5
-
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
 	err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
@@ -36,7 +34,6 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	totalFilteredCommentsQuery := make([]qm.QueryMod, 0)
 	totalCommentsQuery := make([]qm.QueryMod, 0)
 	offset := (args.Page - 1) * args.PageSize
-	pinnedCommentsQuery := []qm.QueryMod{loadChannels, m.CommentWhere.IsPinned.EQ(true), qm.Limit(maxPinnedComments)}
 	getCommentsQuery := applySorting(args.SortBy, []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize)})
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
@@ -45,7 +42,6 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterAuthorClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
-		pinnedCommentsQuery = append(pinnedCommentsQuery, filterAuthorClaimID)
 	}
 
 	if args.ClaimID != nil {
@@ -53,14 +49,12 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
-		pinnedCommentsQuery = append(pinnedCommentsQuery, filterClaimID)
 	}
 
 	if args.TopLevel {
 		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterTopLevel)
-		pinnedCommentsQuery = append(pinnedCommentsQuery, filterTopLevel)
 	}
 
 	if args.ParentID != nil {
@@ -68,7 +62,6 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
-		pinnedCommentsQuery = append(pinnedCommentsQuery, filterParent)
 	}
 
 	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).CountG()
@@ -91,14 +84,6 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return errors.Err(err)
 	}
 
-	if args.Page == 1 {
-		pinnedComments, err := m.Comments(pinnedCommentsQuery...).AllG()
-		if err != nil {
-			return errors.Err(err)
-		}
-		comments = append(pinnedComments, comments...)
-	}
-
 	items, blockedCommentCnt, err := getItems(comments)
 
 	totalFilteredItems = totalFilteredItems - blockedCommentCnt
@@ -116,14 +101,14 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 	if sort != commentapi.Newest {
 		if sort == commentapi.Popularity {
-			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.PopularityScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.PopularityScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
 		} else if sort == commentapi.Controversy {
-			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
 		} else if sort == commentapi.Oldest {
-			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" ASC"))
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" ASC"))
 		}
 	} else {
-		queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" DESC"))
+		queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
 	}
 
 	return queryMods
