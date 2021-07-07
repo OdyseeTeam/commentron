@@ -2,6 +2,7 @@ package comments
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -243,7 +244,8 @@ func checkMinGap(key string, expiration time.Duration) error {
 		return errors.Err(err)
 	}
 	if counter.Get() > 0 {
-		return api.StatusError{Err: errors.Err("the creator has a min gap between comments set."), Status: http.StatusBadRequest}
+		minGapViolated := fmt.Sprintf("Slow mode is on. Please wait at most %d seconds before commenting again.", int(expiration.Seconds()))
+		return api.StatusError{Err: errors.Err(minGapViolated), Status: http.StatusBadRequest}
 	}
 	counter.Add(1)
 
