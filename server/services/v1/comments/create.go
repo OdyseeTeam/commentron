@@ -134,14 +134,14 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 		Data: map[string]interface{}{"comment": item},
 	}, claimID)
 
-	go sendMessage(item, claimID)
+	go sendMessage(item, "delta", claimID)
 
 }
 
-func sendMessage(item commentapi.CommentItem, claimID string) {
+func sendMessage(item commentapi.CommentItem, nType string, claimID string) {
 	resp, err := socketyapi.NewClient("https://sockety.lbry.com", config.SocketyToken).SendNotification(socketyapi.SendNotificationArgs{
 		Service: socketyapi.Commentron,
-		Type:    "delta",
+		Type:    nType,
 		IDs:     []string{claimID},
 		Data:    map[string]interface{}{"comment": item},
 	})
