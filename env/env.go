@@ -8,15 +8,17 @@ import (
 
 // Config holds the environment configuration used by lighthouse.
 type Config struct {
-	MySQLDsn     string `env:"MYSQL_DSN"`
-	SDKUrl       string `env:"SDK_URL"`
-	SlackHookURL string `env:"SLACKHOOKURL"`
-	SlackChannel string `env:"SLACKCHANNEL"`
-	APIURL       string `env:"APIURL" envDefault:"https://api.lbry.com/event/comment"`
-	APIToken     string `env:"APITOKEN"`
-	SocketyToken string `env:"SOCKETY_TOKEN"`
-	TestChannel  string `env:"TEST_CHANNEL"`
-	TestURL      string `env:"TEST_URL" envDefault:"http://localhost:5900/api/v2"`
+	MySQLDsn                string `env:"MYSQL_DSN"`
+	SDKUrl                  string `env:"SDK_URL"`
+	SlackHookURL            string `env:"SLACKHOOKURL"`
+	SlackChannel            string `env:"SLACKCHANNEL"`
+	APIURL                  string `env:"APIURL" envDefault:"https://api.lbry.com/event/comment"`
+	APIToken                string `env:"APITOKEN"`
+	SocketyToken            string `env:"SOCKETY_TOKEN"`
+	TestChannel             string `env:"TEST_CHANNEL"`
+	TestURL                 string `env:"TEST_URL" envDefault:"http://localhost:5900/api/v2"`
+	StripeConnectAPIKey     string `env:"STRIPE_CONNECT_API_KEY"`
+	StripeConnectAPIKeyTest string `env:"STRIPE_CONNECT_API_KEY_TEST"`
 }
 
 // NewWithEnvVars creates an Config from environment variables

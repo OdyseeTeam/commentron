@@ -34,6 +34,7 @@ func InitializeConfiguration() {
 		logrus.Panic(err)
 	}
 	initSlack(conf)
+	initStripe(conf)
 	SocketyToken = conf.SocketyToken
 
 }

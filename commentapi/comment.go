@@ -25,6 +25,8 @@ type CommentItem struct {
 	ChannelURL    string  `json:"channel_url,omitempty"`
 	Replies       int     `json:"replies,omitempty"`
 	SupportAmount float64 `json:"support_amount"`
+	IsFiat        bool    `json:"is_fiat"`
+	Currency      string  `json:"currency"`
 }
 
 // ChannelArgs arguments to the comment.GetChannelForCommentID call
@@ -61,6 +63,7 @@ type CreateArgs struct {
 	SupportTxID     *string `json:"support_tx_id"`
 	SupportVout     *uint64 `json:"support_vout"`
 	PaymentIntentID *string `json:"payment_intent_id"`
+	Environment     *string `json:"environment"`
 	Signature       string  `json:"signature"`
 	SigningTS       string  `json:"signing_ts"`
 }
