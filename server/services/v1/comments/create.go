@@ -112,26 +112,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	item := populateItem(comment, channel, 0)
 
-	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(args.ChannelID))).ExistsG()
+	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
 	if err != nil {
 		return errors.Err(err)
 	}
-	item.IsGlobalMod = isGlobalMod
 
-	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(args.ClaimID)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if signingChannel != nil {
-		item.IsCreator = args.ChannelID == channel.ClaimID
-		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
-		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(args.ChannelID)
-		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).ExistsG()
-		if err != nil {
-			return errors.Err(err)
-		}
-		item.IsModerator = isMod
-	}
 	reply.CommentItem = &item
 	if !comment.IsFlagged {
 		go pushItem(item, args.ClaimID)
@@ -150,6 +135,30 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		})
 	}
 
+	return nil
+}
+
+func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
+	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).ExistsG()
+	if err != nil {
+		return errors.Err(err)
+	}
+	item.IsGlobalMod = isGlobalMod
+
+	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(claimID)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if signingChannel != nil {
+		item.IsCreator = channelID == signingChannel.ClaimID
+		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
+		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
+		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).ExistsG()
+		if err != nil {
+			return errors.Err(err)
+		}
+		item.IsModerator = isMod
+	}
 	return nil
 }
 
