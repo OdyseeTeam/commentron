@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/lbry.go/extras/api"
+
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
 	"github.com/lbryio/commentron/helper"
@@ -18,7 +20,7 @@ type delegatedModLevel int
 
 const defaultLevel = delegatedModLevel(0)
 
-func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -30,6 +32,9 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	}
 
 	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	if modChannel != nil && creatorChannel != nil && modChannel.ClaimID == creatorChannel.ClaimID {
+		return api.StatusError{Err: errors.Err("you are the creator, one cannot simply delegate to themselves"), Status: http.StatusBadRequest}
+	}
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -61,7 +66,7 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	return nil
 }
 
-func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+func removeDelegate(_ *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -99,7 +104,7 @@ func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 	return nil
 }
 
-func listDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
+func listDelegates(_ *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return errors.Err(err)
