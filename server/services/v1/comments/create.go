@@ -77,11 +77,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return errors.Err(err)
 	}
 
-	err = blockedByCreator(args.ClaimID, args.ChannelID, args.CommentText)
-	if err != nil {
-		return errors.Err(err)
-	}
-
 	comment := &m.Comment{
 		CommentID:   commentID,
 		LbryClaimID: args.ClaimID,
@@ -98,6 +93,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		if err != nil {
 			return errors.Err(err)
 		}
+	}
+
+	err = blockedByCreator(args.ClaimID, args.ChannelID, args.CommentText, comment.Amount)
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	err = flags.CheckComment(comment)
@@ -170,7 +170,7 @@ func checkForDuplicate(commentID string) error {
 
 var slowModeCache = ccache.New(ccache.Configure().MaxSize(10000))
 
-func blockedByCreator(contentClaimID, commenterChannelID, comment string) error {
+func blockedByCreator(contentClaimID, commenterChannelID, comment string, supportAmt null.Uint64) error {
 
 	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(contentClaimID)
 	if err != nil {
@@ -197,12 +197,20 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string) error 
 		return errors.Err(err)
 	}
 	if settings != nil {
-		return checkSettings(settings, comment, commenterChannelID, creatorChannel, signingChannel)
+		return checkSettings(settings, comment, commenterChannelID, creatorChannel, signingChannel, supportAmt)
 	}
 	return nil
 }
 
-func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim) error {
+func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim, supportAmt null.Uint64) error {
+	if !settings.MinTipAmountComment.IsZero() {
+		if supportAmt.IsZero() {
+			return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+		}
+		if supportAmt.Uint64 < settings.MinTipAmountComment.Uint64 {
+			return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, creatorChannel.Name), Status: http.StatusBadRequest}
+		}
+	}
 	if !settings.SlowModeMinGap.IsZero() {
 		isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(commenterChannelClaimID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)).ExistsG()
 		if err != nil {
