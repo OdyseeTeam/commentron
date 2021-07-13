@@ -24,6 +24,9 @@ type CommentItem struct {
 	Currency      string  `json:"currency"`
 	Replies       int     `json:"replies,omitempty"`
 	SupportAmount float64 `json:"support_amount"`
+	IsCreator     bool    `json:"is_creator,omitempty"`
+	IsModerator   bool    `json:"is_moderator,omitempty"`
+	IsGlobalMod   bool    `json:"is_global_mod,omitempty"`
 	IsHidden      bool    `json:"is_hidden"`
 	IsPinned      bool    `json:"is_pinned"`
 	IsFiat        bool    `json:"is_fiat"`
