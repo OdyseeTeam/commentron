@@ -27,6 +27,8 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/karlseguin/ccache"
 	"github.com/sirupsen/logrus"
+	"github.com/stripe/stripe-go"
+	"github.com/stripe/stripe-go/paymentintent"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
@@ -92,7 +94,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if args.SupportTxID != nil {
-		err := updateSupportInfo(channel.ClaimID, comment, args.SupportTxID, args.SupportVout)
+		err := updateSupportInfo(channel.ClaimID, comment, args.SupportTxID, args.SupportVout, args.PaymentIntentID, args.Environment)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -266,11 +268,11 @@ func getCounter(key string, expiration time.Duration) (*counter.Counter, error) 
 	return counter, nil
 }
 
-func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64, intentID *string, environment *string) error {
 	triesLeft := 3
 	for {
 		triesLeft--
-		err := updateSupportInfoAttempt(channelID, comment, supportTxID, supportVout)
+		err := updateSupportInfoAttempt(channelID, comment, supportTxID, supportVout, intentID, environment)
 		if err == nil {
 			return nil
 		}
@@ -281,7 +283,24 @@ func updateSupportInfo(channelID string, comment *m.Comment, supportTxID *string
 	}
 }
 
-func updateSupportInfoAttempt(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64) error {
+func updateSupportInfoAttempt(channelID string, comment *m.Comment, supportTxID *string, supportVout *uint64, intentID *string, environment *string) error {
+	if intentID != nil {
+		env := ""
+		if environment != nil {
+			env = *environment
+		}
+		paymentintent := &paymentintent.Client{B: stripe.GetBackend(stripe.APIBackend), Key: config.ConnectAPIKey(config.From(env))}
+		pi, err := paymentintent.Get(*intentID, &stripe.PaymentIntentParams{})
+		if err != nil {
+			logrus.Error(errors.Prefix("could not get payment intent %s", *intentID))
+			return errors.Err("could not validate tip")
+		}
+		comment.Amount.SetValid(uint64(pi.Amount))
+		comment.IsFiat = true
+		comment.Currency.SetValid(pi.Currency)
+		return nil
+
+	}
 	comment.TXID.SetValid(util.StrFromPtr(supportTxID))
 	txSummary, err := lbry.SDK.GetTx(comment.TXID.String)
 	if err != nil {

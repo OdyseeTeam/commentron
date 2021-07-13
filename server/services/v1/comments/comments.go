@@ -10,12 +10,22 @@ import (
 	"github.com/volatiletech/null"
 )
 
+var currencyMap = map[string]uint64{"USD": 100}
+
 func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentapi.CommentItem {
 	var channelName null.String
 	var channelURL null.String
 	if channel != nil {
 		channelName = null.StringFrom(channel.Name)
 		channelURL = null.StringFrom(fmt.Sprintf("lbry://%s#%s", channelName.String, comment.ChannelID.String))
+	}
+	supportAmount := btcutil.Amount(comment.Amount.Uint64).ToBTC()
+	if comment.IsFiat {
+		divisor := currencyMap[comment.Currency.String]
+		if divisor == 0 {
+			divisor = 100
+		}
+		supportAmount = float64(comment.Amount.Uint64) / float64(divisor)
 	}
 
 	item := commentapi.CommentItem{
@@ -32,7 +42,9 @@ func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentap
 		ChannelName:   channelName.String,
 		ChannelURL:    channelURL.String,
 		Replies:       replies,
-		SupportAmount: btcutil.Amount(comment.Amount.Uint64).ToBTC(),
+		SupportAmount: supportAmount,
+		IsFiat:        comment.IsFiat,
+		Currency:      comment.Currency.String,
 	}
 
 	return item

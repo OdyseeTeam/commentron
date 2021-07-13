@@ -38,6 +38,8 @@ type Comment struct {
 	TXID             null.String `boil:"tx_id" json:"tx_id,omitempty" toml:"tx_id" yaml:"tx_id,omitempty"`
 	PopularityScore  null.Int    `boil:"popularity_score" json:"popularity_score,omitempty" toml:"popularity_score" yaml:"popularity_score,omitempty"`
 	ControversyScore null.Int    `boil:"controversy_score" json:"controversy_score,omitempty" toml:"controversy_score" yaml:"controversy_score,omitempty"`
+	IsFiat           bool        `boil:"is_fiat" json:"is_fiat" toml:"is_fiat" yaml:"is_fiat"`
+	Currency         null.String `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -59,6 +61,8 @@ var CommentColumns = struct {
 	TXID             string
 	PopularityScore  string
 	ControversyScore string
+	IsFiat           string
+	Currency         string
 }{
 	CommentID:        "comment_id",
 	LbryClaimID:      "lbry_claim_id",
@@ -75,6 +79,8 @@ var CommentColumns = struct {
 	TXID:             "tx_id",
 	PopularityScore:  "popularity_score",
 	ControversyScore: "controversy_score",
+	IsFiat:           "is_fiat",
+	Currency:         "currency",
 }
 
 // Generated where
@@ -159,6 +165,8 @@ var CommentWhere = struct {
 	TXID             whereHelpernull_String
 	PopularityScore  whereHelpernull_Int
 	ControversyScore whereHelpernull_Int
+	IsFiat           whereHelperbool
+	Currency         whereHelpernull_String
 }{
 	CommentID:        whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID:      whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -175,6 +183,8 @@ var CommentWhere = struct {
 	TXID:             whereHelpernull_String{field: "`comment`.`tx_id`"},
 	PopularityScore:  whereHelpernull_Int{field: "`comment`.`popularity_score`"},
 	ControversyScore: whereHelpernull_Int{field: "`comment`.`controversy_score`"},
+	IsFiat:           whereHelperbool{field: "`comment`.`is_fiat`"},
+	Currency:         whereHelpernull_String{field: "`comment`.`currency`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -207,9 +217,9 @@ func (*commentR) NewStruct() *commentR {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score"}
-	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score"}
-	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score", "is_fiat", "currency"}
+	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score", "currency"}
+	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged", "is_fiat"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 )
 

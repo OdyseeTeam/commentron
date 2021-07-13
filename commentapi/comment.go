@@ -18,13 +18,15 @@ type CommentItem struct {
 	ParentID      string  `json:"parent_id,omitempty"`
 	Signature     string  `json:"signature,omitempty"`
 	SigningTs     string  `json:"signing_ts,omitempty"`
-	IsHidden      bool    `json:"is_hidden"`
-	IsPinned      bool    `json:"is_pinned"`
 	ChannelID     string  `json:"channel_id,omitempty"`
 	ChannelName   string  `json:"channel_name,omitempty"`
 	ChannelURL    string  `json:"channel_url,omitempty"`
+	Currency      string  `json:"currency"`
 	Replies       int     `json:"replies,omitempty"`
 	SupportAmount float64 `json:"support_amount"`
+	IsHidden      bool    `json:"is_hidden"`
+	IsPinned      bool    `json:"is_pinned"`
+	IsFiat        bool    `json:"is_fiat"`
 }
 
 // ChannelArgs arguments to the comment.GetChannelForCommentID call
@@ -61,6 +63,7 @@ type CreateArgs struct {
 	SupportTxID     *string `json:"support_tx_id"`
 	SupportVout     *uint64 `json:"support_vout"`
 	PaymentIntentID *string `json:"payment_intent_id"`
+	Environment     *string `json:"environment"`
 	Signature       string  `json:"signature"`
 	SigningTS       string  `json:"signing_ts"`
 }
