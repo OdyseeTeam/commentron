@@ -179,5 +179,8 @@ func (c ListArgs) Validate() api.StatusError {
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
+	if c.ClaimID == nil && c.AuthorClaimID == nil {
+		return api.StatusError{Err: errors.Err("you must pass either claim_id or author_claim_id"), Status: http.StatusBadRequest}
+	}
 	return api.StatusError{}
 }
