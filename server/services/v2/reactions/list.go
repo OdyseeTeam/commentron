@@ -64,6 +64,9 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 			return errors.Err(err)
 		}
 	}
+	if err != nil {
+		return errors.Err(err)
+	}
 	var userReactions commentapi.Reactions
 	if args.ChannelName != nil {
 		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
