@@ -51,6 +51,9 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			return errors.Err(err)
 		}
 	}
+	if err != nil {
+		return errors.Err(err)
+	}
 	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
