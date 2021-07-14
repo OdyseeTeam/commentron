@@ -88,7 +88,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		Timestamp:   int(timestamp),
 	}
 
-	if args.SupportTxID != nil {
+	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		err := updateSupportInfo(channel.ClaimID, comment, args.SupportTxID, args.SupportVout, args.PaymentIntentID, args.Environment)
 		if err != nil {
 			return errors.Err(err)
