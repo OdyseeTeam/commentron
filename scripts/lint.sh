@@ -26,7 +26,7 @@ echo "Running errcheck..." && errcheck $(go list ./... | grep -v /migration/* | 
 # check for unnecessary conversions - ignore autogen code
 echo "Running unconvert..." && unconvert -v $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 # checks for function complexity, too big or too many returns, should be at 19
-echo "Running gocyclo..." && gocyclo -ignore "_test" -avg -over 20 $GO_FILES
+echo "Running gocyclo..." && gocyclo -ignore "_test" -avg -over 19 $GO_FILES
 # one last linter - ignore autogen code
 echo "Running golint..." && golint -set_exit_status $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )
 test $err = 0 # Return non-zero if any command failed

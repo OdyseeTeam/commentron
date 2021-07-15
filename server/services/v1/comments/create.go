@@ -54,42 +54,13 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return errors.Err(err)
 	}
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).OneG()
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
-	}
 
-	if blockedEntry != nil {
-		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
-	}
-
-	if args.ParentID != nil {
-		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), args.ChannelID)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
-	if err != nil {
-		return errors.Prefix("could not authenticate channel signature:", err)
-	}
-
-	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFrom(args.ChannelID).String)
+	err = checkAllowedAndValidate(args)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	comment := &m.Comment{
-		CommentID:   commentID,
-		LbryClaimID: args.ClaimID,
-		ChannelID:   null.StringFrom(args.ChannelID),
-		Body:        args.CommentText,
-		ParentID:    null.StringFromPtr(args.ParentID),
-		Signature:   null.StringFrom(args.Signature),
-		Signingts:   null.StringFrom(args.SigningTS),
-		Timestamp:   int(timestamp),
-	}
+	comment, err := createComment(args)
 
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		err := updateSupportInfo(channel.ClaimID, comment, args.SupportTxID, args.SupportVout, args.PaymentIntentID, args.Environment)
@@ -136,6 +107,49 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			ClaimID:    item.ClaimID,
 			Amount:     uint64(amount),
 		})
+	}
+
+	return nil
+}
+
+func createComment(args *commentapi.CreateArgs) (*m.Comment, error) {
+	commentID, timestamp, err := createCommentID(args.CommentText, null.StringFrom(args.ChannelID).String)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+
+	return &m.Comment{
+		CommentID:   commentID,
+		LbryClaimID: args.ClaimID,
+		ChannelID:   null.StringFrom(args.ChannelID),
+		Body:        args.CommentText,
+		ParentID:    null.StringFromPtr(args.ParentID),
+		Signature:   null.StringFrom(args.Signature),
+		Signingts:   null.StringFrom(args.SigningTS),
+		Timestamp:   int(timestamp),
+	}, nil
+}
+
+func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
+	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if blockedEntry != nil {
+		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
+	}
+
+	if args.ParentID != nil {
+		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), args.ChannelID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
+	if err != nil {
+		return errors.Prefix("could not authenticate channel signature:", err)
 	}
 
 	return nil
