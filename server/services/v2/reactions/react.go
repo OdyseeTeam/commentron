@@ -183,7 +183,7 @@ func updateCommentScoring(reactionType *model.ReactionType, added bool, comment 
 		absValue = 1
 	}
 	//IF(ABS(likes-dislikes) = 0, 1, ABS(likes-dislikes))/(likes+dislikes+1)
-	score := absValue / float64(likes+dislikes+1) * 10000
+	score := (1 - absValue/float64(likes+dislikes+1)) * 10000
 	comment.ControversyScore.SetValid(int(score))
 	err = comment.UpdateG(boil.Whitelist(model.CommentColumns.ControversyScore))
 	if err != nil {
