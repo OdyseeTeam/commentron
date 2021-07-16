@@ -245,12 +245,24 @@ func blockedByCreator(contentClaimID, commenterChannelID, comment string, suppor
 		return errors.Err(err)
 	}
 	if settings != nil {
-		return checkSettings(settings, comment, commenterChannelID, creatorChannel, signingChannel, supportAmt)
+		return checkSettings(settings, comment, commenterChannelID, contentClaimID, creatorChannel, signingChannel, supportAmt)
 	}
 	return nil
 }
 
-func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim, supportAmt null.Uint64) error {
+func checkSettings(settings *m.CreatorSetting, comment, commenterChannelClaimID, contentClaimID string, creatorChannel *m.Channel, signingChannel *jsonrpc.Claim, supportAmt null.Uint64) error {
+	if !settings.MinTipAmountSuperChat.IsZero() {
+		contentClaim, err := lbry.SDK.GetClaim(contentClaimID)
+		if err != nil {
+			return errors.Err(err)
+		}
+		if contentClaim.Value.GetStream() != nil && contentClaim.Value.GetStream().GetSource() == nil {
+			// Its a live chat, check for min tip amount if set
+			if supportAmt.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+				return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to comment"), Status: http.StatusBadRequest}
+			}
+		}
+	}
 	if !settings.MinTipAmountComment.IsZero() {
 		if supportAmt.IsZero() {
 			return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}

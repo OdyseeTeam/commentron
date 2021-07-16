@@ -3,7 +3,6 @@ package comments
 import (
 	"math"
 	"net/http"
-	"sort"
 
 	"github.com/volatiletech/sqlboiler/boil"
 
@@ -30,7 +29,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	totalCommentsQuery := make([]qm.QueryMod, 0)
 	totalSuperChatAmountQuery := []qm.QueryMod{qm.Select(`SUM(` + m.CommentColumns.Amount + `)`)}
 	offset := (args.Page - 1) * args.PageSize
-	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.Timestamp + " DESC")}
+	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.IsFiat + " DESC " + m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {
@@ -90,10 +89,6 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	}
 
 	items, blockedCommentCnt, err := getItems(comments)
-
-	sort.SliceStable(items, func(i, j int) bool {
-		return items[j].SupportAmount <= items[i].SupportAmount
-	})
 
 	totalItems = totalItems - blockedCommentCnt
 	reply.Items = items
