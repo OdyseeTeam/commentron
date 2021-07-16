@@ -29,7 +29,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	totalCommentsQuery := make([]qm.QueryMod, 0)
 	totalSuperChatAmountQuery := []qm.QueryMod{qm.Select(`SUM(` + m.CommentColumns.Amount + `)`)}
 	offset := (args.Page - 1) * args.PageSize
-	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.IsFiat + " DESC " + m.CommentColumns.Timestamp + " DESC")}
+	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.IsFiat + " DESC, " + m.CommentColumns.Amount + " DESC, " + m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {

@@ -14,12 +14,16 @@ import (
 // SocketyToken token used to communicate with Sockety
 var SocketyToken string
 
+//IsTestMode turns off validations for local testing
+var IsTestMode bool
+
 // InitializeConfiguration inits the base configuration of commentron
 func InitializeConfiguration() {
 	conf, err := env.NewWithEnvVars()
 	if err != nil {
 		logrus.Panic(err)
 	}
+	IsTestMode = conf.IsTestMode
 	if viper.GetBool("debugmode") {
 		helper.Debugging = true
 		logrus.SetLevel(logrus.DebugLevel)
