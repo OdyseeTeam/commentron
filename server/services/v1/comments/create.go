@@ -109,6 +109,8 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 			Comment:    &item.Comment,
 			ClaimID:    item.ClaimID,
 			Amount:     uint64(amount),
+			IsFiat:     item.IsFiat,
+			Currency:   util.PtrToString(item.Currency),
 		})
 	}
 

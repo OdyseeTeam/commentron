@@ -28,6 +28,8 @@ type NotifyOptions struct {
 	Comment    *string
 	ClaimID    string
 	Amount     uint64
+	IsFiat     bool
+	Currency   *string
 }
 
 // APIClient is the interface type for internal-api calls

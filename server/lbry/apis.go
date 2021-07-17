@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -41,6 +42,7 @@ func notify(options NotifyOptions) error {
 	form.Set("comment_id", options.CommentID)
 	form.Set("claim_id", options.ClaimID)
 	form.Set("amount", fmt.Sprintf("%d", options.Amount))
+	form.Set("is_fiat", strconv.FormatBool(options.IsFiat))
 
 	if options.Comment != nil {
 		form.Set("comment", *options.Comment)
@@ -52,6 +54,10 @@ func notify(options NotifyOptions) error {
 
 	if options.ParentID != nil {
 		form.Set("parent_id", *options.ParentID)
+	}
+
+	if options.IsFiat && options.Currency != nil {
+		form.Set("currency", *options.Currency)
 	}
 
 	response, err := c.PostForm(apiURL, form)
