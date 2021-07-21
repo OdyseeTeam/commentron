@@ -32,6 +32,8 @@ type CreatorSetting struct {
 	CreatedAt             time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt             time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	SlowModeMinGap        null.Uint64 `boil:"slow_mode_min_gap" json:"slow_mode_min_gap,omitempty" toml:"slow_mode_min_gap" yaml:"slow_mode_min_gap,omitempty"`
+	CurseJarAmount        null.Uint64 `boil:"curse_jar_amount" json:"curse_jar_amount,omitempty" toml:"curse_jar_amount" yaml:"curse_jar_amount,omitempty"`
+	IsFiltersEnabled      null.Bool   `boil:"is_filters_enabled" json:"is_filters_enabled,omitempty" toml:"is_filters_enabled" yaml:"is_filters_enabled,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,6 +49,8 @@ var CreatorSettingColumns = struct {
 	CreatedAt             string
 	UpdatedAt             string
 	SlowModeMinGap        string
+	CurseJarAmount        string
+	IsFiltersEnabled      string
 }{
 	ID:                    "id",
 	CreatorChannelID:      "creator_channel_id",
@@ -57,6 +61,8 @@ var CreatorSettingColumns = struct {
 	CreatedAt:             "created_at",
 	UpdatedAt:             "updated_at",
 	SlowModeMinGap:        "slow_mode_min_gap",
+	CurseJarAmount:        "curse_jar_amount",
+	IsFiltersEnabled:      "is_filters_enabled",
 }
 
 // Generated where
@@ -71,6 +77,8 @@ var CreatorSettingWhere = struct {
 	CreatedAt             whereHelpertime_Time
 	UpdatedAt             whereHelpertime_Time
 	SlowModeMinGap        whereHelpernull_Uint64
+	CurseJarAmount        whereHelpernull_Uint64
+	IsFiltersEnabled      whereHelpernull_Bool
 }{
 	ID:                    whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:      whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -81,6 +89,8 @@ var CreatorSettingWhere = struct {
 	CreatedAt:             whereHelpertime_Time{field: "`creator_setting`.`created_at`"},
 	UpdatedAt:             whereHelpertime_Time{field: "`creator_setting`.`updated_at`"},
 	SlowModeMinGap:        whereHelpernull_Uint64{field: "`creator_setting`.`slow_mode_min_gap`"},
+	CurseJarAmount:        whereHelpernull_Uint64{field: "`creator_setting`.`curse_jar_amount`"},
+	IsFiltersEnabled:      whereHelpernull_Bool{field: "`creator_setting`.`is_filters_enabled`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -104,8 +114,8 @@ func (*creatorSettingR) NewStruct() *creatorSettingR {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 )

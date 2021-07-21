@@ -80,6 +80,14 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.MinTipAmountComment.SetValid(uint64(lbc.ToBTC()))
 	}
 
+	if args.CurseJarAmount != nil { // Coming with Appeal process
+		settings.CurseJarAmount.SetValid(*args.CurseJarAmount)
+	}
+
+	if args.FiltersEnabled != nil { // Future feature to be developed
+		settings.IsFiltersEnabled.SetValid(*args.FiltersEnabled)
+	}
+
 	err = settings.UpdateG(boil.Infer())
 	if err != nil {
 		return errors.Err(err)
@@ -91,9 +99,21 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 }
 
 func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.ListSettingsResponse) {
-	reply.Words = settings.MutedWords.String
-	reply.CommentsEnabled = settings.CommentsEnabled.Bool
-	reply.MinTipAmountComment = btcutil.Amount(settings.MinTipAmountComment.Uint64).ToBTC()
-	reply.MinTipAmountSuperChat = btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()
-	reply.SlowModeMinGap = settings.SlowModeMinGap.Uint64
+	if settings.MutedWords.Valid {
+		reply.Words = &settings.MutedWords.String
+	}
+	if settings.CommentsEnabled.Valid {
+		reply.CommentsEnabled = &settings.CommentsEnabled.Bool
+	}
+	if settings.MinTipAmountComment.Valid {
+		minTipAmount := btcutil.Amount(settings.MinTipAmountComment.Uint64).ToBTC()
+		reply.MinTipAmountComment = &minTipAmount
+	}
+	if settings.MinTipAmountSuperChat.Valid {
+		minTipAmountSuperChat := btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()
+		reply.MinTipAmountSuperChat = &minTipAmountSuperChat
+	}
+	if settings.SlowModeMinGap.Valid {
+		reply.SlowModeMinGap = &settings.SlowModeMinGap.Uint64
+	}
 }

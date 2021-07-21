@@ -26,7 +26,7 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 		if parentChannel != nil {
 
 			blockedEntry, err := m.BlockedEntries(
-				m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
+				m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
 				m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).OneG()
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return errors.Err(err)

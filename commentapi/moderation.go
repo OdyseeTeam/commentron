@@ -14,7 +14,8 @@ type BlockArgs struct {
 	CreatorChannelID   string `json:"creator_channel_id"`
 	CreatorChannelName string `json:"creator_channel_name"`
 	// Blocks identity from comment universally, requires Admin rights on commentron instance
-	BlockAll bool `json:"block_all"`
+	BlockAll   bool   `json:"block_all"`
+	TimeOutHrs uint64 `json:"time_out_hrs"`
 	// If true will delete all comments of the offender, requires Admin rights on commentron for universal delete
 	DeleteAll bool   `json:"delete_all"`
 	Signature string `json:"signature"`

@@ -9,6 +9,8 @@ import (
 	"encoding/pem"
 	"math/big"
 
+	"github.com/lbryio/commentron/config"
+
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
@@ -38,8 +40,11 @@ func ValidateSignature(channelClaimID, signature, signingTS, data string) error 
 	//		return errors.Err("validation is disallowed for non controlling channels")
 	//	}
 	pk := channel.Value.GetChannel().GetPublicKey()
-	return validateSignature(channelClaimID, signature, signingTS, data, pk)
-
+	err = validateSignature(channelClaimID, signature, signingTS, data, pk)
+	if config.IsTestMode {
+		return nil
+	}
+	return err
 }
 
 // ValidateSignatureFromClaim validates the signature was signed by the channel reference.

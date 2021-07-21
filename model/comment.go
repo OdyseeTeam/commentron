@@ -103,52 +103,6 @@ func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
-type whereHelpernull_Uint64 struct{ field string }
-
-func (w whereHelpernull_Uint64) EQ(x null.Uint64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Uint64) NEQ(x null.Uint64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Uint64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Uint64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_Uint64) LT(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Uint64) LTE(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Uint64) GT(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Uint64) GTE(x null.Uint64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-type whereHelpernull_Int struct{ field string }
-
-func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var CommentWhere = struct {
 	CommentID        whereHelperstring
 	LbryClaimID      whereHelperstring
@@ -189,23 +143,26 @@ var CommentWhere = struct {
 
 // CommentRels is where relationship names are stored.
 var CommentRels = struct {
-	Channel        string
-	Parent         string
-	ParentComments string
-	Reactions      string
+	Channel                        string
+	Parent                         string
+	OffendingCommentBlockedEntries string
+	ParentComments                 string
+	Reactions                      string
 }{
-	Channel:        "Channel",
-	Parent:         "Parent",
-	ParentComments: "ParentComments",
-	Reactions:      "Reactions",
+	Channel:                        "Channel",
+	Parent:                         "Parent",
+	OffendingCommentBlockedEntries: "OffendingCommentBlockedEntries",
+	ParentComments:                 "ParentComments",
+	Reactions:                      "Reactions",
 }
 
 // commentR is where relationships are stored.
 type commentR struct {
-	Channel        *Channel
-	Parent         *Comment
-	ParentComments CommentSlice
-	Reactions      ReactionSlice
+	Channel                        *Channel
+	Parent                         *Comment
+	OffendingCommentBlockedEntries BlockedEntrySlice
+	ParentComments                 CommentSlice
+	Reactions                      ReactionSlice
 }
 
 // NewStruct creates a new relationship struct
@@ -442,6 +399,27 @@ func (o *Comment) Parent(mods ...qm.QueryMod) commentQuery {
 	return query
 }
 
+// OffendingCommentBlockedEntries retrieves all the blocked_entry's BlockedEntries with an executor via offending_comment_id column.
+func (o *Comment) OffendingCommentBlockedEntries(mods ...qm.QueryMod) blockedEntryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`blocked_entry`.`offending_comment_id`=?", o.CommentID),
+	)
+
+	query := BlockedEntries(queryMods...)
+	queries.SetFrom(query.Query, "`blocked_entry`")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"`blocked_entry`.*"})
+	}
+
+	return query
+}
+
 // ParentComments retrieves all the comment's Comments with an executor via parent_id column.
 func (o *Comment) ParentComments(mods ...qm.QueryMod) commentQuery {
 	var queryMods []qm.QueryMod
@@ -670,6 +648,94 @@ func (commentL) LoadParent(e boil.Executor, singular bool, maybeComment interfac
 					foreign.R = &commentR{}
 				}
 				foreign.R.ParentComments = append(foreign.R.ParentComments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadOffendingCommentBlockedEntries allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (commentL) LoadOffendingCommentBlockedEntries(e boil.Executor, singular bool, maybeComment interface{}, mods queries.Applicator) error {
+	var slice []*Comment
+	var object *Comment
+
+	if singular {
+		object = maybeComment.(*Comment)
+	} else {
+		slice = *maybeComment.(*[]*Comment)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &commentR{}
+		}
+		args = append(args, object.CommentID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &commentR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.CommentID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.CommentID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(qm.From(`blocked_entry`), qm.WhereIn(`offending_comment_id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load blocked_entry")
+	}
+
+	var resultSlice []*BlockedEntry
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice blocked_entry")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on blocked_entry")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for blocked_entry")
+	}
+
+	if singular {
+		object.R.OffendingCommentBlockedEntries = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &blockedEntryR{}
+			}
+			foreign.R.OffendingComment = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.CommentID, foreign.OffendingCommentID) {
+				local.R.OffendingCommentBlockedEntries = append(local.R.OffendingCommentBlockedEntries, foreign)
+				if foreign.R == nil {
+					foreign.R = &blockedEntryR{}
+				}
+				foreign.R.OffendingComment = local
 				break
 			}
 		}
@@ -1119,6 +1185,225 @@ func (o *Comment) RemoveParent(exec boil.Executor, related *Comment) error {
 		related.R.ParentComments = related.R.ParentComments[:ln-1]
 		break
 	}
+	return nil
+}
+
+// AddOffendingCommentBlockedEntriesG adds the given related objects to the existing relationships
+// of the comment, optionally inserting them as new records.
+// Appends related to o.R.OffendingCommentBlockedEntries.
+// Sets related.R.OffendingComment appropriately.
+// Uses the global database handle.
+func (o *Comment) AddOffendingCommentBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.AddOffendingCommentBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// AddOffendingCommentBlockedEntriesP adds the given related objects to the existing relationships
+// of the comment, optionally inserting them as new records.
+// Appends related to o.R.OffendingCommentBlockedEntries.
+// Sets related.R.OffendingComment appropriately.
+// Panics on error.
+func (o *Comment) AddOffendingCommentBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.AddOffendingCommentBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddOffendingCommentBlockedEntriesGP adds the given related objects to the existing relationships
+// of the comment, optionally inserting them as new records.
+// Appends related to o.R.OffendingCommentBlockedEntries.
+// Sets related.R.OffendingComment appropriately.
+// Uses the global database handle and panics on error.
+func (o *Comment) AddOffendingCommentBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.AddOffendingCommentBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddOffendingCommentBlockedEntries adds the given related objects to the existing relationships
+// of the comment, optionally inserting them as new records.
+// Appends related to o.R.OffendingCommentBlockedEntries.
+// Sets related.R.OffendingComment appropriately.
+func (o *Comment) AddOffendingCommentBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.OffendingCommentID, o.CommentID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `blocked_entry` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"offending_comment_id"}),
+				strmangle.WhereClause("`", "`", 0, blockedEntryPrimaryKeyColumns),
+			)
+			values := []interface{}{o.CommentID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.OffendingCommentID, o.CommentID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &commentR{
+			OffendingCommentBlockedEntries: related,
+		}
+	} else {
+		o.R.OffendingCommentBlockedEntries = append(o.R.OffendingCommentBlockedEntries, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &blockedEntryR{
+				OffendingComment: o,
+			}
+		} else {
+			rel.R.OffendingComment = o
+		}
+	}
+	return nil
+}
+
+// SetOffendingCommentBlockedEntriesG removes all previously related items of the
+// comment replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Replaces o.R.OffendingCommentBlockedEntries with related.
+// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Uses the global database handle.
+func (o *Comment) SetOffendingCommentBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
+	return o.SetOffendingCommentBlockedEntries(boil.GetDB(), insert, related...)
+}
+
+// SetOffendingCommentBlockedEntriesP removes all previously related items of the
+// comment replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Replaces o.R.OffendingCommentBlockedEntries with related.
+// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Panics on error.
+func (o *Comment) SetOffendingCommentBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
+	if err := o.SetOffendingCommentBlockedEntries(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetOffendingCommentBlockedEntriesGP removes all previously related items of the
+// comment replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Replaces o.R.OffendingCommentBlockedEntries with related.
+// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Uses the global database handle and panics on error.
+func (o *Comment) SetOffendingCommentBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
+	if err := o.SetOffendingCommentBlockedEntries(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetOffendingCommentBlockedEntries removes all previously related items of the
+// comment replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+// Replaces o.R.OffendingCommentBlockedEntries with related.
+// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
+func (o *Comment) SetOffendingCommentBlockedEntries(exec boil.Executor, insert bool, related ...*BlockedEntry) error {
+	query := "update `blocked_entry` set `offending_comment_id` = null where `offending_comment_id` = ?"
+	values := []interface{}{o.CommentID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.OffendingCommentBlockedEntries {
+			queries.SetScanner(&rel.OffendingCommentID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.OffendingComment = nil
+		}
+
+		o.R.OffendingCommentBlockedEntries = nil
+	}
+	return o.AddOffendingCommentBlockedEntries(exec, insert, related...)
+}
+
+// RemoveOffendingCommentBlockedEntriesG relationships from objects passed in.
+// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.OffendingComment.
+// Uses the global database handle.
+func (o *Comment) RemoveOffendingCommentBlockedEntriesG(related ...*BlockedEntry) error {
+	return o.RemoveOffendingCommentBlockedEntries(boil.GetDB(), related...)
+}
+
+// RemoveOffendingCommentBlockedEntriesP relationships from objects passed in.
+// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.OffendingComment.
+// Panics on error.
+func (o *Comment) RemoveOffendingCommentBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
+	if err := o.RemoveOffendingCommentBlockedEntries(exec, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveOffendingCommentBlockedEntriesGP relationships from objects passed in.
+// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.OffendingComment.
+// Uses the global database handle and panics on error.
+func (o *Comment) RemoveOffendingCommentBlockedEntriesGP(related ...*BlockedEntry) {
+	if err := o.RemoveOffendingCommentBlockedEntries(boil.GetDB(), related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// RemoveOffendingCommentBlockedEntries relationships from objects passed in.
+// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
+// Sets related.R.OffendingComment.
+func (o *Comment) RemoveOffendingCommentBlockedEntries(exec boil.Executor, related ...*BlockedEntry) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.OffendingCommentID, nil)
+		if rel.R != nil {
+			rel.R.OffendingComment = nil
+		}
+		if err = rel.Update(exec, boil.Whitelist("offending_comment_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.OffendingCommentBlockedEntries {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.OffendingCommentBlockedEntries)
+			if ln > 1 && i < ln-1 {
+				o.R.OffendingCommentBlockedEntries[i] = o.R.OffendingCommentBlockedEntries[ln-1]
+			}
+			o.R.OffendingCommentBlockedEntries = o.R.OffendingCommentBlockedEntries[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

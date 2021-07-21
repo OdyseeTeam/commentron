@@ -32,7 +32,7 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 		return errors.Err(err)
 	}
 
-	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).AllG()
+	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).AllG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -59,7 +59,7 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 	} else {
 		if len(entries) > 0 {
 			for _, be := range entries {
-				if be.BlockedByChannelID.String == creatorChannel.ClaimID {
+				if be.CreatorChannelID.String == creatorChannel.ClaimID {
 					err := be.DeleteG()
 					if err != nil {
 						return errors.Err(err)

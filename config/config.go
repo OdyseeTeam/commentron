@@ -4,7 +4,6 @@ import (
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/env"
 	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"
@@ -18,11 +17,8 @@ var SocketyToken string
 var IsTestMode bool
 
 // InitializeConfiguration inits the base configuration of commentron
-func InitializeConfiguration() {
-	conf, err := env.NewWithEnvVars()
-	if err != nil {
-		logrus.Panic(err)
-	}
+func InitializeConfiguration(conf *env.Config) {
+
 	IsTestMode = conf.IsTestMode
 	if viper.GetBool("debugmode") {
 		helper.Debugging = true
@@ -32,8 +28,8 @@ func InitializeConfiguration() {
 		helper.Debugging = true
 		logrus.SetLevel(logrus.TraceLevel)
 	}
-	lbry.Init(conf)
-	err = db.Init(conf.MySQLDsn, helper.Debugging)
+
+	err := db.Init(conf.MySQLDsn, helper.Debugging)
 	if err != nil {
 		logrus.Panic(err)
 	}

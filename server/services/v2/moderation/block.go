@@ -3,6 +3,7 @@ package moderation
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/helper"
@@ -38,25 +39,46 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		return err
 	}
 
+	// Only get the block list they were invited to.
+	participatingBlockedList, err := creatorChannel.BlockedListInvite().OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
 	bannedChannel, err := helper.FindOrCreateChannel(args.BlockedChannelID, args.BlockedChannelName)
 	if err != nil {
 		return errors.Err(err)
 	}
 	blockedEntry, err := model.BlockedEntries(
 		model.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.BlockedChannelID)),
-		model.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).OneG()
+		model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).OneG()
 	if err != nil && err != sql.ErrNoRows {
 		return errors.Err(err)
 	}
+
 	if blockedEntry == nil {
+		blocklistID := null.Uint64{}
+		if participatingBlockedList != nil {
+			blocklistID.SetValid(participatingBlockedList.ID)
+		}
 		blockedEntry = &model.BlockedEntry{
-			BlockedChannelID:   null.StringFrom(bannedChannel.ClaimID),
-			BlockedByChannelID: null.StringFrom(creatorChannel.ClaimID),
+			BlockedChannelID: null.StringFrom(bannedChannel.ClaimID),
+			CreatorChannelID: null.StringFrom(creatorChannel.ClaimID),
+			BlockedListID:    blocklistID,
 		}
 		err := blockedEntry.InsertG(boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
+	} else {
+		blockedEntry.Strikes.SetValid(blockedEntry.Strikes.Int + 1)
+	}
+	if participatingBlockedList != nil && args.TimeOutHrs > 0 {
+		return api.StatusError{Err: errors.Err("the block list rules you are participating have their time out hours settings per strike. You must stop participating in the shared blocked list to customize timeouts"), Status: http.StatusBadRequest}
+	} else if participatingBlockedList != nil {
+		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(blockedEntry.Strikes.Int, participatingBlockedList)))
+	} else {
+		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOutHrs) * time.Hour))
 	}
 	isMod, err := modChannel.ModChannelModerators().ExistsG()
 	if err != nil {
@@ -66,11 +88,15 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		if !isMod {
 			return api.StatusError{Err: errors.Err("cannot block universally without admin privileges"), Status: http.StatusForbidden}
 		}
-		blockedEntry.BlockedByChannelID.SetValid(creatorChannel.ClaimID)
+		blockedEntry.CreatorChannelID.SetValid(creatorChannel.ClaimID)
 		blockedEntry.UniversallyBlocked.SetValid(true)
 		reply.AllBlocked = true
 	} else {
 		reply.BannedFrom = &creatorChannel.ClaimID
+	}
+
+	if modChannel.ClaimID != creatorChannel.ClaimID {
+		blockedEntry.DelegatedModeratorChannelID = null.StringFrom(modChannel.ClaimID)
 	}
 
 	err = blockedEntry.UpdateG(boil.Infer())
@@ -100,6 +126,20 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	reply.BannedChannelID = bannedChannel.ClaimID
 
 	return nil
+}
+
+const defaultStrikeTimeout = 4 * time.Hour
+
+func getStrikeDuration(strike int, list *model.BlockedList) time.Duration {
+	if list.StrikeThree.Valid && strike == 3 {
+		return time.Duration(list.StrikeThree.Uint64) * time.Hour
+	} else if list.StrikeTwo.Valid && strike == 2 {
+		return time.Duration(list.StrikeTwo.Uint64) * time.Hour
+	} else if list.StrikeOne.Valid && strike == 1 {
+		return time.Duration(list.StrikeOne.Uint64) * time.Hour
+	} else {
+		return defaultStrikeTimeout
+	}
 }
 
 func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannelName string) (*model.Channel, *model.Channel, error) {
@@ -146,7 +186,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	var blockedByCreator model.BlockedEntrySlice
 	var blockedGlobally model.BlockedEntrySlice
 
-	blockedByMod, err = modChannel.BlockedByChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(false))).AllG()
+	blockedByMod, err = modChannel.CreatorChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(false))).AllG()
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -157,7 +197,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	}
 
 	if isMod {
-		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.BlockedByChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
@@ -180,7 +220,7 @@ func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, er
 	for _, m := range moderations {
 		creatorIDs = append(creatorIDs, m.CreatorChannelID)
 	}
-	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.BlockedByChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.BlockedByChannel)).AllG()
+	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.CreatorChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel)).AllG()
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Err(err)
 	}
@@ -192,8 +232,8 @@ func populateBlockedChannelsReply(blockedBy *model.Channel, blocked model.Blocke
 	for _, b := range blocked {
 		blockedByChannel := blockedBy
 		if b.R != nil && b.R.BlockedChannel != nil {
-			if b.R.BlockedByChannel != nil && blockedBy == nil {
-				blockedByChannel = b.R.BlockedByChannel
+			if b.R.CreatorChannel != nil && blockedBy == nil {
+				blockedByChannel = b.R.CreatorChannel
 			}
 			blockedChannels = append(blockedChannels, commentapi.BlockedChannel{
 				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
