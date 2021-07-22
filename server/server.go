@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lbryio/commentron/config"
+
 	"github.com/lbryio/commentron/metrics"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -24,6 +26,7 @@ import (
 	rpcHack "github.com/lbryio/commentron/server/services/v1/rpc"
 	jsonHack "github.com/lbryio/commentron/server/services/v1/rpc/json"
 	"github.com/lbryio/commentron/server/services/v1/status"
+	"github.com/lbryio/commentron/server/services/v2/blockedlists"
 	"github.com/lbryio/commentron/server/services/v2/moderation"
 	"github.com/lbryio/commentron/server/services/v2/reactions"
 	"github.com/lbryio/commentron/server/services/v2/settings"
@@ -172,11 +175,12 @@ func v1RPCServer() http.Handler {
 			err, ok := info.Error.(api.StatusError)
 			if ok {
 				info.StatusCode = err.Status
-			}
-			if info.StatusCode >= http.StatusInternalServerError {
-				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
 			} else {
-				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
+				message := info.Error.Error()
+				if config.IsTestMode {
+					message = errors.FullTrace(info.Error)
+				}
+				logrus.Error(color.RedString(consoleText + ": " + message))
 			}
 		} else if helper.Debugging {
 			logrus.Debug(color.GreenString(consoleText))
@@ -198,6 +202,7 @@ func v2RPCServer() http.Handler {
 	moderationService := new(moderation.Service)
 	settingService := new(settings.Service)
 	verifyService := new(verify.Service)
+	blockedlistService := new(blockedlists.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -223,6 +228,10 @@ func v2RPCServer() http.Handler {
 	if err != nil {
 		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}
+	err = rpcServer.RegisterService(blockedlistService, "blockedlist")
+	if err != nil {
+		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
+	}
 	rpcServer.RegisterBeforeFunc(func(info *rpc.RequestInfo) {
 		logrus.Debugf("M->%s: from %s, %d", info.Method, getIP(info.Request), info.StatusCode)
 	})
@@ -234,7 +243,11 @@ func v2RPCServer() http.Handler {
 				info.StatusCode = statusErr.Status
 			}
 			if info.StatusCode >= http.StatusInternalServerError {
-				logrus.Error(color.RedString(consoleText + ": " + err.Error()))
+				message := err.Error()
+				if config.IsTestMode {
+					message = errors.FullTrace(err)
+				}
+				logrus.Error(color.RedString(consoleText + ": " + message))
 			} else {
 				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
 			}

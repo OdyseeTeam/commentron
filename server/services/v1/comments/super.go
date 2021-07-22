@@ -4,6 +4,8 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/volatiletech/sqlboiler/boil"
 
 	"github.com/btcsuite/btcutil"
@@ -88,7 +90,19 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		return errors.Err(err)
 	}
 
-	items, blockedCommentCnt, err := getItems(comments)
+	channelClaim, err := lbry.SDK.GetSigningChannelForClaim(util.StrFromPtr(args.ClaimID))
+	if err != nil {
+		return errors.Err(err)
+	}
+	var creatorChannel *m.Channel
+	if channelClaim != nil {
+		creatorChannel, err = m.Channels(m.ChannelWhere.ClaimID.EQ(channelClaim.ClaimID)).OneG()
+		if err != nil {
+			return errors.Err(err)
+		}
+	}
+
+	items, blockedCommentCnt, err := getItems(comments, creatorChannel)
 
 	totalItems = totalItems - blockedCommentCnt
 	reply.Items = items

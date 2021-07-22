@@ -20,7 +20,7 @@ import (
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
-	err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
+	creatorChannel, err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return errors.Err(err)
 	}
 
-	items, blockedCommentCnt, err := getItems(comments)
+	items, blockedCommentCnt, err := getItems(comments, creatorChannel)
 
 	totalFilteredItems = totalFilteredItems - blockedCommentCnt
 	reply.Items = items
@@ -114,26 +114,27 @@ func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 	return queryMods
 }
 
-func checkCommentsEnabled(channelName, ChannelID null.String) error {
-	if !channelName.IsZero() && !ChannelID.IsZero() {
+func checkCommentsEnabled(channelName, ChannelID null.String) (*m.Channel, error) {
+	if channelName.Valid && ChannelID.Valid {
 		creatorChannel, err := helper.FindOrCreateChannel(ChannelID.String, channelName.String)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
+			return nil, errors.Err(err)
 		}
 		if settings != nil {
 			if !settings.CommentsEnabled.Bool {
-				return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+				return nil, api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
 			}
 		}
+		return creatorChannel, nil
 	}
-	return nil
+	return nil, nil
 }
 
-func getItems(comments m.CommentSlice) ([]commentapi.CommentItem, int64, error) {
+func getItems(comments m.CommentSlice, creatorChannel *m.Channel) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
 	var alreadyInSet = map[string]bool{}
@@ -148,7 +149,13 @@ Comments:
 				}
 				if channel != nil {
 					for _, entry := range blockedFrom {
-						if entry.UniversallyBlocked.Bool || entry.BlockedByChannelID.String == channel.ClaimID {
+						if creatorChannel != nil && creatorChannel.BlockedListID.Valid {
+							if creatorChannel.BlockedListID == entry.BlockedListID {
+								blockedCommentCnt++
+								continue Comments
+							}
+						}
+						if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
 							blockedCommentCnt++
 							continue Comments
 						}

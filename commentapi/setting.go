@@ -20,38 +20,33 @@ type ListSettingsArgs struct {
 
 // ListSettingsResponse returns all the settings for creator/user
 type ListSettingsResponse struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
+	Authorization
 	// CSV list of containing words to block comment on content
-	Words                 string  `json:"words"`
-	CommentsEnabled       bool    `json:"comments_enabled"`
-	MinTipAmountComment   float64 `json:"min_tip_amount_comment"`
-	MinTipAmountSuperChat float64 `json:"min_tip_amount_super_chat"`
-	SlowModeMinGap        uint64  `json:"slow_mode_min_gap"`
-	Signature             string  `json:"signature"`
-	SigningTS             string  `json:"signing_ts"`
-}
-
-// UpdateSettingsArgs arguments for different settings that could be set
-type UpdateSettingsArgs struct {
-	ChannelName           string   `json:"channel_name"`
-	ChannelID             string   `json:"channel_id"`
+	Words                 *string  `json:"words"`
 	CommentsEnabled       *bool    `json:"comments_enabled"`
 	MinTipAmountComment   *float64 `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat *float64 `json:"min_tip_amount_super_chat"`
 	SlowModeMinGap        *uint64  `json:"slow_mode_min_gap"`
-	Signature             string   `json:"signature"`
-	SigningTS             string   `json:"signing_ts"`
+	CurseJarAmount        *uint64  `json:"curse_jar_amount"`
+	FiltersEnabled        *bool    `json:"filters_enabled"`
+}
+
+// UpdateSettingsArgs arguments for different settings that could be set
+type UpdateSettingsArgs struct {
+	Authorization
+	CommentsEnabled       *bool    `json:"comments_enabled"`
+	MinTipAmountComment   *float64 `json:"min_tip_amount_comment"`
+	MinTipAmountSuperChat *float64 `json:"min_tip_amount_super_chat"`
+	SlowModeMinGap        *uint64  `json:"slow_mode_min_gap"`
+	CurseJarAmount        *uint64  `json:"curse_jar_amount"`
+	FiltersEnabled        *bool    `json:"filters_enabled"`
 }
 
 // BlockWordArgs arguments passed to settings.BlockWord. Appends to list
 type BlockWordArgs struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
+	Authorization
 	// CSV list of containing words to block comment on content
-	Words     string `json:"words"`
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
+	Words string `json:"words"`
 }
 
 // Validate validates the data in the args
@@ -79,12 +74,9 @@ type BlockWordRespose struct {
 
 // UnBlockWordArgs arguments passed to settings.UnBlockWord. Removes if exists
 type UnBlockWordArgs struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
+	Authorization
 	// CSV list of containing words to block comment on content
-	Words     string `json:"words"`
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
+	Words string `json:"words"`
 }
 
 // Validate validates the data in the args
@@ -104,10 +96,7 @@ func (b UnBlockWordArgs) Validate() api.StatusError {
 
 // ListBlockedWordsArgs lists all the blocked words for the channel
 type ListBlockedWordsArgs struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
-	Signature   string `json:"signature"`
-	SigningTS   string `json:"signing_ts"`
+	Authorization
 }
 
 // Validate validates the data in the args

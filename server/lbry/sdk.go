@@ -22,7 +22,7 @@ func (sdk *sdkClient) GetClaim(claimID string) (*jsonrpc.Claim, error) {
 	metrics.SDKClaimCache.WithLabelValues("hit").Add(1)
 	cachedValue, err := claimCache.Fetch(claimID, 30*time.Minute, sdk.getClaim(claimID))
 	if err != nil {
-		return nil, err
+		return nil, errors.Err(err)
 	}
 	if cachedValue.Value() == nil {
 		claimCache.Delete(claimID)
@@ -53,7 +53,7 @@ func (sdk *sdkClient) getClaim(claimID string) func() (interface{}, error) {
 func (sdk *sdkClient) GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error) {
 	claim, err := sdk.GetClaim(claimID)
 	if err != nil {
-		return nil, errors.Err(err)
+		return nil, err
 	}
 	if claim == nil {
 		return nil, errors.Err("could not resolve claim_id %s", claimID)
@@ -72,7 +72,7 @@ func (sdk *sdkClient) GetTx(txid string) (*jsonrpc.TransactionSummary, error) {
 	c := jsonrpc.NewClient(sdkURL)
 	summary, err := c.TransactionShow(txid)
 	if err != nil {
-		return nil, errors.Err(err)
+		return nil, err
 	}
 	return summary, nil
 }

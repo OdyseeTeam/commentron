@@ -10,9 +10,9 @@ Content-Type: application/json
 {
   "jsonrpc": "2.0",
   "id": null,
-  "method": "create_comment",
+  "method": "comment.Create",
   "params": {
-    "claim_id": "6d266af6c25c80fa2ac6cc7662921ad2e90a07e7",
+    "claim_id": "971926a0fb0dcaafca88797d517203ebd82eb14c",
     "comment": "This is literally, the most anonymous comment I have EVER seen.",
     "channel_id": "9cb713f01bf247a0e03170b5ed00d5161340c486",
     "channel_name": "@🌹❤️😍Amirul😍❤️🌹",

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/volatiletech/sqlboiler/queries/qm"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/flags"
@@ -57,24 +59,24 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	request := &createRequest{args: args}
 	err = checkAllowedAndValidate(args)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 
 	err = createComment(request)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		err := updateSupportInfo(request)
 		if err != nil {
-			return errors.Err(err)
+			return err
 		}
 	}
 
 	err = blockedByCreator(request)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 
 	err = flags.CheckComment(request.comment)
@@ -84,14 +86,14 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	err = request.comment.InsertG(boil.Infer())
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 
 	item := populateItem(request.comment, channel, 0)
 
 	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 
 	reply.CommentItem = &item
@@ -154,7 +156,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 	}
 
 	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
-	if err != nil && !config.IsTestMode {
+	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}
 
@@ -243,7 +245,11 @@ func blockedByCreator(request *createRequest) error {
 	if request.signingChannel == nil {
 		return nil
 	}
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.BlockedByChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))).OneG()
+	request.creatorChannel, err = helper.FindOrCreateChannel(request.signingChannel.ClaimID, request.signingChannel.Name)
+	creatorFilter := m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID))
+	userFilter := m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))
+	blockedListFilter := m.BlockedEntryWhere.BlockedListID.EQ(request.creatorChannel.BlockedListID)
+	blockedEntry, err := m.BlockedEntries(creatorFilter, userFilter).OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -252,10 +258,22 @@ func blockedByCreator(request *createRequest) error {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	}
 
-	request.creatorChannel, err = helper.FindOrCreateChannel(request.signingChannel.ClaimID, request.signingChannel.Name)
-	if err != nil {
-		return err
+	blockedListEntry, err := m.BlockedEntries(blockedListFilter, userFilter, qm.Load(m.BlockedEntryRels.BlockedList), qm.Load(m.BlockedEntryRels.CreatorChannel)).OneG()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
 	}
+	if blockedListEntry != nil && blockedListEntry.R != nil && blockedListEntry.R.BlockedList != nil {
+		blockedByChannel := "UNKNOWN"
+		blockedListName := blockedListEntry.R.BlockedList.Name
+		if blockedListEntry.R.CreatorChannel != nil {
+			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
+		}
+		timeLeft := time.Since(blockedListEntry.Expiry.Time)
+
+		message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment until %g hrs has passed.", blockedByChannel, blockedListName, timeLeft.Hours())
+		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
+	}
+
 	settings, err := request.creatorChannel.CreatorChannelCreatorSettings().OneG()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
@@ -320,7 +338,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 func checkMinGap(key string, expiration time.Duration) error {
 	creatorCounter, err := getCounter(key, expiration)
 	if err != nil {
-		return errors.Err(err)
+		return err
 	}
 	if creatorCounter.Get() > 0 {
 		minGapViolated := fmt.Sprintf("Slow mode is on. Please wait at most %d seconds before commenting again.", int(expiration.Seconds()))
