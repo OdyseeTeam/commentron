@@ -16,7 +16,7 @@ import (
 
 func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, []commentapi.CommentItem, error) {
 	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(model.CommentRels.Channel)).One(db.RO)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return commentapi.CommentItem{}, nil, errors.Err(err)
 	}
 	if comment == nil {
@@ -27,7 +27,7 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, [
 		channel = comment.R.Channel
 	}
 	replies, err := comment.ParentComments().Count(db.RO)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return commentapi.CommentItem{}, nil, errors.Err(err)
 	}
 	var ancestors []commentapi.CommentItem

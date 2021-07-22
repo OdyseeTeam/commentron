@@ -40,12 +40,18 @@ func Init(dsnRO, dsnRW string, debug bool) error {
 		return errors.Err(err)
 	}
 
+	logWrapperRO := &QueryLogger{DB: dbConnRO, Name: "Commentron-RO"}
 	if debug {
-		boil.DebugMode = true
+		logWrapperRO.Logger = log.StandardLogger()
 	}
 
-	RO = dbConnRO
-	RW = dbConnRW
+	logWrapperRW := &QueryLogger{DB: dbConnRW, Name: "Commentron-RW"}
+	if debug {
+		logWrapperRW.Logger = log.StandardLogger()
+	}
+
+	RO = logWrapperRO
+	RW = logWrapperRW
 
 	migrations := &migrate.AssetMigrationSource{
 		Asset:    migration.Asset,
