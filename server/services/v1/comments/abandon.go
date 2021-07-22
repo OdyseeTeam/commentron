@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -14,7 +15,7 @@ import (
 )
 
 func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
-	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID)).OneG()
+	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID)).One(db.RO)
 	if err != nil {
 		return nil, errors.Err(err)
 	}
@@ -36,7 +37,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID), Status: http.StatusBadRequest}
 		}
 	} else {
-		channel, err = model.Channels(model.ChannelWhere.ClaimID.EQ(comment.ChannelID.String)).OneG()
+		channel, err = model.Channels(model.ChannelWhere.ClaimID.EQ(comment.ChannelID.String)).One(db.RO)
 		if err != nil {
 			return nil, errors.Err(err)
 		}
@@ -47,7 +48,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		return nil, err
 	}
 	item := populateItem(comment, channel, 0)
-	err = comment.DeleteG()
+	err = comment.Delete(db.RW)
 	if err != nil {
 		return nil, errors.Err(err)
 	}

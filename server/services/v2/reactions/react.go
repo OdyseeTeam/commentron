@@ -7,16 +7,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/lbryio/commentron/helper"
-
-	"github.com/lbryio/commentron/flags"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/flags"
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/sirupsen/logrus"
 
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/extras/api"
@@ -30,7 +27,7 @@ import (
 // React creates/updates a reaction to a comment
 func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactResponse) error {
 
-	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).AllG()
+	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -44,14 +41,14 @@ func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	if len(commentIDs) > 1 {
 		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
 	}
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).OneG()
+	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
 			ClaimID: args.ChannelID,
 			Name:    args.ChannelName,
 		}
 		err = nil
-		err := channel.InsertG(boil.Infer())
+		err := channel.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -158,18 +155,18 @@ func updateCommentScoring(reactionType *model.ReactionType, comment *model.Comme
 		return
 	}
 	// Update Popularity Score
-	likes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(likeRT)).CountG()
+	likes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(likeRT)).Count(db.RO)
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] likes:", comment.CommentID), err))
 		return
 	}
 	comment.PopularityScore.SetValid(int(likes))
-	err = comment.UpdateG(boil.Whitelist(model.CommentColumns.PopularityScore))
+	err = comment.Update(db.RW, boil.Whitelist(model.CommentColumns.PopularityScore))
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] popularity scoring:", comment.CommentID), err))
 	}
 	// Update Controversy Score
-	dislikes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(disLikeRT)).CountG()
+	dislikes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(disLikeRT)).Count(db.RO)
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] dislikes:", comment.CommentID), err))
 		return
@@ -181,7 +178,7 @@ func updateCommentScoring(reactionType *model.ReactionType, comment *model.Comme
 	//IF(ABS(likes-dislikes) = 0, 1-(1/(likes+dislikes+1)*10000, ABS(likes-dislikes))/(likes+dislikes+1)*10000
 	score := (1 - absValue/float64(likes+dislikes+1)) * 10000
 	comment.ControversyScore.SetValid(int(score))
-	err = comment.UpdateG(boil.Whitelist(model.CommentColumns.ControversyScore))
+	err = comment.Update(db.RW, boil.Whitelist(model.CommentColumns.ControversyScore))
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] controversy scoring:", comment.CommentID), err))
 	}

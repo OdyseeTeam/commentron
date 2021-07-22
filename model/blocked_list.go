@@ -185,31 +185,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single blockedList record from the query using the global executor.
-func (q blockedListQuery) OneG() (*BlockedList, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single blockedList record from the query using the global executor, and panics on error.
-func (q blockedListQuery) OneGP() *BlockedList {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single blockedList record from the query, and panics on error.
-func (q blockedListQuery) OneP(exec boil.Executor) *BlockedList {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single blockedList record from the query.
 func (q blockedListQuery) One(exec boil.Executor) (*BlockedList, error) {
 	o := &BlockedList{}
@@ -227,31 +202,6 @@ func (q blockedListQuery) One(exec boil.Executor) (*BlockedList, error) {
 	return o, nil
 }
 
-// AllG returns all BlockedList records from the query using the global executor.
-func (q blockedListQuery) AllG() (BlockedListSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all BlockedList records from the query using the global executor, and panics on error.
-func (q blockedListQuery) AllGP() BlockedListSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all BlockedList records from the query, and panics on error.
-func (q blockedListQuery) AllP(exec boil.Executor) BlockedListSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all BlockedList records from the query.
 func (q blockedListQuery) All(exec boil.Executor) (BlockedListSlice, error) {
 	var o []*BlockedList
@@ -262,31 +212,6 @@ func (q blockedListQuery) All(exec boil.Executor) (BlockedListSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all BlockedList records in the query, and panics on error.
-func (q blockedListQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all BlockedList records in the query using the global executor, and panics on error.
-func (q blockedListQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all BlockedList records in the query, and panics on error.
-func (q blockedListQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all BlockedList records in the query.
@@ -302,31 +227,6 @@ func (q blockedListQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q blockedListQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q blockedListQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q blockedListQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -997,34 +897,6 @@ func (blockedListL) LoadChannels(e boil.Executor, singular bool, maybeBlockedLis
 	return nil
 }
 
-// SetChannelG of the blockedList to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.BlockedLists.
-// Uses the global database handle.
-func (o *BlockedList) SetChannelG(insert bool, related *Channel) error {
-	return o.SetChannel(boil.GetDB(), insert, related)
-}
-
-// SetChannelP of the blockedList to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.BlockedLists.
-// Panics on error.
-func (o *BlockedList) SetChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetChannelGP of the blockedList to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.BlockedLists.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) SetChannelGP(insert bool, related *Channel) {
-	if err := o.SetChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetChannel of the blockedList to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.BlockedLists.
@@ -1070,37 +942,6 @@ func (o *BlockedList) SetChannel(exec boil.Executor, insert bool, related *Chann
 	}
 
 	return nil
-}
-
-// AddBlockedEntriesG adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedEntries.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle.
-func (o *BlockedList) AddBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.AddBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedEntriesP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedEntries.
-// Sets related.R.BlockedList appropriately.
-// Panics on error.
-func (o *BlockedList) AddBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.AddBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedEntriesGP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedEntries.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) AddBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.AddBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddBlockedEntries adds the given related objects to the existing relationships
@@ -1156,43 +997,6 @@ func (o *BlockedList) AddBlockedEntries(exec boil.Executor, insert bool, related
 	return nil
 }
 
-// SetBlockedEntriesG removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's BlockedEntries accordingly.
-// Replaces o.R.BlockedEntries with related.
-// Sets related.R.BlockedList's BlockedEntries accordingly.
-// Uses the global database handle.
-func (o *BlockedList) SetBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.SetBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// SetBlockedEntriesP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's BlockedEntries accordingly.
-// Replaces o.R.BlockedEntries with related.
-// Sets related.R.BlockedList's BlockedEntries accordingly.
-// Panics on error.
-func (o *BlockedList) SetBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.SetBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedEntriesGP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's BlockedEntries accordingly.
-// Replaces o.R.BlockedEntries with related.
-// Sets related.R.BlockedList's BlockedEntries accordingly.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) SetBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.SetBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedEntries removes all previously related items of the
 // blocked_list replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -1225,34 +1029,6 @@ func (o *BlockedList) SetBlockedEntries(exec boil.Executor, insert bool, related
 		o.R.BlockedEntries = nil
 	}
 	return o.AddBlockedEntries(exec, insert, related...)
-}
-
-// RemoveBlockedEntriesG relationships from objects passed in.
-// Removes related items from R.BlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Uses the global database handle.
-func (o *BlockedList) RemoveBlockedEntriesG(related ...*BlockedEntry) error {
-	return o.RemoveBlockedEntries(boil.GetDB(), related...)
-}
-
-// RemoveBlockedEntriesP relationships from objects passed in.
-// Removes related items from R.BlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Panics on error.
-func (o *BlockedList) RemoveBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
-	if err := o.RemoveBlockedEntries(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveBlockedEntriesGP relationships from objects passed in.
-// Removes related items from R.BlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) RemoveBlockedEntriesGP(related ...*BlockedEntry) {
-	if err := o.RemoveBlockedEntries(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveBlockedEntries relationships from objects passed in.
@@ -1289,37 +1065,6 @@ func (o *BlockedList) RemoveBlockedEntries(exec boil.Executor, related ...*Block
 	}
 
 	return nil
-}
-
-// AddBlockedListAppealsG adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListAppeals.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle.
-func (o *BlockedList) AddBlockedListAppealsG(insert bool, related ...*BlockedListAppeal) error {
-	return o.AddBlockedListAppeals(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedListAppealsP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListAppeals.
-// Sets related.R.BlockedList appropriately.
-// Panics on error.
-func (o *BlockedList) AddBlockedListAppealsP(exec boil.Executor, insert bool, related ...*BlockedListAppeal) {
-	if err := o.AddBlockedListAppeals(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedListAppealsGP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListAppeals.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) AddBlockedListAppealsGP(insert bool, related ...*BlockedListAppeal) {
-	if err := o.AddBlockedListAppeals(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddBlockedListAppeals adds the given related objects to the existing relationships
@@ -1375,37 +1120,6 @@ func (o *BlockedList) AddBlockedListAppeals(exec boil.Executor, insert bool, rel
 	return nil
 }
 
-// AddBlockedListInvitesG adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInvites.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle.
-func (o *BlockedList) AddBlockedListInvitesG(insert bool, related ...*BlockedListInvite) error {
-	return o.AddBlockedListInvites(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedListInvitesP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInvites.
-// Sets related.R.BlockedList appropriately.
-// Panics on error.
-func (o *BlockedList) AddBlockedListInvitesP(exec boil.Executor, insert bool, related ...*BlockedListInvite) {
-	if err := o.AddBlockedListInvites(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedListInvitesGP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInvites.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) AddBlockedListInvitesGP(insert bool, related ...*BlockedListInvite) {
-	if err := o.AddBlockedListInvites(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // AddBlockedListInvites adds the given related objects to the existing relationships
 // of the blocked_list, optionally inserting them as new records.
 // Appends related to o.R.BlockedListInvites.
@@ -1457,37 +1171,6 @@ func (o *BlockedList) AddBlockedListInvites(exec boil.Executor, insert bool, rel
 		}
 	}
 	return nil
-}
-
-// AddBlockedListInviteChannelsG adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInviteChannels.
-// Sets related.R.BlockedListInvite appropriately.
-// Uses the global database handle.
-func (o *BlockedList) AddBlockedListInviteChannelsG(insert bool, related ...*Channel) error {
-	return o.AddBlockedListInviteChannels(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedListInviteChannelsP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInviteChannels.
-// Sets related.R.BlockedListInvite appropriately.
-// Panics on error.
-func (o *BlockedList) AddBlockedListInviteChannelsP(exec boil.Executor, insert bool, related ...*Channel) {
-	if err := o.AddBlockedListInviteChannels(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedListInviteChannelsGP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.BlockedListInviteChannels.
-// Sets related.R.BlockedListInvite appropriately.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) AddBlockedListInviteChannelsGP(insert bool, related ...*Channel) {
-	if err := o.AddBlockedListInviteChannels(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddBlockedListInviteChannels adds the given related objects to the existing relationships
@@ -1543,43 +1226,6 @@ func (o *BlockedList) AddBlockedListInviteChannels(exec boil.Executor, insert bo
 	return nil
 }
 
-// SetBlockedListInviteChannelsG removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Replaces o.R.BlockedListInviteChannels with related.
-// Sets related.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Uses the global database handle.
-func (o *BlockedList) SetBlockedListInviteChannelsG(insert bool, related ...*Channel) error {
-	return o.SetBlockedListInviteChannels(boil.GetDB(), insert, related...)
-}
-
-// SetBlockedListInviteChannelsP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Replaces o.R.BlockedListInviteChannels with related.
-// Sets related.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Panics on error.
-func (o *BlockedList) SetBlockedListInviteChannelsP(exec boil.Executor, insert bool, related ...*Channel) {
-	if err := o.SetBlockedListInviteChannels(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedListInviteChannelsGP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Replaces o.R.BlockedListInviteChannels with related.
-// Sets related.R.BlockedListInvite's BlockedListInviteChannels accordingly.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) SetBlockedListInviteChannelsGP(insert bool, related ...*Channel) {
-	if err := o.SetBlockedListInviteChannels(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedListInviteChannels removes all previously related items of the
 // blocked_list replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -1612,34 +1258,6 @@ func (o *BlockedList) SetBlockedListInviteChannels(exec boil.Executor, insert bo
 		o.R.BlockedListInviteChannels = nil
 	}
 	return o.AddBlockedListInviteChannels(exec, insert, related...)
-}
-
-// RemoveBlockedListInviteChannelsG relationships from objects passed in.
-// Removes related items from R.BlockedListInviteChannels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedListInvite.
-// Uses the global database handle.
-func (o *BlockedList) RemoveBlockedListInviteChannelsG(related ...*Channel) error {
-	return o.RemoveBlockedListInviteChannels(boil.GetDB(), related...)
-}
-
-// RemoveBlockedListInviteChannelsP relationships from objects passed in.
-// Removes related items from R.BlockedListInviteChannels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedListInvite.
-// Panics on error.
-func (o *BlockedList) RemoveBlockedListInviteChannelsP(exec boil.Executor, related ...*Channel) {
-	if err := o.RemoveBlockedListInviteChannels(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveBlockedListInviteChannelsGP relationships from objects passed in.
-// Removes related items from R.BlockedListInviteChannels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedListInvite.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) RemoveBlockedListInviteChannelsGP(related ...*Channel) {
-	if err := o.RemoveBlockedListInviteChannels(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveBlockedListInviteChannels relationships from objects passed in.
@@ -1676,37 +1294,6 @@ func (o *BlockedList) RemoveBlockedListInviteChannels(exec boil.Executor, relate
 	}
 
 	return nil
-}
-
-// AddChannelsG adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.Channels.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle.
-func (o *BlockedList) AddChannelsG(insert bool, related ...*Channel) error {
-	return o.AddChannels(boil.GetDB(), insert, related...)
-}
-
-// AddChannelsP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.Channels.
-// Sets related.R.BlockedList appropriately.
-// Panics on error.
-func (o *BlockedList) AddChannelsP(exec boil.Executor, insert bool, related ...*Channel) {
-	if err := o.AddChannels(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddChannelsGP adds the given related objects to the existing relationships
-// of the blocked_list, optionally inserting them as new records.
-// Appends related to o.R.Channels.
-// Sets related.R.BlockedList appropriately.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) AddChannelsGP(insert bool, related ...*Channel) {
-	if err := o.AddChannels(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddChannels adds the given related objects to the existing relationships
@@ -1762,43 +1349,6 @@ func (o *BlockedList) AddChannels(exec boil.Executor, insert bool, related ...*C
 	return nil
 }
 
-// SetChannelsG removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's Channels accordingly.
-// Replaces o.R.Channels with related.
-// Sets related.R.BlockedList's Channels accordingly.
-// Uses the global database handle.
-func (o *BlockedList) SetChannelsG(insert bool, related ...*Channel) error {
-	return o.SetChannels(boil.GetDB(), insert, related...)
-}
-
-// SetChannelsP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's Channels accordingly.
-// Replaces o.R.Channels with related.
-// Sets related.R.BlockedList's Channels accordingly.
-// Panics on error.
-func (o *BlockedList) SetChannelsP(exec boil.Executor, insert bool, related ...*Channel) {
-	if err := o.SetChannels(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetChannelsGP removes all previously related items of the
-// blocked_list replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedList's Channels accordingly.
-// Replaces o.R.Channels with related.
-// Sets related.R.BlockedList's Channels accordingly.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) SetChannelsGP(insert bool, related ...*Channel) {
-	if err := o.SetChannels(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetChannels removes all previously related items of the
 // blocked_list replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -1831,34 +1381,6 @@ func (o *BlockedList) SetChannels(exec boil.Executor, insert bool, related ...*C
 		o.R.Channels = nil
 	}
 	return o.AddChannels(exec, insert, related...)
-}
-
-// RemoveChannelsG relationships from objects passed in.
-// Removes related items from R.Channels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Uses the global database handle.
-func (o *BlockedList) RemoveChannelsG(related ...*Channel) error {
-	return o.RemoveChannels(boil.GetDB(), related...)
-}
-
-// RemoveChannelsP relationships from objects passed in.
-// Removes related items from R.Channels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Panics on error.
-func (o *BlockedList) RemoveChannelsP(exec boil.Executor, related ...*Channel) {
-	if err := o.RemoveChannels(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveChannelsGP relationships from objects passed in.
-// Removes related items from R.Channels (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedList.
-// Uses the global database handle and panics on error.
-func (o *BlockedList) RemoveChannelsGP(related ...*Channel) {
-	if err := o.RemoveChannels(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveChannels relationships from objects passed in.
@@ -1903,31 +1425,6 @@ func BlockedLists(mods ...qm.QueryMod) blockedListQuery {
 	return blockedListQuery{NewQuery(mods...)}
 }
 
-// FindBlockedListG retrieves a single record by ID.
-func FindBlockedListG(iD uint64, selectCols ...string) (*BlockedList, error) {
-	return FindBlockedList(boil.GetDB(), iD, selectCols...)
-}
-
-// FindBlockedListP retrieves a single record by ID with an executor, and panics on error.
-func FindBlockedListP(exec boil.Executor, iD uint64, selectCols ...string) *BlockedList {
-	retobj, err := FindBlockedList(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindBlockedListGP retrieves a single record by ID, and panics on error.
-func FindBlockedListGP(iD uint64, selectCols ...string) *BlockedList {
-	retobj, err := FindBlockedList(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindBlockedList retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindBlockedList(exec boil.Executor, iD uint64, selectCols ...string) (*BlockedList, error) {
@@ -1952,27 +1449,6 @@ func FindBlockedList(exec boil.Executor, iD uint64, selectCols ...string) (*Bloc
 	}
 
 	return blockedListObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *BlockedList) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *BlockedList) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *BlockedList) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -2077,30 +1553,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single BlockedList record using the global executor.
-// See Update for more documentation.
-func (o *BlockedList) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the BlockedList, and panics on error.
-// See Update for more documentation.
-func (o *BlockedList) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single BlockedList record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *BlockedList) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the BlockedList.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -2152,19 +1604,6 @@ func (o *BlockedList) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q blockedListQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q blockedListQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q blockedListQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -2175,27 +1614,6 @@ func (q blockedListQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o BlockedListSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o BlockedListSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o BlockedListSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -2240,26 +1658,6 @@ func (o BlockedListSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *BlockedList) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *BlockedList) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *BlockedList) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLBlockedListUniqueColumns = []string{
@@ -2406,32 +1804,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single BlockedList record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *BlockedList) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single BlockedList record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedList) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single BlockedList record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedList) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single BlockedList record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *BlockedList) Delete(exec boil.Executor) error {
@@ -2455,14 +1827,6 @@ func (o *BlockedList) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q blockedListQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q blockedListQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -2477,27 +1841,6 @@ func (q blockedListQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o BlockedListSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o BlockedListSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o BlockedListSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -2528,29 +1871,6 @@ func (o BlockedListSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *BlockedList) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no BlockedList provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *BlockedList) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *BlockedList) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *BlockedList) Reload(exec boil.Executor) error {
@@ -2561,34 +1881,6 @@ func (o *BlockedList) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *BlockedListSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty BlockedListSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -2618,31 +1910,6 @@ func (o *BlockedListSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// BlockedListExistsG checks if the BlockedList row exists.
-func BlockedListExistsG(iD uint64) (bool, error) {
-	return BlockedListExists(boil.GetDB(), iD)
-}
-
-// BlockedListExistsP checks if the BlockedList row exists. Panics on error.
-func BlockedListExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := BlockedListExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// BlockedListExistsGP checks if the BlockedList row exists. Panics on error.
-func BlockedListExistsGP(iD uint64) bool {
-	e, err := BlockedListExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // BlockedListExists checks if the BlockedList row exists.

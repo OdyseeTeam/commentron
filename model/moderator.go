@@ -130,31 +130,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single moderator record from the query using the global executor.
-func (q moderatorQuery) OneG() (*Moderator, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single moderator record from the query using the global executor, and panics on error.
-func (q moderatorQuery) OneGP() *Moderator {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single moderator record from the query, and panics on error.
-func (q moderatorQuery) OneP(exec boil.Executor) *Moderator {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single moderator record from the query.
 func (q moderatorQuery) One(exec boil.Executor) (*Moderator, error) {
 	o := &Moderator{}
@@ -172,31 +147,6 @@ func (q moderatorQuery) One(exec boil.Executor) (*Moderator, error) {
 	return o, nil
 }
 
-// AllG returns all Moderator records from the query using the global executor.
-func (q moderatorQuery) AllG() (ModeratorSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all Moderator records from the query using the global executor, and panics on error.
-func (q moderatorQuery) AllGP() ModeratorSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all Moderator records from the query, and panics on error.
-func (q moderatorQuery) AllP(exec boil.Executor) ModeratorSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all Moderator records from the query.
 func (q moderatorQuery) All(exec boil.Executor) (ModeratorSlice, error) {
 	var o []*Moderator
@@ -207,31 +157,6 @@ func (q moderatorQuery) All(exec boil.Executor) (ModeratorSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all Moderator records in the query, and panics on error.
-func (q moderatorQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all Moderator records in the query using the global executor, and panics on error.
-func (q moderatorQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all Moderator records in the query, and panics on error.
-func (q moderatorQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all Moderator records in the query.
@@ -247,31 +172,6 @@ func (q moderatorQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q moderatorQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q moderatorQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q moderatorQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -401,34 +301,6 @@ func (moderatorL) LoadModChannel(e boil.Executor, singular bool, maybeModerator 
 	return nil
 }
 
-// SetModChannelG of the moderator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelModerators.
-// Uses the global database handle.
-func (o *Moderator) SetModChannelG(insert bool, related *Channel) error {
-	return o.SetModChannel(boil.GetDB(), insert, related)
-}
-
-// SetModChannelP of the moderator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelModerators.
-// Panics on error.
-func (o *Moderator) SetModChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetModChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetModChannelGP of the moderator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelModerators.
-// Uses the global database handle and panics on error.
-func (o *Moderator) SetModChannelGP(insert bool, related *Channel) {
-	if err := o.SetModChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetModChannel of the moderator to the related item.
 // Sets o.R.ModChannel to related.
 // Adds o to related.R.ModChannelModerators.
@@ -476,34 +348,6 @@ func (o *Moderator) SetModChannel(exec boil.Executor, insert bool, related *Chan
 	return nil
 }
 
-// RemoveModChannelG relationship.
-// Sets o.R.ModChannel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Moderator) RemoveModChannelG(related *Channel) error {
-	return o.RemoveModChannel(boil.GetDB(), related)
-}
-
-// RemoveModChannelP relationship.
-// Sets o.R.ModChannel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Moderator) RemoveModChannelP(exec boil.Executor, related *Channel) {
-	if err := o.RemoveModChannel(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveModChannelGP relationship.
-// Sets o.R.ModChannel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Moderator) RemoveModChannelGP(related *Channel) {
-	if err := o.RemoveModChannel(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveModChannel relationship.
 // Sets o.R.ModChannel to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -541,31 +385,6 @@ func Moderators(mods ...qm.QueryMod) moderatorQuery {
 	return moderatorQuery{NewQuery(mods...)}
 }
 
-// FindModeratorG retrieves a single record by ID.
-func FindModeratorG(iD uint64, selectCols ...string) (*Moderator, error) {
-	return FindModerator(boil.GetDB(), iD, selectCols...)
-}
-
-// FindModeratorP retrieves a single record by ID with an executor, and panics on error.
-func FindModeratorP(exec boil.Executor, iD uint64, selectCols ...string) *Moderator {
-	retobj, err := FindModerator(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindModeratorGP retrieves a single record by ID, and panics on error.
-func FindModeratorGP(iD uint64, selectCols ...string) *Moderator {
-	retobj, err := FindModerator(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindModerator retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindModerator(exec boil.Executor, iD uint64, selectCols ...string) (*Moderator, error) {
@@ -590,27 +409,6 @@ func FindModerator(exec boil.Executor, iD uint64, selectCols ...string) (*Modera
 	}
 
 	return moderatorObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *Moderator) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *Moderator) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *Moderator) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -715,30 +513,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single Moderator record using the global executor.
-// See Update for more documentation.
-func (o *Moderator) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the Moderator, and panics on error.
-// See Update for more documentation.
-func (o *Moderator) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single Moderator record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *Moderator) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the Moderator.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -790,19 +564,6 @@ func (o *Moderator) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q moderatorQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q moderatorQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q moderatorQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -813,27 +574,6 @@ func (q moderatorQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o ModeratorSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o ModeratorSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o ModeratorSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -878,26 +618,6 @@ func (o ModeratorSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *Moderator) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *Moderator) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *Moderator) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLModeratorUniqueColumns = []string{
@@ -1044,32 +764,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single Moderator record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *Moderator) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single Moderator record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Moderator) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single Moderator record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Moderator) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single Moderator record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Moderator) Delete(exec boil.Executor) error {
@@ -1093,14 +787,6 @@ func (o *Moderator) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q moderatorQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q moderatorQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1115,27 +801,6 @@ func (q moderatorQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o ModeratorSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o ModeratorSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o ModeratorSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1166,29 +831,6 @@ func (o ModeratorSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *Moderator) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no Moderator provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *Moderator) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *Moderator) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Moderator) Reload(exec boil.Executor) error {
@@ -1199,34 +841,6 @@ func (o *Moderator) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *ModeratorSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty ModeratorSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ModeratorSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ModeratorSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1256,31 +870,6 @@ func (o *ModeratorSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// ModeratorExistsG checks if the Moderator row exists.
-func ModeratorExistsG(iD uint64) (bool, error) {
-	return ModeratorExists(boil.GetDB(), iD)
-}
-
-// ModeratorExistsP checks if the Moderator row exists. Panics on error.
-func ModeratorExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := ModeratorExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ModeratorExistsGP checks if the Moderator row exists. Panics on error.
-func ModeratorExistsGP(iD uint64) bool {
-	e, err := ModeratorExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // ModeratorExists checks if the Moderator row exists.

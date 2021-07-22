@@ -142,31 +142,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single blockedListInvite record from the query using the global executor.
-func (q blockedListInviteQuery) OneG() (*BlockedListInvite, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single blockedListInvite record from the query using the global executor, and panics on error.
-func (q blockedListInviteQuery) OneGP() *BlockedListInvite {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single blockedListInvite record from the query, and panics on error.
-func (q blockedListInviteQuery) OneP(exec boil.Executor) *BlockedListInvite {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single blockedListInvite record from the query.
 func (q blockedListInviteQuery) One(exec boil.Executor) (*BlockedListInvite, error) {
 	o := &BlockedListInvite{}
@@ -184,31 +159,6 @@ func (q blockedListInviteQuery) One(exec boil.Executor) (*BlockedListInvite, err
 	return o, nil
 }
 
-// AllG returns all BlockedListInvite records from the query using the global executor.
-func (q blockedListInviteQuery) AllG() (BlockedListInviteSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all BlockedListInvite records from the query using the global executor, and panics on error.
-func (q blockedListInviteQuery) AllGP() BlockedListInviteSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all BlockedListInvite records from the query, and panics on error.
-func (q blockedListInviteQuery) AllP(exec boil.Executor) BlockedListInviteSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all BlockedListInvite records from the query.
 func (q blockedListInviteQuery) All(exec boil.Executor) (BlockedListInviteSlice, error) {
 	var o []*BlockedListInvite
@@ -219,31 +169,6 @@ func (q blockedListInviteQuery) All(exec boil.Executor) (BlockedListInviteSlice,
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all BlockedListInvite records in the query, and panics on error.
-func (q blockedListInviteQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all BlockedListInvite records in the query using the global executor, and panics on error.
-func (q blockedListInviteQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all BlockedListInvite records in the query, and panics on error.
-func (q blockedListInviteQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all BlockedListInvite records in the query.
@@ -259,31 +184,6 @@ func (q blockedListInviteQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q blockedListInviteQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q blockedListInviteQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q blockedListInviteQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -623,34 +523,6 @@ func (blockedListInviteL) LoadInvitedChannel(e boil.Executor, singular bool, may
 	return nil
 }
 
-// SetBlockedListG of the blockedListInvite to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListInvites.
-// Uses the global database handle.
-func (o *BlockedListInvite) SetBlockedListG(insert bool, related *BlockedList) error {
-	return o.SetBlockedList(boil.GetDB(), insert, related)
-}
-
-// SetBlockedListP of the blockedListInvite to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListInvites.
-// Panics on error.
-func (o *BlockedListInvite) SetBlockedListP(exec boil.Executor, insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedListGP of the blockedListInvite to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListInvites.
-// Uses the global database handle and panics on error.
-func (o *BlockedListInvite) SetBlockedListGP(insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedList of the blockedListInvite to the related item.
 // Sets o.R.BlockedList to related.
 // Adds o to related.R.BlockedListInvites.
@@ -698,34 +570,6 @@ func (o *BlockedListInvite) SetBlockedList(exec boil.Executor, insert bool, rela
 	return nil
 }
 
-// SetInviterChannelG of the blockedListInvite to the related item.
-// Sets o.R.InviterChannel to related.
-// Adds o to related.R.InviterChannelBlockedListInvites.
-// Uses the global database handle.
-func (o *BlockedListInvite) SetInviterChannelG(insert bool, related *Channel) error {
-	return o.SetInviterChannel(boil.GetDB(), insert, related)
-}
-
-// SetInviterChannelP of the blockedListInvite to the related item.
-// Sets o.R.InviterChannel to related.
-// Adds o to related.R.InviterChannelBlockedListInvites.
-// Panics on error.
-func (o *BlockedListInvite) SetInviterChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetInviterChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetInviterChannelGP of the blockedListInvite to the related item.
-// Sets o.R.InviterChannel to related.
-// Adds o to related.R.InviterChannelBlockedListInvites.
-// Uses the global database handle and panics on error.
-func (o *BlockedListInvite) SetInviterChannelGP(insert bool, related *Channel) {
-	if err := o.SetInviterChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetInviterChannel of the blockedListInvite to the related item.
 // Sets o.R.InviterChannel to related.
 // Adds o to related.R.InviterChannelBlockedListInvites.
@@ -771,34 +615,6 @@ func (o *BlockedListInvite) SetInviterChannel(exec boil.Executor, insert bool, r
 	}
 
 	return nil
-}
-
-// SetInvitedChannelG of the blockedListInvite to the related item.
-// Sets o.R.InvitedChannel to related.
-// Adds o to related.R.InvitedChannelBlockedListInvites.
-// Uses the global database handle.
-func (o *BlockedListInvite) SetInvitedChannelG(insert bool, related *Channel) error {
-	return o.SetInvitedChannel(boil.GetDB(), insert, related)
-}
-
-// SetInvitedChannelP of the blockedListInvite to the related item.
-// Sets o.R.InvitedChannel to related.
-// Adds o to related.R.InvitedChannelBlockedListInvites.
-// Panics on error.
-func (o *BlockedListInvite) SetInvitedChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetInvitedChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetInvitedChannelGP of the blockedListInvite to the related item.
-// Sets o.R.InvitedChannel to related.
-// Adds o to related.R.InvitedChannelBlockedListInvites.
-// Uses the global database handle and panics on error.
-func (o *BlockedListInvite) SetInvitedChannelGP(insert bool, related *Channel) {
-	if err := o.SetInvitedChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetInvitedChannel of the blockedListInvite to the related item.
@@ -854,31 +670,6 @@ func BlockedListInvites(mods ...qm.QueryMod) blockedListInviteQuery {
 	return blockedListInviteQuery{NewQuery(mods...)}
 }
 
-// FindBlockedListInviteG retrieves a single record by ID.
-func FindBlockedListInviteG(iD uint64, selectCols ...string) (*BlockedListInvite, error) {
-	return FindBlockedListInvite(boil.GetDB(), iD, selectCols...)
-}
-
-// FindBlockedListInviteP retrieves a single record by ID with an executor, and panics on error.
-func FindBlockedListInviteP(exec boil.Executor, iD uint64, selectCols ...string) *BlockedListInvite {
-	retobj, err := FindBlockedListInvite(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindBlockedListInviteGP retrieves a single record by ID, and panics on error.
-func FindBlockedListInviteGP(iD uint64, selectCols ...string) *BlockedListInvite {
-	retobj, err := FindBlockedListInvite(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindBlockedListInvite retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindBlockedListInvite(exec boil.Executor, iD uint64, selectCols ...string) (*BlockedListInvite, error) {
@@ -903,27 +694,6 @@ func FindBlockedListInvite(exec boil.Executor, iD uint64, selectCols ...string) 
 	}
 
 	return blockedListInviteObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *BlockedListInvite) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *BlockedListInvite) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *BlockedListInvite) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -1028,30 +798,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single BlockedListInvite record using the global executor.
-// See Update for more documentation.
-func (o *BlockedListInvite) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the BlockedListInvite, and panics on error.
-// See Update for more documentation.
-func (o *BlockedListInvite) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single BlockedListInvite record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *BlockedListInvite) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the BlockedListInvite.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -1103,19 +849,6 @@ func (o *BlockedListInvite) Update(exec boil.Executor, columns boil.Columns) err
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q blockedListInviteQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q blockedListInviteQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q blockedListInviteQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -1126,27 +859,6 @@ func (q blockedListInviteQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o BlockedListInviteSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o BlockedListInviteSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o BlockedListInviteSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -1191,26 +903,6 @@ func (o BlockedListInviteSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *BlockedListInvite) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *BlockedListInvite) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *BlockedListInvite) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLBlockedListInviteUniqueColumns = []string{
@@ -1357,32 +1049,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single BlockedListInvite record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *BlockedListInvite) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single BlockedListInvite record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedListInvite) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single BlockedListInvite record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedListInvite) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single BlockedListInvite record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *BlockedListInvite) Delete(exec boil.Executor) error {
@@ -1406,14 +1072,6 @@ func (o *BlockedListInvite) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q blockedListInviteQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q blockedListInviteQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1428,27 +1086,6 @@ func (q blockedListInviteQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o BlockedListInviteSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o BlockedListInviteSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o BlockedListInviteSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1479,29 +1116,6 @@ func (o BlockedListInviteSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *BlockedListInvite) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no BlockedListInvite provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *BlockedListInvite) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *BlockedListInvite) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *BlockedListInvite) Reload(exec boil.Executor) error {
@@ -1512,34 +1126,6 @@ func (o *BlockedListInvite) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *BlockedListInviteSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty BlockedListInviteSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListInviteSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListInviteSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1569,31 +1155,6 @@ func (o *BlockedListInviteSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// BlockedListInviteExistsG checks if the BlockedListInvite row exists.
-func BlockedListInviteExistsG(iD uint64) (bool, error) {
-	return BlockedListInviteExists(boil.GetDB(), iD)
-}
-
-// BlockedListInviteExistsP checks if the BlockedListInvite row exists. Panics on error.
-func BlockedListInviteExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := BlockedListInviteExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// BlockedListInviteExistsGP checks if the BlockedListInvite row exists. Panics on error.
-func BlockedListInviteExistsGP(iD uint64) bool {
-	e, err := BlockedListInviteExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // BlockedListInviteExists checks if the BlockedListInvite row exists.

@@ -149,31 +149,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single blockedListAppeal record from the query using the global executor.
-func (q blockedListAppealQuery) OneG() (*BlockedListAppeal, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single blockedListAppeal record from the query using the global executor, and panics on error.
-func (q blockedListAppealQuery) OneGP() *BlockedListAppeal {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single blockedListAppeal record from the query, and panics on error.
-func (q blockedListAppealQuery) OneP(exec boil.Executor) *BlockedListAppeal {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single blockedListAppeal record from the query.
 func (q blockedListAppealQuery) One(exec boil.Executor) (*BlockedListAppeal, error) {
 	o := &BlockedListAppeal{}
@@ -191,31 +166,6 @@ func (q blockedListAppealQuery) One(exec boil.Executor) (*BlockedListAppeal, err
 	return o, nil
 }
 
-// AllG returns all BlockedListAppeal records from the query using the global executor.
-func (q blockedListAppealQuery) AllG() (BlockedListAppealSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all BlockedListAppeal records from the query using the global executor, and panics on error.
-func (q blockedListAppealQuery) AllGP() BlockedListAppealSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all BlockedListAppeal records from the query, and panics on error.
-func (q blockedListAppealQuery) AllP(exec boil.Executor) BlockedListAppealSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all BlockedListAppeal records from the query.
 func (q blockedListAppealQuery) All(exec boil.Executor) (BlockedListAppealSlice, error) {
 	var o []*BlockedListAppeal
@@ -226,31 +176,6 @@ func (q blockedListAppealQuery) All(exec boil.Executor) (BlockedListAppealSlice,
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all BlockedListAppeal records in the query, and panics on error.
-func (q blockedListAppealQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all BlockedListAppeal records in the query using the global executor, and panics on error.
-func (q blockedListAppealQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all BlockedListAppeal records in the query, and panics on error.
-func (q blockedListAppealQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all BlockedListAppeal records in the query.
@@ -266,31 +191,6 @@ func (q blockedListAppealQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q blockedListAppealQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q blockedListAppealQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q blockedListAppealQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -523,34 +423,6 @@ func (blockedListAppealL) LoadBlockedEntry(e boil.Executor, singular bool, maybe
 	return nil
 }
 
-// SetBlockedListG of the blockedListAppeal to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListAppeals.
-// Uses the global database handle.
-func (o *BlockedListAppeal) SetBlockedListG(insert bool, related *BlockedList) error {
-	return o.SetBlockedList(boil.GetDB(), insert, related)
-}
-
-// SetBlockedListP of the blockedListAppeal to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListAppeals.
-// Panics on error.
-func (o *BlockedListAppeal) SetBlockedListP(exec boil.Executor, insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedListGP of the blockedListAppeal to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.BlockedListAppeals.
-// Uses the global database handle and panics on error.
-func (o *BlockedListAppeal) SetBlockedListGP(insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedList of the blockedListAppeal to the related item.
 // Sets o.R.BlockedList to related.
 // Adds o to related.R.BlockedListAppeals.
@@ -596,34 +468,6 @@ func (o *BlockedListAppeal) SetBlockedList(exec boil.Executor, insert bool, rela
 	}
 
 	return nil
-}
-
-// SetBlockedEntryG of the blockedListAppeal to the related item.
-// Sets o.R.BlockedEntry to related.
-// Adds o to related.R.BlockedListAppeals.
-// Uses the global database handle.
-func (o *BlockedListAppeal) SetBlockedEntryG(insert bool, related *BlockedEntry) error {
-	return o.SetBlockedEntry(boil.GetDB(), insert, related)
-}
-
-// SetBlockedEntryP of the blockedListAppeal to the related item.
-// Sets o.R.BlockedEntry to related.
-// Adds o to related.R.BlockedListAppeals.
-// Panics on error.
-func (o *BlockedListAppeal) SetBlockedEntryP(exec boil.Executor, insert bool, related *BlockedEntry) {
-	if err := o.SetBlockedEntry(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedEntryGP of the blockedListAppeal to the related item.
-// Sets o.R.BlockedEntry to related.
-// Adds o to related.R.BlockedListAppeals.
-// Uses the global database handle and panics on error.
-func (o *BlockedListAppeal) SetBlockedEntryGP(insert bool, related *BlockedEntry) {
-	if err := o.SetBlockedEntry(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetBlockedEntry of the blockedListAppeal to the related item.
@@ -679,31 +523,6 @@ func BlockedListAppeals(mods ...qm.QueryMod) blockedListAppealQuery {
 	return blockedListAppealQuery{NewQuery(mods...)}
 }
 
-// FindBlockedListAppealG retrieves a single record by ID.
-func FindBlockedListAppealG(iD uint64, selectCols ...string) (*BlockedListAppeal, error) {
-	return FindBlockedListAppeal(boil.GetDB(), iD, selectCols...)
-}
-
-// FindBlockedListAppealP retrieves a single record by ID with an executor, and panics on error.
-func FindBlockedListAppealP(exec boil.Executor, iD uint64, selectCols ...string) *BlockedListAppeal {
-	retobj, err := FindBlockedListAppeal(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindBlockedListAppealGP retrieves a single record by ID, and panics on error.
-func FindBlockedListAppealGP(iD uint64, selectCols ...string) *BlockedListAppeal {
-	retobj, err := FindBlockedListAppeal(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindBlockedListAppeal retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindBlockedListAppeal(exec boil.Executor, iD uint64, selectCols ...string) (*BlockedListAppeal, error) {
@@ -728,27 +547,6 @@ func FindBlockedListAppeal(exec boil.Executor, iD uint64, selectCols ...string) 
 	}
 
 	return blockedListAppealObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *BlockedListAppeal) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *BlockedListAppeal) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *BlockedListAppeal) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -853,30 +651,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single BlockedListAppeal record using the global executor.
-// See Update for more documentation.
-func (o *BlockedListAppeal) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the BlockedListAppeal, and panics on error.
-// See Update for more documentation.
-func (o *BlockedListAppeal) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single BlockedListAppeal record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *BlockedListAppeal) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the BlockedListAppeal.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -928,19 +702,6 @@ func (o *BlockedListAppeal) Update(exec boil.Executor, columns boil.Columns) err
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q blockedListAppealQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q blockedListAppealQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q blockedListAppealQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -951,27 +712,6 @@ func (q blockedListAppealQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o BlockedListAppealSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o BlockedListAppealSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o BlockedListAppealSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -1016,26 +756,6 @@ func (o BlockedListAppealSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *BlockedListAppeal) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *BlockedListAppeal) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *BlockedListAppeal) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLBlockedListAppealUniqueColumns = []string{
@@ -1182,32 +902,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single BlockedListAppeal record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *BlockedListAppeal) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single BlockedListAppeal record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedListAppeal) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single BlockedListAppeal record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *BlockedListAppeal) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single BlockedListAppeal record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *BlockedListAppeal) Delete(exec boil.Executor) error {
@@ -1231,14 +925,6 @@ func (o *BlockedListAppeal) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q blockedListAppealQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q blockedListAppealQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1253,27 +939,6 @@ func (q blockedListAppealQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o BlockedListAppealSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o BlockedListAppealSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o BlockedListAppealSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1304,29 +969,6 @@ func (o BlockedListAppealSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *BlockedListAppeal) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no BlockedListAppeal provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *BlockedListAppeal) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *BlockedListAppeal) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *BlockedListAppeal) Reload(exec boil.Executor) error {
@@ -1337,34 +979,6 @@ func (o *BlockedListAppeal) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *BlockedListAppealSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty BlockedListAppealSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListAppealSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *BlockedListAppealSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1394,31 +1008,6 @@ func (o *BlockedListAppealSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// BlockedListAppealExistsG checks if the BlockedListAppeal row exists.
-func BlockedListAppealExistsG(iD uint64) (bool, error) {
-	return BlockedListAppealExists(boil.GetDB(), iD)
-}
-
-// BlockedListAppealExistsP checks if the BlockedListAppeal row exists. Panics on error.
-func BlockedListAppealExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := BlockedListAppealExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// BlockedListAppealExistsGP checks if the BlockedListAppeal row exists. Panics on error.
-func BlockedListAppealExistsGP(iD uint64) bool {
-	e, err := BlockedListAppealExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // BlockedListAppealExists checks if the BlockedListAppeal row exists.

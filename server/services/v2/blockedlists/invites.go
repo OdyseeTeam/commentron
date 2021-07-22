@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -21,7 +22,7 @@ func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply
 	if err != nil {
 		return err
 	}
-	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).OneG()
+	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return api.StatusError{Err: errors.Err("there is no shared block list with id %d", args.SharedBlockedListID), Status: http.StatusBadRequest}
@@ -51,7 +52,7 @@ func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply
 		return api.StatusError{Err: errors.Err("channel %s is already a member of the shared blocked list %s", invitee.Name, blockedList.Name), Status: http.StatusBadRequest}
 	}
 	where := model.BlockedListInviteWhere
-	invite, err := model.BlockedListInvites(where.BlockedListID.EQ(args.SharedBlockedListID), where.InvitedChannelID.EQ(args.InviteeChannelID)).OneG()
+	invite, err := model.BlockedListInvites(where.BlockedListID.EQ(args.SharedBlockedListID), where.InvitedChannelID.EQ(args.InviteeChannelID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -69,7 +70,7 @@ func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply
 		InvitedChannelID: invitee.ClaimID,
 		Message:          args.Message,
 	}
-	err = invite.InsertG(boil.Infer())
+	err = invite.Insert(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -89,7 +90,7 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 	}
 
 	where := model.BlockedListInviteWhere
-	invite, err := model.BlockedListInvites(where.BlockedListID.EQ(args.SharedBlockedListID), where.InvitedChannelID.EQ(channel.ClaimID)).OneG()
+	invite, err := model.BlockedListInvites(where.BlockedListID.EQ(args.SharedBlockedListID), where.InvitedChannelID.EQ(channel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -98,7 +99,7 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 		return api.StatusError{Err: errors.Err("channel %s does not have an invite for the shared block list %s to accept", args.ChannelName)}
 	}
 
-	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).OneG()
+	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return api.StatusError{Err: errors.Err("there is no shared block list with id %d", args.SharedBlockedListID), Status: http.StatusBadRequest}
@@ -112,14 +113,14 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 	}
 
 	blockedListCol := map[string]interface{}{model.BlockedEntryColumns.BlockedListID: blockedListID}
-	err = channel.CreatorChannelBlockedEntries().UpdateAllG(blockedListCol)
+	err = channel.CreatorChannelBlockedEntries().UpdateAll(db.RW, blockedListCol)
 	if err != nil {
 		return errors.Err(err)
 	}
 
 	channel.BlockedListID = blockedListID
 	channel.BlockedListInviteID = blockedListID
-	err = channel.UpdateG(boil.Whitelist(model.ChannelColumns.BlockedListID, model.ChannelColumns.BlockedListInviteID))
+	err = channel.Update(db.RW, boil.Whitelist(model.ChannelColumns.BlockedListID, model.ChannelColumns.BlockedListInviteID))
 	if err != nil {
 		return errors.Err(err)
 	}

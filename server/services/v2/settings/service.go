@@ -3,17 +3,16 @@ package settings
 import (
 	"net/http"
 
-	"github.com/volatiletech/sqlboiler/boil"
-
-	"github.com/lbryio/commentron/model"
-
-	"github.com/btcsuite/btcutil"
-
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
+	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/errors.go"
+
+	"github.com/btcsuite/btcutil"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // Service is the service struct defined for the comment package for rpc service "moderation.*"
@@ -88,7 +87,7 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.IsFiltersEnabled.SetValid(*args.FiltersEnabled)
 	}
 
-	err = settings.UpdateG(boil.Infer())
+	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}

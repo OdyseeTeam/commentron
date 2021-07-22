@@ -12,16 +12,30 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
+var RW boil.Executor
+var RO boil.Executor
+
 // Init initializes a database connection based on the dsn provided. It also sets it as the global db connection.
-func Init(dsn string, debug bool) error {
-	dsn += "?parseTime=1&collation=utf8mb4_unicode_ci"
-	dbConn, err := sqlx.Connect("mysql", dsn)
-	dbConn.SetMaxOpenConns(300)
+func Init(dsnRO, dsnRW string, debug bool) error {
+	dsnSuffix := "?parseTime=1&collation=utf8mb4_unicode_ci"
+	dsnRO += dsnSuffix
+	dbConnRO, err := sqlx.Connect("mysql", dsnRO)
+	if err != nil {
+		return errors.Err(err)
+	}
+	dbConnRO.SetMaxOpenConns(300)
+	err = dbConnRO.Ping()
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	err = dbConn.Ping()
+	dsnRW += dsnSuffix
+	dbConnRW, err := sqlx.Connect("mysql", dsnRW)
+	if err != nil {
+		return errors.Err(err)
+	}
+	dbConnRW.SetMaxOpenConns(300)
+	err = dbConnRW.Ping()
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -30,14 +44,15 @@ func Init(dsn string, debug bool) error {
 		boil.DebugMode = true
 	}
 
-	boil.SetDB(dbConn)
+	RO = dbConnRO
+	RW = dbConnRW
 
 	migrations := &migrate.AssetMigrationSource{
 		Asset:    migration.Asset,
 		AssetDir: migration.AssetDir,
 		Dir:      "migration",
 	}
-	n, migrationErr := migrate.Exec(dbConn.DB, "mysql", migrations, migrate.Up)
+	n, migrationErr := migrate.Exec(dbConnRW.DB, "mysql", migrations, migrate.Up)
 	if migrationErr != nil {
 		return errors.Err(migrationErr)
 	}

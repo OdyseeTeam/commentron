@@ -4,17 +4,17 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
+	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
-	"github.com/volatiletech/sqlboiler/boil"
-
-	"github.com/btcsuite/btcutil"
-
-	"github.com/lbryio/commentron/commentapi"
-	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/lbry.go/extras/util"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+
+	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/null"
+	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -75,17 +75,17 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		return errors.Err(err)
 	}
 
-	totalItems, err := m.Comments(totalCommentsQuery...).CountG()
+	totalItems, err := m.Comments(totalCommentsQuery...).Count(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).ExistsG()
+	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	comments, err := m.Comments(getCommentsQuery...).AllG()
+	comments, err := m.Comments(getCommentsQuery...).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -96,7 +96,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	}
 	var creatorChannel *m.Channel
 	if channelClaim != nil {
-		creatorChannel, err = m.Channels(m.ChannelWhere.ClaimID.EQ(channelClaim.ClaimID)).OneG()
+		creatorChannel, err = m.Channels(m.ChannelWhere.ClaimID.EQ(channelClaim.ClaimID)).One(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}

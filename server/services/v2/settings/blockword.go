@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/server/lbry"
 
@@ -41,7 +42,7 @@ func (s *Service) BlockWord(r *http.Request, args *commentapi.BlockWordArgs, rep
 
 	existingWords = append(existingWords, wordsToAdd...)
 	settings.MutedWords.SetValid(strings.Join(existingWords, ","))
-	err = settings.UpdateG(boil.Infer())
+	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -84,7 +85,7 @@ skip:
 		settings.MutedWords.SetValid(strings.Join(remainingWords, ","))
 	}
 
-	err = settings.UpdateG(boil.Infer())
+	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}

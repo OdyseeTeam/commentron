@@ -160,31 +160,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single channel record from the query using the global executor.
-func (q channelQuery) OneG() (*Channel, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single channel record from the query using the global executor, and panics on error.
-func (q channelQuery) OneGP() *Channel {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single channel record from the query, and panics on error.
-func (q channelQuery) OneP(exec boil.Executor) *Channel {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single channel record from the query.
 func (q channelQuery) One(exec boil.Executor) (*Channel, error) {
 	o := &Channel{}
@@ -202,31 +177,6 @@ func (q channelQuery) One(exec boil.Executor) (*Channel, error) {
 	return o, nil
 }
 
-// AllG returns all Channel records from the query using the global executor.
-func (q channelQuery) AllG() (ChannelSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all Channel records from the query using the global executor, and panics on error.
-func (q channelQuery) AllGP() ChannelSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all Channel records from the query, and panics on error.
-func (q channelQuery) AllP(exec boil.Executor) ChannelSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all Channel records from the query.
 func (q channelQuery) All(exec boil.Executor) (ChannelSlice, error) {
 	var o []*Channel
@@ -237,31 +187,6 @@ func (q channelQuery) All(exec boil.Executor) (ChannelSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all Channel records in the query, and panics on error.
-func (q channelQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all Channel records in the query using the global executor, and panics on error.
-func (q channelQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all Channel records in the query, and panics on error.
-func (q channelQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all Channel records in the query.
@@ -277,31 +202,6 @@ func (q channelQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q channelQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q channelQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q channelQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -1850,34 +1750,6 @@ func (channelL) LoadReactions(e boil.Executor, singular bool, maybeChannel inter
 	return nil
 }
 
-// SetBlockedListInviteG of the channel to the related item.
-// Sets o.R.BlockedListInvite to related.
-// Adds o to related.R.BlockedListInviteChannels.
-// Uses the global database handle.
-func (o *Channel) SetBlockedListInviteG(insert bool, related *BlockedList) error {
-	return o.SetBlockedListInvite(boil.GetDB(), insert, related)
-}
-
-// SetBlockedListInviteP of the channel to the related item.
-// Sets o.R.BlockedListInvite to related.
-// Adds o to related.R.BlockedListInviteChannels.
-// Panics on error.
-func (o *Channel) SetBlockedListInviteP(exec boil.Executor, insert bool, related *BlockedList) {
-	if err := o.SetBlockedListInvite(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedListInviteGP of the channel to the related item.
-// Sets o.R.BlockedListInvite to related.
-// Adds o to related.R.BlockedListInviteChannels.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetBlockedListInviteGP(insert bool, related *BlockedList) {
-	if err := o.SetBlockedListInvite(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedListInvite of the channel to the related item.
 // Sets o.R.BlockedListInvite to related.
 // Adds o to related.R.BlockedListInviteChannels.
@@ -1925,34 +1797,6 @@ func (o *Channel) SetBlockedListInvite(exec boil.Executor, insert bool, related 
 	return nil
 }
 
-// RemoveBlockedListInviteG relationship.
-// Sets o.R.BlockedListInvite to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Channel) RemoveBlockedListInviteG(related *BlockedList) error {
-	return o.RemoveBlockedListInvite(boil.GetDB(), related)
-}
-
-// RemoveBlockedListInviteP relationship.
-// Sets o.R.BlockedListInvite to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Channel) RemoveBlockedListInviteP(exec boil.Executor, related *BlockedList) {
-	if err := o.RemoveBlockedListInvite(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveBlockedListInviteGP relationship.
-// Sets o.R.BlockedListInvite to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveBlockedListInviteGP(related *BlockedList) {
-	if err := o.RemoveBlockedListInvite(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveBlockedListInvite relationship.
 // Sets o.R.BlockedListInvite to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -1982,34 +1826,6 @@ func (o *Channel) RemoveBlockedListInvite(exec boil.Executor, related *BlockedLi
 		break
 	}
 	return nil
-}
-
-// SetBlockedListG of the channel to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.Channels.
-// Uses the global database handle.
-func (o *Channel) SetBlockedListG(insert bool, related *BlockedList) error {
-	return o.SetBlockedList(boil.GetDB(), insert, related)
-}
-
-// SetBlockedListP of the channel to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.Channels.
-// Panics on error.
-func (o *Channel) SetBlockedListP(exec boil.Executor, insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedListGP of the channel to the related item.
-// Sets o.R.BlockedList to related.
-// Adds o to related.R.Channels.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetBlockedListGP(insert bool, related *BlockedList) {
-	if err := o.SetBlockedList(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetBlockedList of the channel to the related item.
@@ -2059,34 +1875,6 @@ func (o *Channel) SetBlockedList(exec boil.Executor, insert bool, related *Block
 	return nil
 }
 
-// RemoveBlockedListG relationship.
-// Sets o.R.BlockedList to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Channel) RemoveBlockedListG(related *BlockedList) error {
-	return o.RemoveBlockedList(boil.GetDB(), related)
-}
-
-// RemoveBlockedListP relationship.
-// Sets o.R.BlockedList to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Channel) RemoveBlockedListP(exec boil.Executor, related *BlockedList) {
-	if err := o.RemoveBlockedList(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveBlockedListGP relationship.
-// Sets o.R.BlockedList to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveBlockedListGP(related *BlockedList) {
-	if err := o.RemoveBlockedList(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveBlockedList relationship.
 // Sets o.R.BlockedList to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -2116,37 +1904,6 @@ func (o *Channel) RemoveBlockedList(exec boil.Executor, related *BlockedList) er
 		break
 	}
 	return nil
-}
-
-// AddBlockedChannelBlockedEntriesG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedChannelBlockedEntries.
-// Sets related.R.BlockedChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddBlockedChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.AddBlockedChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedChannelBlockedEntriesP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedChannelBlockedEntries.
-// Sets related.R.BlockedChannel appropriately.
-// Panics on error.
-func (o *Channel) AddBlockedChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.AddBlockedChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedChannelBlockedEntriesGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedChannelBlockedEntries.
-// Sets related.R.BlockedChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddBlockedChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.AddBlockedChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddBlockedChannelBlockedEntries adds the given related objects to the existing relationships
@@ -2202,43 +1959,6 @@ func (o *Channel) AddBlockedChannelBlockedEntries(exec boil.Executor, insert boo
 	return nil
 }
 
-// SetBlockedChannelBlockedEntriesG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Replaces o.R.BlockedChannelBlockedEntries with related.
-// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Uses the global database handle.
-func (o *Channel) SetBlockedChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.SetBlockedChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// SetBlockedChannelBlockedEntriesP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Replaces o.R.BlockedChannelBlockedEntries with related.
-// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Panics on error.
-func (o *Channel) SetBlockedChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.SetBlockedChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetBlockedChannelBlockedEntriesGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Replaces o.R.BlockedChannelBlockedEntries with related.
-// Sets related.R.BlockedChannel's BlockedChannelBlockedEntries accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetBlockedChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.SetBlockedChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetBlockedChannelBlockedEntries removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -2271,34 +1991,6 @@ func (o *Channel) SetBlockedChannelBlockedEntries(exec boil.Executor, insert boo
 		o.R.BlockedChannelBlockedEntries = nil
 	}
 	return o.AddBlockedChannelBlockedEntries(exec, insert, related...)
-}
-
-// RemoveBlockedChannelBlockedEntriesG relationships from objects passed in.
-// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedChannel.
-// Uses the global database handle.
-func (o *Channel) RemoveBlockedChannelBlockedEntriesG(related ...*BlockedEntry) error {
-	return o.RemoveBlockedChannelBlockedEntries(boil.GetDB(), related...)
-}
-
-// RemoveBlockedChannelBlockedEntriesP relationships from objects passed in.
-// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedChannel.
-// Panics on error.
-func (o *Channel) RemoveBlockedChannelBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
-	if err := o.RemoveBlockedChannelBlockedEntries(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveBlockedChannelBlockedEntriesGP relationships from objects passed in.
-// Removes related items from R.BlockedChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.BlockedChannel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveBlockedChannelBlockedEntriesGP(related ...*BlockedEntry) {
-	if err := o.RemoveBlockedChannelBlockedEntries(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveBlockedChannelBlockedEntries relationships from objects passed in.
@@ -2335,37 +2027,6 @@ func (o *Channel) RemoveBlockedChannelBlockedEntries(exec boil.Executor, related
 	}
 
 	return nil
-}
-
-// AddCreatorChannelBlockedEntriesG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelBlockedEntries.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddCreatorChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.AddCreatorChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// AddCreatorChannelBlockedEntriesP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelBlockedEntries.
-// Sets related.R.CreatorChannel appropriately.
-// Panics on error.
-func (o *Channel) AddCreatorChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.AddCreatorChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCreatorChannelBlockedEntriesGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelBlockedEntries.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddCreatorChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.AddCreatorChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddCreatorChannelBlockedEntries adds the given related objects to the existing relationships
@@ -2421,43 +2082,6 @@ func (o *Channel) AddCreatorChannelBlockedEntries(exec boil.Executor, insert boo
 	return nil
 }
 
-// SetCreatorChannelBlockedEntriesG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Replaces o.R.CreatorChannelBlockedEntries with related.
-// Sets related.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Uses the global database handle.
-func (o *Channel) SetCreatorChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.SetCreatorChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// SetCreatorChannelBlockedEntriesP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Replaces o.R.CreatorChannelBlockedEntries with related.
-// Sets related.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Panics on error.
-func (o *Channel) SetCreatorChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.SetCreatorChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCreatorChannelBlockedEntriesGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Replaces o.R.CreatorChannelBlockedEntries with related.
-// Sets related.R.CreatorChannel's CreatorChannelBlockedEntries accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetCreatorChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.SetCreatorChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetCreatorChannelBlockedEntries removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -2490,34 +2114,6 @@ func (o *Channel) SetCreatorChannelBlockedEntries(exec boil.Executor, insert boo
 		o.R.CreatorChannelBlockedEntries = nil
 	}
 	return o.AddCreatorChannelBlockedEntries(exec, insert, related...)
-}
-
-// RemoveCreatorChannelBlockedEntriesG relationships from objects passed in.
-// Removes related items from R.CreatorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.CreatorChannel.
-// Uses the global database handle.
-func (o *Channel) RemoveCreatorChannelBlockedEntriesG(related ...*BlockedEntry) error {
-	return o.RemoveCreatorChannelBlockedEntries(boil.GetDB(), related...)
-}
-
-// RemoveCreatorChannelBlockedEntriesP relationships from objects passed in.
-// Removes related items from R.CreatorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.CreatorChannel.
-// Panics on error.
-func (o *Channel) RemoveCreatorChannelBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
-	if err := o.RemoveCreatorChannelBlockedEntries(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveCreatorChannelBlockedEntriesGP relationships from objects passed in.
-// Removes related items from R.CreatorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.CreatorChannel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveCreatorChannelBlockedEntriesGP(related ...*BlockedEntry) {
-	if err := o.RemoveCreatorChannelBlockedEntries(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveCreatorChannelBlockedEntries relationships from objects passed in.
@@ -2554,37 +2150,6 @@ func (o *Channel) RemoveCreatorChannelBlockedEntries(exec boil.Executor, related
 	}
 
 	return nil
-}
-
-// AddDelegatedModeratorChannelBlockedEntriesG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.DelegatedModeratorChannelBlockedEntries.
-// Sets related.R.DelegatedModeratorChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddDelegatedModeratorChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.AddDelegatedModeratorChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// AddDelegatedModeratorChannelBlockedEntriesP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.DelegatedModeratorChannelBlockedEntries.
-// Sets related.R.DelegatedModeratorChannel appropriately.
-// Panics on error.
-func (o *Channel) AddDelegatedModeratorChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.AddDelegatedModeratorChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddDelegatedModeratorChannelBlockedEntriesGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.DelegatedModeratorChannelBlockedEntries.
-// Sets related.R.DelegatedModeratorChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddDelegatedModeratorChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.AddDelegatedModeratorChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddDelegatedModeratorChannelBlockedEntries adds the given related objects to the existing relationships
@@ -2640,43 +2205,6 @@ func (o *Channel) AddDelegatedModeratorChannelBlockedEntries(exec boil.Executor,
 	return nil
 }
 
-// SetDelegatedModeratorChannelBlockedEntriesG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Replaces o.R.DelegatedModeratorChannelBlockedEntries with related.
-// Sets related.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Uses the global database handle.
-func (o *Channel) SetDelegatedModeratorChannelBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.SetDelegatedModeratorChannelBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// SetDelegatedModeratorChannelBlockedEntriesP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Replaces o.R.DelegatedModeratorChannelBlockedEntries with related.
-// Sets related.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Panics on error.
-func (o *Channel) SetDelegatedModeratorChannelBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.SetDelegatedModeratorChannelBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetDelegatedModeratorChannelBlockedEntriesGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Replaces o.R.DelegatedModeratorChannelBlockedEntries with related.
-// Sets related.R.DelegatedModeratorChannel's DelegatedModeratorChannelBlockedEntries accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetDelegatedModeratorChannelBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.SetDelegatedModeratorChannelBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetDelegatedModeratorChannelBlockedEntries removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -2709,34 +2237,6 @@ func (o *Channel) SetDelegatedModeratorChannelBlockedEntries(exec boil.Executor,
 		o.R.DelegatedModeratorChannelBlockedEntries = nil
 	}
 	return o.AddDelegatedModeratorChannelBlockedEntries(exec, insert, related...)
-}
-
-// RemoveDelegatedModeratorChannelBlockedEntriesG relationships from objects passed in.
-// Removes related items from R.DelegatedModeratorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.DelegatedModeratorChannel.
-// Uses the global database handle.
-func (o *Channel) RemoveDelegatedModeratorChannelBlockedEntriesG(related ...*BlockedEntry) error {
-	return o.RemoveDelegatedModeratorChannelBlockedEntries(boil.GetDB(), related...)
-}
-
-// RemoveDelegatedModeratorChannelBlockedEntriesP relationships from objects passed in.
-// Removes related items from R.DelegatedModeratorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.DelegatedModeratorChannel.
-// Panics on error.
-func (o *Channel) RemoveDelegatedModeratorChannelBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
-	if err := o.RemoveDelegatedModeratorChannelBlockedEntries(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveDelegatedModeratorChannelBlockedEntriesGP relationships from objects passed in.
-// Removes related items from R.DelegatedModeratorChannelBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.DelegatedModeratorChannel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveDelegatedModeratorChannelBlockedEntriesGP(related ...*BlockedEntry) {
-	if err := o.RemoveDelegatedModeratorChannelBlockedEntries(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveDelegatedModeratorChannelBlockedEntries relationships from objects passed in.
@@ -2773,37 +2273,6 @@ func (o *Channel) RemoveDelegatedModeratorChannelBlockedEntries(exec boil.Execut
 	}
 
 	return nil
-}
-
-// AddBlockedListsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedLists.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddBlockedListsG(insert bool, related ...*BlockedList) error {
-	return o.AddBlockedLists(boil.GetDB(), insert, related...)
-}
-
-// AddBlockedListsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedLists.
-// Sets related.R.Channel appropriately.
-// Panics on error.
-func (o *Channel) AddBlockedListsP(exec boil.Executor, insert bool, related ...*BlockedList) {
-	if err := o.AddBlockedLists(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddBlockedListsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.BlockedLists.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddBlockedListsGP(insert bool, related ...*BlockedList) {
-	if err := o.AddBlockedLists(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddBlockedLists adds the given related objects to the existing relationships
@@ -2859,37 +2328,6 @@ func (o *Channel) AddBlockedLists(exec boil.Executor, insert bool, related ...*B
 	return nil
 }
 
-// AddInviterChannelBlockedListInvitesG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InviterChannelBlockedListInvites.
-// Sets related.R.InviterChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddInviterChannelBlockedListInvitesG(insert bool, related ...*BlockedListInvite) error {
-	return o.AddInviterChannelBlockedListInvites(boil.GetDB(), insert, related...)
-}
-
-// AddInviterChannelBlockedListInvitesP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InviterChannelBlockedListInvites.
-// Sets related.R.InviterChannel appropriately.
-// Panics on error.
-func (o *Channel) AddInviterChannelBlockedListInvitesP(exec boil.Executor, insert bool, related ...*BlockedListInvite) {
-	if err := o.AddInviterChannelBlockedListInvites(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddInviterChannelBlockedListInvitesGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InviterChannelBlockedListInvites.
-// Sets related.R.InviterChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddInviterChannelBlockedListInvitesGP(insert bool, related ...*BlockedListInvite) {
-	if err := o.AddInviterChannelBlockedListInvites(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // AddInviterChannelBlockedListInvites adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.InviterChannelBlockedListInvites.
@@ -2941,37 +2379,6 @@ func (o *Channel) AddInviterChannelBlockedListInvites(exec boil.Executor, insert
 		}
 	}
 	return nil
-}
-
-// AddInvitedChannelBlockedListInvitesG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InvitedChannelBlockedListInvites.
-// Sets related.R.InvitedChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddInvitedChannelBlockedListInvitesG(insert bool, related ...*BlockedListInvite) error {
-	return o.AddInvitedChannelBlockedListInvites(boil.GetDB(), insert, related...)
-}
-
-// AddInvitedChannelBlockedListInvitesP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InvitedChannelBlockedListInvites.
-// Sets related.R.InvitedChannel appropriately.
-// Panics on error.
-func (o *Channel) AddInvitedChannelBlockedListInvitesP(exec boil.Executor, insert bool, related ...*BlockedListInvite) {
-	if err := o.AddInvitedChannelBlockedListInvites(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddInvitedChannelBlockedListInvitesGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.InvitedChannelBlockedListInvites.
-// Sets related.R.InvitedChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddInvitedChannelBlockedListInvitesGP(insert bool, related ...*BlockedListInvite) {
-	if err := o.AddInvitedChannelBlockedListInvites(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddInvitedChannelBlockedListInvites adds the given related objects to the existing relationships
@@ -3027,37 +2434,6 @@ func (o *Channel) AddInvitedChannelBlockedListInvites(exec boil.Executor, insert
 	return nil
 }
 
-// AddCommentsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Comments.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddCommentsG(insert bool, related ...*Comment) error {
-	return o.AddComments(boil.GetDB(), insert, related...)
-}
-
-// AddCommentsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Comments.
-// Sets related.R.Channel appropriately.
-// Panics on error.
-func (o *Channel) AddCommentsP(exec boil.Executor, insert bool, related ...*Comment) {
-	if err := o.AddComments(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCommentsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Comments.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddCommentsGP(insert bool, related ...*Comment) {
-	if err := o.AddComments(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // AddComments adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.Comments.
@@ -3111,43 +2487,6 @@ func (o *Channel) AddComments(exec boil.Executor, insert bool, related ...*Comme
 	return nil
 }
 
-// SetCommentsG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Comments accordingly.
-// Replaces o.R.Comments with related.
-// Sets related.R.Channel's Comments accordingly.
-// Uses the global database handle.
-func (o *Channel) SetCommentsG(insert bool, related ...*Comment) error {
-	return o.SetComments(boil.GetDB(), insert, related...)
-}
-
-// SetCommentsP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Comments accordingly.
-// Replaces o.R.Comments with related.
-// Sets related.R.Channel's Comments accordingly.
-// Panics on error.
-func (o *Channel) SetCommentsP(exec boil.Executor, insert bool, related ...*Comment) {
-	if err := o.SetComments(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCommentsGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Comments accordingly.
-// Replaces o.R.Comments with related.
-// Sets related.R.Channel's Comments accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetCommentsGP(insert bool, related ...*Comment) {
-	if err := o.SetComments(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetComments removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -3180,34 +2519,6 @@ func (o *Channel) SetComments(exec boil.Executor, insert bool, related ...*Comme
 		o.R.Comments = nil
 	}
 	return o.AddComments(exec, insert, related...)
-}
-
-// RemoveCommentsG relationships from objects passed in.
-// Removes related items from R.Comments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle.
-func (o *Channel) RemoveCommentsG(related ...*Comment) error {
-	return o.RemoveComments(boil.GetDB(), related...)
-}
-
-// RemoveCommentsP relationships from objects passed in.
-// Removes related items from R.Comments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Panics on error.
-func (o *Channel) RemoveCommentsP(exec boil.Executor, related ...*Comment) {
-	if err := o.RemoveComments(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveCommentsGP relationships from objects passed in.
-// Removes related items from R.Comments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveCommentsGP(related ...*Comment) {
-	if err := o.RemoveComments(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveComments relationships from objects passed in.
@@ -3244,37 +2555,6 @@ func (o *Channel) RemoveComments(exec boil.Executor, related ...*Comment) error 
 	}
 
 	return nil
-}
-
-// AddCreatorChannelCreatorSettingsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelCreatorSettings.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddCreatorChannelCreatorSettingsG(insert bool, related ...*CreatorSetting) error {
-	return o.AddCreatorChannelCreatorSettings(boil.GetDB(), insert, related...)
-}
-
-// AddCreatorChannelCreatorSettingsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelCreatorSettings.
-// Sets related.R.CreatorChannel appropriately.
-// Panics on error.
-func (o *Channel) AddCreatorChannelCreatorSettingsP(exec boil.Executor, insert bool, related ...*CreatorSetting) {
-	if err := o.AddCreatorChannelCreatorSettings(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCreatorChannelCreatorSettingsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelCreatorSettings.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddCreatorChannelCreatorSettingsGP(insert bool, related ...*CreatorSetting) {
-	if err := o.AddCreatorChannelCreatorSettings(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddCreatorChannelCreatorSettings adds the given related objects to the existing relationships
@@ -3330,37 +2610,6 @@ func (o *Channel) AddCreatorChannelCreatorSettings(exec boil.Executor, insert bo
 	return nil
 }
 
-// AddModChannelDelegatedModeratorsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelDelegatedModerators.
-// Sets related.R.ModChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddModChannelDelegatedModeratorsG(insert bool, related ...*DelegatedModerator) error {
-	return o.AddModChannelDelegatedModerators(boil.GetDB(), insert, related...)
-}
-
-// AddModChannelDelegatedModeratorsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelDelegatedModerators.
-// Sets related.R.ModChannel appropriately.
-// Panics on error.
-func (o *Channel) AddModChannelDelegatedModeratorsP(exec boil.Executor, insert bool, related ...*DelegatedModerator) {
-	if err := o.AddModChannelDelegatedModerators(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddModChannelDelegatedModeratorsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelDelegatedModerators.
-// Sets related.R.ModChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddModChannelDelegatedModeratorsGP(insert bool, related ...*DelegatedModerator) {
-	if err := o.AddModChannelDelegatedModerators(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // AddModChannelDelegatedModerators adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ModChannelDelegatedModerators.
@@ -3412,37 +2661,6 @@ func (o *Channel) AddModChannelDelegatedModerators(exec boil.Executor, insert bo
 		}
 	}
 	return nil
-}
-
-// AddCreatorChannelDelegatedModeratorsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelDelegatedModerators.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddCreatorChannelDelegatedModeratorsG(insert bool, related ...*DelegatedModerator) error {
-	return o.AddCreatorChannelDelegatedModerators(boil.GetDB(), insert, related...)
-}
-
-// AddCreatorChannelDelegatedModeratorsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelDelegatedModerators.
-// Sets related.R.CreatorChannel appropriately.
-// Panics on error.
-func (o *Channel) AddCreatorChannelDelegatedModeratorsP(exec boil.Executor, insert bool, related ...*DelegatedModerator) {
-	if err := o.AddCreatorChannelDelegatedModerators(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCreatorChannelDelegatedModeratorsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.CreatorChannelDelegatedModerators.
-// Sets related.R.CreatorChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddCreatorChannelDelegatedModeratorsGP(insert bool, related ...*DelegatedModerator) {
-	if err := o.AddCreatorChannelDelegatedModerators(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddCreatorChannelDelegatedModerators adds the given related objects to the existing relationships
@@ -3498,37 +2716,6 @@ func (o *Channel) AddCreatorChannelDelegatedModerators(exec boil.Executor, inser
 	return nil
 }
 
-// AddModChannelModeratorsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelModerators.
-// Sets related.R.ModChannel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddModChannelModeratorsG(insert bool, related ...*Moderator) error {
-	return o.AddModChannelModerators(boil.GetDB(), insert, related...)
-}
-
-// AddModChannelModeratorsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelModerators.
-// Sets related.R.ModChannel appropriately.
-// Panics on error.
-func (o *Channel) AddModChannelModeratorsP(exec boil.Executor, insert bool, related ...*Moderator) {
-	if err := o.AddModChannelModerators(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddModChannelModeratorsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ModChannelModerators.
-// Sets related.R.ModChannel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddModChannelModeratorsGP(insert bool, related ...*Moderator) {
-	if err := o.AddModChannelModerators(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // AddModChannelModerators adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ModChannelModerators.
@@ -3582,43 +2769,6 @@ func (o *Channel) AddModChannelModerators(exec boil.Executor, insert bool, relat
 	return nil
 }
 
-// SetModChannelModeratorsG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ModChannel's ModChannelModerators accordingly.
-// Replaces o.R.ModChannelModerators with related.
-// Sets related.R.ModChannel's ModChannelModerators accordingly.
-// Uses the global database handle.
-func (o *Channel) SetModChannelModeratorsG(insert bool, related ...*Moderator) error {
-	return o.SetModChannelModerators(boil.GetDB(), insert, related...)
-}
-
-// SetModChannelModeratorsP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ModChannel's ModChannelModerators accordingly.
-// Replaces o.R.ModChannelModerators with related.
-// Sets related.R.ModChannel's ModChannelModerators accordingly.
-// Panics on error.
-func (o *Channel) SetModChannelModeratorsP(exec boil.Executor, insert bool, related ...*Moderator) {
-	if err := o.SetModChannelModerators(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetModChannelModeratorsGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ModChannel's ModChannelModerators accordingly.
-// Replaces o.R.ModChannelModerators with related.
-// Sets related.R.ModChannel's ModChannelModerators accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetModChannelModeratorsGP(insert bool, related ...*Moderator) {
-	if err := o.SetModChannelModerators(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetModChannelModerators removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -3651,34 +2801,6 @@ func (o *Channel) SetModChannelModerators(exec boil.Executor, insert bool, relat
 		o.R.ModChannelModerators = nil
 	}
 	return o.AddModChannelModerators(exec, insert, related...)
-}
-
-// RemoveModChannelModeratorsG relationships from objects passed in.
-// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
-// Sets related.R.ModChannel.
-// Uses the global database handle.
-func (o *Channel) RemoveModChannelModeratorsG(related ...*Moderator) error {
-	return o.RemoveModChannelModerators(boil.GetDB(), related...)
-}
-
-// RemoveModChannelModeratorsP relationships from objects passed in.
-// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
-// Sets related.R.ModChannel.
-// Panics on error.
-func (o *Channel) RemoveModChannelModeratorsP(exec boil.Executor, related ...*Moderator) {
-	if err := o.RemoveModChannelModerators(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveModChannelModeratorsGP relationships from objects passed in.
-// Removes related items from R.ModChannelModerators (uses pointer comparison, removal does not keep order)
-// Sets related.R.ModChannel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveModChannelModeratorsGP(related ...*Moderator) {
-	if err := o.RemoveModChannelModerators(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveModChannelModerators relationships from objects passed in.
@@ -3715,37 +2837,6 @@ func (o *Channel) RemoveModChannelModerators(exec boil.Executor, related ...*Mod
 	}
 
 	return nil
-}
-
-// AddReactionsG adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle.
-func (o *Channel) AddReactionsG(insert bool, related ...*Reaction) error {
-	return o.AddReactions(boil.GetDB(), insert, related...)
-}
-
-// AddReactionsP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Channel appropriately.
-// Panics on error.
-func (o *Channel) AddReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
-	if err := o.AddReactions(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddReactionsGP adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Channel appropriately.
-// Uses the global database handle and panics on error.
-func (o *Channel) AddReactionsGP(insert bool, related ...*Reaction) {
-	if err := o.AddReactions(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddReactions adds the given related objects to the existing relationships
@@ -3801,43 +2892,6 @@ func (o *Channel) AddReactions(exec boil.Executor, insert bool, related ...*Reac
 	return nil
 }
 
-// SetReactionsG removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Reactions accordingly.
-// Replaces o.R.Reactions with related.
-// Sets related.R.Channel's Reactions accordingly.
-// Uses the global database handle.
-func (o *Channel) SetReactionsG(insert bool, related ...*Reaction) error {
-	return o.SetReactions(boil.GetDB(), insert, related...)
-}
-
-// SetReactionsP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Reactions accordingly.
-// Replaces o.R.Reactions with related.
-// Sets related.R.Channel's Reactions accordingly.
-// Panics on error.
-func (o *Channel) SetReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
-	if err := o.SetReactions(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetReactionsGP removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Reactions accordingly.
-// Replaces o.R.Reactions with related.
-// Sets related.R.Channel's Reactions accordingly.
-// Uses the global database handle and panics on error.
-func (o *Channel) SetReactionsGP(insert bool, related ...*Reaction) {
-	if err := o.SetReactions(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetReactions removes all previously related items of the
 // channel replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -3870,34 +2924,6 @@ func (o *Channel) SetReactions(exec boil.Executor, insert bool, related ...*Reac
 		o.R.Reactions = nil
 	}
 	return o.AddReactions(exec, insert, related...)
-}
-
-// RemoveReactionsG relationships from objects passed in.
-// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle.
-func (o *Channel) RemoveReactionsG(related ...*Reaction) error {
-	return o.RemoveReactions(boil.GetDB(), related...)
-}
-
-// RemoveReactionsP relationships from objects passed in.
-// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Panics on error.
-func (o *Channel) RemoveReactionsP(exec boil.Executor, related ...*Reaction) {
-	if err := o.RemoveReactions(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveReactionsGP relationships from objects passed in.
-// Removes related items from R.Reactions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-// Uses the global database handle and panics on error.
-func (o *Channel) RemoveReactionsGP(related ...*Reaction) {
-	if err := o.RemoveReactions(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveReactions relationships from objects passed in.
@@ -3942,31 +2968,6 @@ func Channels(mods ...qm.QueryMod) channelQuery {
 	return channelQuery{NewQuery(mods...)}
 }
 
-// FindChannelG retrieves a single record by ID.
-func FindChannelG(claimID string, selectCols ...string) (*Channel, error) {
-	return FindChannel(boil.GetDB(), claimID, selectCols...)
-}
-
-// FindChannelP retrieves a single record by ID with an executor, and panics on error.
-func FindChannelP(exec boil.Executor, claimID string, selectCols ...string) *Channel {
-	retobj, err := FindChannel(exec, claimID, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindChannelGP retrieves a single record by ID, and panics on error.
-func FindChannelGP(claimID string, selectCols ...string) *Channel {
-	retobj, err := FindChannel(boil.GetDB(), claimID, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindChannel retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindChannel(exec boil.Executor, claimID string, selectCols ...string) (*Channel, error) {
@@ -3991,27 +2992,6 @@ func FindChannel(exec boil.Executor, claimID string, selectCols ...string) (*Cha
 	}
 
 	return channelObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *Channel) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *Channel) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *Channel) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -4105,30 +3085,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single Channel record using the global executor.
-// See Update for more documentation.
-func (o *Channel) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the Channel, and panics on error.
-// See Update for more documentation.
-func (o *Channel) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single Channel record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *Channel) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the Channel.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -4180,19 +3136,6 @@ func (o *Channel) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q channelQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q channelQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q channelQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -4203,27 +3146,6 @@ func (q channelQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o ChannelSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o ChannelSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o ChannelSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -4268,26 +3190,6 @@ func (o ChannelSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *Channel) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *Channel) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *Channel) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLChannelUniqueColumns = []string{
@@ -4423,32 +3325,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single Channel record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *Channel) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single Channel record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Channel) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single Channel record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Channel) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single Channel record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Channel) Delete(exec boil.Executor) error {
@@ -4472,14 +3348,6 @@ func (o *Channel) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q channelQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q channelQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -4494,27 +3362,6 @@ func (q channelQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o ChannelSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o ChannelSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o ChannelSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -4545,29 +3392,6 @@ func (o ChannelSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *Channel) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no Channel provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *Channel) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *Channel) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Channel) Reload(exec boil.Executor) error {
@@ -4578,34 +3402,6 @@ func (o *Channel) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *ChannelSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty ChannelSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ChannelSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ChannelSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -4635,31 +3431,6 @@ func (o *ChannelSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// ChannelExistsG checks if the Channel row exists.
-func ChannelExistsG(claimID string) (bool, error) {
-	return ChannelExists(boil.GetDB(), claimID)
-}
-
-// ChannelExistsP checks if the Channel row exists. Panics on error.
-func ChannelExistsP(exec boil.Executor, claimID string) bool {
-	e, err := ChannelExists(exec, claimID)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ChannelExistsGP checks if the Channel row exists. Panics on error.
-func ChannelExistsGP(claimID string) bool {
-	e, err := ChannelExists(boil.GetDB(), claimID)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // ChannelExists checks if the Channel row exists.

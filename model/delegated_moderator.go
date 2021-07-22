@@ -128,31 +128,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single delegatedModerator record from the query using the global executor.
-func (q delegatedModeratorQuery) OneG() (*DelegatedModerator, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single delegatedModerator record from the query using the global executor, and panics on error.
-func (q delegatedModeratorQuery) OneGP() *DelegatedModerator {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single delegatedModerator record from the query, and panics on error.
-func (q delegatedModeratorQuery) OneP(exec boil.Executor) *DelegatedModerator {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single delegatedModerator record from the query.
 func (q delegatedModeratorQuery) One(exec boil.Executor) (*DelegatedModerator, error) {
 	o := &DelegatedModerator{}
@@ -170,31 +145,6 @@ func (q delegatedModeratorQuery) One(exec boil.Executor) (*DelegatedModerator, e
 	return o, nil
 }
 
-// AllG returns all DelegatedModerator records from the query using the global executor.
-func (q delegatedModeratorQuery) AllG() (DelegatedModeratorSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all DelegatedModerator records from the query using the global executor, and panics on error.
-func (q delegatedModeratorQuery) AllGP() DelegatedModeratorSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all DelegatedModerator records from the query, and panics on error.
-func (q delegatedModeratorQuery) AllP(exec boil.Executor) DelegatedModeratorSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all DelegatedModerator records from the query.
 func (q delegatedModeratorQuery) All(exec boil.Executor) (DelegatedModeratorSlice, error) {
 	var o []*DelegatedModerator
@@ -205,31 +155,6 @@ func (q delegatedModeratorQuery) All(exec boil.Executor) (DelegatedModeratorSlic
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all DelegatedModerator records in the query, and panics on error.
-func (q delegatedModeratorQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all DelegatedModerator records in the query using the global executor, and panics on error.
-func (q delegatedModeratorQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all DelegatedModerator records in the query, and panics on error.
-func (q delegatedModeratorQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all DelegatedModerator records in the query.
@@ -245,31 +170,6 @@ func (q delegatedModeratorQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q delegatedModeratorQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q delegatedModeratorQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q delegatedModeratorQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -502,34 +402,6 @@ func (delegatedModeratorL) LoadCreatorChannel(e boil.Executor, singular bool, ma
 	return nil
 }
 
-// SetModChannelG of the delegatedModerator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelDelegatedModerators.
-// Uses the global database handle.
-func (o *DelegatedModerator) SetModChannelG(insert bool, related *Channel) error {
-	return o.SetModChannel(boil.GetDB(), insert, related)
-}
-
-// SetModChannelP of the delegatedModerator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelDelegatedModerators.
-// Panics on error.
-func (o *DelegatedModerator) SetModChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetModChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetModChannelGP of the delegatedModerator to the related item.
-// Sets o.R.ModChannel to related.
-// Adds o to related.R.ModChannelDelegatedModerators.
-// Uses the global database handle and panics on error.
-func (o *DelegatedModerator) SetModChannelGP(insert bool, related *Channel) {
-	if err := o.SetModChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetModChannel of the delegatedModerator to the related item.
 // Sets o.R.ModChannel to related.
 // Adds o to related.R.ModChannelDelegatedModerators.
@@ -575,34 +447,6 @@ func (o *DelegatedModerator) SetModChannel(exec boil.Executor, insert bool, rela
 	}
 
 	return nil
-}
-
-// SetCreatorChannelG of the delegatedModerator to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelDelegatedModerators.
-// Uses the global database handle.
-func (o *DelegatedModerator) SetCreatorChannelG(insert bool, related *Channel) error {
-	return o.SetCreatorChannel(boil.GetDB(), insert, related)
-}
-
-// SetCreatorChannelP of the delegatedModerator to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelDelegatedModerators.
-// Panics on error.
-func (o *DelegatedModerator) SetCreatorChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetCreatorChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCreatorChannelGP of the delegatedModerator to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelDelegatedModerators.
-// Uses the global database handle and panics on error.
-func (o *DelegatedModerator) SetCreatorChannelGP(insert bool, related *Channel) {
-	if err := o.SetCreatorChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetCreatorChannel of the delegatedModerator to the related item.
@@ -658,31 +502,6 @@ func DelegatedModerators(mods ...qm.QueryMod) delegatedModeratorQuery {
 	return delegatedModeratorQuery{NewQuery(mods...)}
 }
 
-// FindDelegatedModeratorG retrieves a single record by ID.
-func FindDelegatedModeratorG(iD uint64, selectCols ...string) (*DelegatedModerator, error) {
-	return FindDelegatedModerator(boil.GetDB(), iD, selectCols...)
-}
-
-// FindDelegatedModeratorP retrieves a single record by ID with an executor, and panics on error.
-func FindDelegatedModeratorP(exec boil.Executor, iD uint64, selectCols ...string) *DelegatedModerator {
-	retobj, err := FindDelegatedModerator(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindDelegatedModeratorGP retrieves a single record by ID, and panics on error.
-func FindDelegatedModeratorGP(iD uint64, selectCols ...string) *DelegatedModerator {
-	retobj, err := FindDelegatedModerator(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindDelegatedModerator retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindDelegatedModerator(exec boil.Executor, iD uint64, selectCols ...string) (*DelegatedModerator, error) {
@@ -707,27 +526,6 @@ func FindDelegatedModerator(exec boil.Executor, iD uint64, selectCols ...string)
 	}
 
 	return delegatedModeratorObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *DelegatedModerator) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *DelegatedModerator) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *DelegatedModerator) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -832,30 +630,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single DelegatedModerator record using the global executor.
-// See Update for more documentation.
-func (o *DelegatedModerator) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the DelegatedModerator, and panics on error.
-// See Update for more documentation.
-func (o *DelegatedModerator) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single DelegatedModerator record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *DelegatedModerator) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the DelegatedModerator.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -907,19 +681,6 @@ func (o *DelegatedModerator) Update(exec boil.Executor, columns boil.Columns) er
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q delegatedModeratorQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q delegatedModeratorQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q delegatedModeratorQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -930,27 +691,6 @@ func (q delegatedModeratorQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o DelegatedModeratorSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o DelegatedModeratorSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o DelegatedModeratorSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -995,26 +735,6 @@ func (o DelegatedModeratorSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *DelegatedModerator) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *DelegatedModerator) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *DelegatedModerator) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLDelegatedModeratorUniqueColumns = []string{
@@ -1161,32 +881,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single DelegatedModerator record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *DelegatedModerator) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single DelegatedModerator record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *DelegatedModerator) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single DelegatedModerator record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *DelegatedModerator) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single DelegatedModerator record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *DelegatedModerator) Delete(exec boil.Executor) error {
@@ -1210,14 +904,6 @@ func (o *DelegatedModerator) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q delegatedModeratorQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q delegatedModeratorQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1232,27 +918,6 @@ func (q delegatedModeratorQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o DelegatedModeratorSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o DelegatedModeratorSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o DelegatedModeratorSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1283,29 +948,6 @@ func (o DelegatedModeratorSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *DelegatedModerator) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no DelegatedModerator provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *DelegatedModerator) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *DelegatedModerator) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *DelegatedModerator) Reload(exec boil.Executor) error {
@@ -1316,34 +958,6 @@ func (o *DelegatedModerator) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *DelegatedModeratorSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty DelegatedModeratorSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *DelegatedModeratorSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *DelegatedModeratorSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1373,31 +987,6 @@ func (o *DelegatedModeratorSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// DelegatedModeratorExistsG checks if the DelegatedModerator row exists.
-func DelegatedModeratorExistsG(iD uint64) (bool, error) {
-	return DelegatedModeratorExists(boil.GetDB(), iD)
-}
-
-// DelegatedModeratorExistsP checks if the DelegatedModerator row exists. Panics on error.
-func DelegatedModeratorExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := DelegatedModeratorExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// DelegatedModeratorExistsGP checks if the DelegatedModerator row exists. Panics on error.
-func DelegatedModeratorExistsGP(iD uint64) bool {
-	e, err := DelegatedModeratorExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // DelegatedModeratorExists checks if the DelegatedModerator row exists.

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -64,22 +65,22 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
 	}
 
-	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).CountG()
+	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).Count(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	totalItems, err := m.Comments(totalCommentsQuery...).CountG()
+	totalItems, err := m.Comments(totalCommentsQuery...).Count(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).ExistsG()
+	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	comments, err := m.Comments(getCommentsQuery...).AllG()
+	comments, err := m.Comments(getCommentsQuery...).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -120,7 +121,7 @@ func checkCommentsEnabled(channelName, ChannelID null.String) (*m.Channel, error
 		if err != nil {
 			return nil, err
 		}
-		settings, err := creatorChannel.CreatorChannelCreatorSettings().OneG()
+		settings, err := creatorChannel.CreatorChannelCreatorSettings().One(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.Err(err)
 		}
@@ -168,7 +169,7 @@ Comments:
 			channel = comment.R.Channel
 			if channel != nil && channel.Name != "" {
 				if !alreadyInSet[comment.CommentID] {
-					replies, err := comment.ParentComments().CountG()
+					replies, err := comment.ParentComments().Count(db.RO)
 					if err != nil && errors.Is(err, sql.ErrNoRows) {
 						return items, blockedCommentCnt, errors.Err(err)
 					}

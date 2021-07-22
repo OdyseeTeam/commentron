@@ -211,31 +211,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single comment record from the query using the global executor.
-func (q commentQuery) OneG() (*Comment, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single comment record from the query using the global executor, and panics on error.
-func (q commentQuery) OneGP() *Comment {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single comment record from the query, and panics on error.
-func (q commentQuery) OneP(exec boil.Executor) *Comment {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single comment record from the query.
 func (q commentQuery) One(exec boil.Executor) (*Comment, error) {
 	o := &Comment{}
@@ -253,31 +228,6 @@ func (q commentQuery) One(exec boil.Executor) (*Comment, error) {
 	return o, nil
 }
 
-// AllG returns all Comment records from the query using the global executor.
-func (q commentQuery) AllG() (CommentSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all Comment records from the query using the global executor, and panics on error.
-func (q commentQuery) AllGP() CommentSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all Comment records from the query, and panics on error.
-func (q commentQuery) AllP(exec boil.Executor) CommentSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all Comment records from the query.
 func (q commentQuery) All(exec boil.Executor) (CommentSlice, error) {
 	var o []*Comment
@@ -288,31 +238,6 @@ func (q commentQuery) All(exec boil.Executor) (CommentSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all Comment records in the query, and panics on error.
-func (q commentQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all Comment records in the query using the global executor, and panics on error.
-func (q commentQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all Comment records in the query, and panics on error.
-func (q commentQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all Comment records in the query.
@@ -328,31 +253,6 @@ func (q commentQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q commentQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q commentQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q commentQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -920,34 +820,6 @@ func (commentL) LoadReactions(e boil.Executor, singular bool, maybeComment inter
 	return nil
 }
 
-// SetChannelG of the comment to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Comments.
-// Uses the global database handle.
-func (o *Comment) SetChannelG(insert bool, related *Channel) error {
-	return o.SetChannel(boil.GetDB(), insert, related)
-}
-
-// SetChannelP of the comment to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Comments.
-// Panics on error.
-func (o *Comment) SetChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetChannelGP of the comment to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Comments.
-// Uses the global database handle and panics on error.
-func (o *Comment) SetChannelGP(insert bool, related *Channel) {
-	if err := o.SetChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetChannel of the comment to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.Comments.
@@ -995,34 +867,6 @@ func (o *Comment) SetChannel(exec boil.Executor, insert bool, related *Channel) 
 	return nil
 }
 
-// RemoveChannelG relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Comment) RemoveChannelG(related *Channel) error {
-	return o.RemoveChannel(boil.GetDB(), related)
-}
-
-// RemoveChannelP relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Comment) RemoveChannelP(exec boil.Executor, related *Channel) {
-	if err := o.RemoveChannel(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveChannelGP relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Comment) RemoveChannelGP(related *Channel) {
-	if err := o.RemoveChannel(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveChannel relationship.
 // Sets o.R.Channel to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -1052,34 +896,6 @@ func (o *Comment) RemoveChannel(exec boil.Executor, related *Channel) error {
 		break
 	}
 	return nil
-}
-
-// SetParentG of the comment to the related item.
-// Sets o.R.Parent to related.
-// Adds o to related.R.ParentComments.
-// Uses the global database handle.
-func (o *Comment) SetParentG(insert bool, related *Comment) error {
-	return o.SetParent(boil.GetDB(), insert, related)
-}
-
-// SetParentP of the comment to the related item.
-// Sets o.R.Parent to related.
-// Adds o to related.R.ParentComments.
-// Panics on error.
-func (o *Comment) SetParentP(exec boil.Executor, insert bool, related *Comment) {
-	if err := o.SetParent(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetParentGP of the comment to the related item.
-// Sets o.R.Parent to related.
-// Adds o to related.R.ParentComments.
-// Uses the global database handle and panics on error.
-func (o *Comment) SetParentGP(insert bool, related *Comment) {
-	if err := o.SetParent(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetParent of the comment to the related item.
@@ -1129,34 +945,6 @@ func (o *Comment) SetParent(exec boil.Executor, insert bool, related *Comment) e
 	return nil
 }
 
-// RemoveParentG relationship.
-// Sets o.R.Parent to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Comment) RemoveParentG(related *Comment) error {
-	return o.RemoveParent(boil.GetDB(), related)
-}
-
-// RemoveParentP relationship.
-// Sets o.R.Parent to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Comment) RemoveParentP(exec boil.Executor, related *Comment) {
-	if err := o.RemoveParent(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveParentGP relationship.
-// Sets o.R.Parent to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Comment) RemoveParentGP(related *Comment) {
-	if err := o.RemoveParent(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveParent relationship.
 // Sets o.R.Parent to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -1186,37 +974,6 @@ func (o *Comment) RemoveParent(exec boil.Executor, related *Comment) error {
 		break
 	}
 	return nil
-}
-
-// AddOffendingCommentBlockedEntriesG adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.OffendingCommentBlockedEntries.
-// Sets related.R.OffendingComment appropriately.
-// Uses the global database handle.
-func (o *Comment) AddOffendingCommentBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.AddOffendingCommentBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// AddOffendingCommentBlockedEntriesP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.OffendingCommentBlockedEntries.
-// Sets related.R.OffendingComment appropriately.
-// Panics on error.
-func (o *Comment) AddOffendingCommentBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.AddOffendingCommentBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddOffendingCommentBlockedEntriesGP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.OffendingCommentBlockedEntries.
-// Sets related.R.OffendingComment appropriately.
-// Uses the global database handle and panics on error.
-func (o *Comment) AddOffendingCommentBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.AddOffendingCommentBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddOffendingCommentBlockedEntries adds the given related objects to the existing relationships
@@ -1272,43 +1029,6 @@ func (o *Comment) AddOffendingCommentBlockedEntries(exec boil.Executor, insert b
 	return nil
 }
 
-// SetOffendingCommentBlockedEntriesG removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Replaces o.R.OffendingCommentBlockedEntries with related.
-// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Uses the global database handle.
-func (o *Comment) SetOffendingCommentBlockedEntriesG(insert bool, related ...*BlockedEntry) error {
-	return o.SetOffendingCommentBlockedEntries(boil.GetDB(), insert, related...)
-}
-
-// SetOffendingCommentBlockedEntriesP removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Replaces o.R.OffendingCommentBlockedEntries with related.
-// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Panics on error.
-func (o *Comment) SetOffendingCommentBlockedEntriesP(exec boil.Executor, insert bool, related ...*BlockedEntry) {
-	if err := o.SetOffendingCommentBlockedEntries(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetOffendingCommentBlockedEntriesGP removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Replaces o.R.OffendingCommentBlockedEntries with related.
-// Sets related.R.OffendingComment's OffendingCommentBlockedEntries accordingly.
-// Uses the global database handle and panics on error.
-func (o *Comment) SetOffendingCommentBlockedEntriesGP(insert bool, related ...*BlockedEntry) {
-	if err := o.SetOffendingCommentBlockedEntries(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetOffendingCommentBlockedEntries removes all previously related items of the
 // comment replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -1341,34 +1061,6 @@ func (o *Comment) SetOffendingCommentBlockedEntries(exec boil.Executor, insert b
 		o.R.OffendingCommentBlockedEntries = nil
 	}
 	return o.AddOffendingCommentBlockedEntries(exec, insert, related...)
-}
-
-// RemoveOffendingCommentBlockedEntriesG relationships from objects passed in.
-// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.OffendingComment.
-// Uses the global database handle.
-func (o *Comment) RemoveOffendingCommentBlockedEntriesG(related ...*BlockedEntry) error {
-	return o.RemoveOffendingCommentBlockedEntries(boil.GetDB(), related...)
-}
-
-// RemoveOffendingCommentBlockedEntriesP relationships from objects passed in.
-// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.OffendingComment.
-// Panics on error.
-func (o *Comment) RemoveOffendingCommentBlockedEntriesP(exec boil.Executor, related ...*BlockedEntry) {
-	if err := o.RemoveOffendingCommentBlockedEntries(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveOffendingCommentBlockedEntriesGP relationships from objects passed in.
-// Removes related items from R.OffendingCommentBlockedEntries (uses pointer comparison, removal does not keep order)
-// Sets related.R.OffendingComment.
-// Uses the global database handle and panics on error.
-func (o *Comment) RemoveOffendingCommentBlockedEntriesGP(related ...*BlockedEntry) {
-	if err := o.RemoveOffendingCommentBlockedEntries(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveOffendingCommentBlockedEntries relationships from objects passed in.
@@ -1405,37 +1097,6 @@ func (o *Comment) RemoveOffendingCommentBlockedEntries(exec boil.Executor, relat
 	}
 
 	return nil
-}
-
-// AddParentCommentsG adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.ParentComments.
-// Sets related.R.Parent appropriately.
-// Uses the global database handle.
-func (o *Comment) AddParentCommentsG(insert bool, related ...*Comment) error {
-	return o.AddParentComments(boil.GetDB(), insert, related...)
-}
-
-// AddParentCommentsP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.ParentComments.
-// Sets related.R.Parent appropriately.
-// Panics on error.
-func (o *Comment) AddParentCommentsP(exec boil.Executor, insert bool, related ...*Comment) {
-	if err := o.AddParentComments(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddParentCommentsGP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.ParentComments.
-// Sets related.R.Parent appropriately.
-// Uses the global database handle and panics on error.
-func (o *Comment) AddParentCommentsGP(insert bool, related ...*Comment) {
-	if err := o.AddParentComments(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddParentComments adds the given related objects to the existing relationships
@@ -1491,43 +1152,6 @@ func (o *Comment) AddParentComments(exec boil.Executor, insert bool, related ...
 	return nil
 }
 
-// SetParentCommentsG removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Parent's ParentComments accordingly.
-// Replaces o.R.ParentComments with related.
-// Sets related.R.Parent's ParentComments accordingly.
-// Uses the global database handle.
-func (o *Comment) SetParentCommentsG(insert bool, related ...*Comment) error {
-	return o.SetParentComments(boil.GetDB(), insert, related...)
-}
-
-// SetParentCommentsP removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Parent's ParentComments accordingly.
-// Replaces o.R.ParentComments with related.
-// Sets related.R.Parent's ParentComments accordingly.
-// Panics on error.
-func (o *Comment) SetParentCommentsP(exec boil.Executor, insert bool, related ...*Comment) {
-	if err := o.SetParentComments(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetParentCommentsGP removes all previously related items of the
-// comment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Parent's ParentComments accordingly.
-// Replaces o.R.ParentComments with related.
-// Sets related.R.Parent's ParentComments accordingly.
-// Uses the global database handle and panics on error.
-func (o *Comment) SetParentCommentsGP(insert bool, related ...*Comment) {
-	if err := o.SetParentComments(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetParentComments removes all previously related items of the
 // comment replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -1560,34 +1184,6 @@ func (o *Comment) SetParentComments(exec boil.Executor, insert bool, related ...
 		o.R.ParentComments = nil
 	}
 	return o.AddParentComments(exec, insert, related...)
-}
-
-// RemoveParentCommentsG relationships from objects passed in.
-// Removes related items from R.ParentComments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Parent.
-// Uses the global database handle.
-func (o *Comment) RemoveParentCommentsG(related ...*Comment) error {
-	return o.RemoveParentComments(boil.GetDB(), related...)
-}
-
-// RemoveParentCommentsP relationships from objects passed in.
-// Removes related items from R.ParentComments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Parent.
-// Panics on error.
-func (o *Comment) RemoveParentCommentsP(exec boil.Executor, related ...*Comment) {
-	if err := o.RemoveParentComments(exec, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveParentCommentsGP relationships from objects passed in.
-// Removes related items from R.ParentComments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Parent.
-// Uses the global database handle and panics on error.
-func (o *Comment) RemoveParentCommentsGP(related ...*Comment) {
-	if err := o.RemoveParentComments(boil.GetDB(), related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // RemoveParentComments relationships from objects passed in.
@@ -1624,37 +1220,6 @@ func (o *Comment) RemoveParentComments(exec boil.Executor, related ...*Comment) 
 	}
 
 	return nil
-}
-
-// AddReactionsG adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Comment appropriately.
-// Uses the global database handle.
-func (o *Comment) AddReactionsG(insert bool, related ...*Reaction) error {
-	return o.AddReactions(boil.GetDB(), insert, related...)
-}
-
-// AddReactionsP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Comment appropriately.
-// Panics on error.
-func (o *Comment) AddReactionsP(exec boil.Executor, insert bool, related ...*Reaction) {
-	if err := o.AddReactions(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddReactionsGP adds the given related objects to the existing relationships
-// of the comment, optionally inserting them as new records.
-// Appends related to o.R.Reactions.
-// Sets related.R.Comment appropriately.
-// Uses the global database handle and panics on error.
-func (o *Comment) AddReactionsGP(insert bool, related ...*Reaction) {
-	if err := o.AddReactions(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // AddReactions adds the given related objects to the existing relationships
@@ -1716,31 +1281,6 @@ func Comments(mods ...qm.QueryMod) commentQuery {
 	return commentQuery{NewQuery(mods...)}
 }
 
-// FindCommentG retrieves a single record by ID.
-func FindCommentG(commentID string, selectCols ...string) (*Comment, error) {
-	return FindComment(boil.GetDB(), commentID, selectCols...)
-}
-
-// FindCommentP retrieves a single record by ID with an executor, and panics on error.
-func FindCommentP(exec boil.Executor, commentID string, selectCols ...string) *Comment {
-	retobj, err := FindComment(exec, commentID, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindCommentGP retrieves a single record by ID, and panics on error.
-func FindCommentGP(commentID string, selectCols ...string) *Comment {
-	retobj, err := FindComment(boil.GetDB(), commentID, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindComment retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindComment(exec boil.Executor, commentID string, selectCols ...string) (*Comment, error) {
@@ -1765,27 +1305,6 @@ func FindComment(exec boil.Executor, commentID string, selectCols ...string) (*C
 	}
 
 	return commentObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *Comment) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *Comment) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *Comment) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -1879,30 +1398,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single Comment record using the global executor.
-// See Update for more documentation.
-func (o *Comment) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the Comment, and panics on error.
-// See Update for more documentation.
-func (o *Comment) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single Comment record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *Comment) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the Comment.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -1954,19 +1449,6 @@ func (o *Comment) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q commentQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q commentQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q commentQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -1977,27 +1459,6 @@ func (q commentQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o CommentSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o CommentSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o CommentSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -2042,26 +1503,6 @@ func (o CommentSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *Comment) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *Comment) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *Comment) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLCommentUniqueColumns = []string{
@@ -2197,32 +1638,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single Comment record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *Comment) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single Comment record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Comment) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single Comment record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Comment) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single Comment record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Comment) Delete(exec boil.Executor) error {
@@ -2246,14 +1661,6 @@ func (o *Comment) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q commentQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q commentQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -2268,27 +1675,6 @@ func (q commentQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o CommentSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o CommentSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o CommentSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -2319,29 +1705,6 @@ func (o CommentSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *Comment) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no Comment provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *Comment) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *Comment) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Comment) Reload(exec boil.Executor) error {
@@ -2352,34 +1715,6 @@ func (o *Comment) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *CommentSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty CommentSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *CommentSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *CommentSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -2409,31 +1744,6 @@ func (o *CommentSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// CommentExistsG checks if the Comment row exists.
-func CommentExistsG(commentID string) (bool, error) {
-	return CommentExists(boil.GetDB(), commentID)
-}
-
-// CommentExistsP checks if the Comment row exists. Panics on error.
-func CommentExistsP(exec boil.Executor, commentID string) bool {
-	e, err := CommentExists(exec, commentID)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// CommentExistsGP checks if the Comment row exists. Panics on error.
-func CommentExistsGP(commentID string) bool {
-	e, err := CommentExists(boil.GetDB(), commentID)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // CommentExists checks if the Comment row exists.

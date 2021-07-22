@@ -4,18 +4,18 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
-
 	"github.com/lbryio/commentron/commentapi"
-
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, []commentapi.CommentItem, error) {
-	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(model.CommentRels.Channel)).OneG()
+	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(model.CommentRels.Channel)).One(db.RO)
 	if err != nil {
 		return commentapi.CommentItem{}, nil, errors.Err(err)
 	}
@@ -26,7 +26,7 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, [
 	if comment.R != nil && comment.R.Channel != nil {
 		channel = comment.R.Channel
 	}
-	replies, err := comment.ParentComments().CountG()
+	replies, err := comment.ParentComments().Count(db.RO)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return commentapi.CommentItem{}, nil, errors.Err(err)
 	}
@@ -34,7 +34,7 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, [
 	if args.WithAncestors {
 		lastcomment := comment
 		for !lastcomment.ParentID.IsZero() {
-			parentComment, err := lastcomment.Parent(qm.Load(model.CommentRels.Channel)).OneG()
+			parentComment, err := lastcomment.Parent(qm.Load(model.CommentRels.Channel)).One(db.RO)
 			if err != nil {
 				return commentapi.CommentItem{}, nil, errors.Err(err)
 			}
@@ -42,7 +42,7 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, [
 			if parentComment.R != nil && parentComment.R.Channel != nil {
 				parentChannel = parentComment.R.Channel
 			}
-			parentReplies, err := comment.ParentComments().CountG()
+			parentReplies, err := comment.ParentComments().Count(db.RO)
 			if err != nil && errors.Is(err, sql.ErrNoRows) {
 				return commentapi.CommentItem{}, nil, errors.Err(err)
 			}

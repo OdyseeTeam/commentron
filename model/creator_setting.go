@@ -151,31 +151,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single creatorSetting record from the query using the global executor.
-func (q creatorSettingQuery) OneG() (*CreatorSetting, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single creatorSetting record from the query using the global executor, and panics on error.
-func (q creatorSettingQuery) OneGP() *CreatorSetting {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single creatorSetting record from the query, and panics on error.
-func (q creatorSettingQuery) OneP(exec boil.Executor) *CreatorSetting {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single creatorSetting record from the query.
 func (q creatorSettingQuery) One(exec boil.Executor) (*CreatorSetting, error) {
 	o := &CreatorSetting{}
@@ -193,31 +168,6 @@ func (q creatorSettingQuery) One(exec boil.Executor) (*CreatorSetting, error) {
 	return o, nil
 }
 
-// AllG returns all CreatorSetting records from the query using the global executor.
-func (q creatorSettingQuery) AllG() (CreatorSettingSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all CreatorSetting records from the query using the global executor, and panics on error.
-func (q creatorSettingQuery) AllGP() CreatorSettingSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all CreatorSetting records from the query, and panics on error.
-func (q creatorSettingQuery) AllP(exec boil.Executor) CreatorSettingSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all CreatorSetting records from the query.
 func (q creatorSettingQuery) All(exec boil.Executor) (CreatorSettingSlice, error) {
 	var o []*CreatorSetting
@@ -228,31 +178,6 @@ func (q creatorSettingQuery) All(exec boil.Executor) (CreatorSettingSlice, error
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all CreatorSetting records in the query, and panics on error.
-func (q creatorSettingQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all CreatorSetting records in the query using the global executor, and panics on error.
-func (q creatorSettingQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all CreatorSetting records in the query, and panics on error.
-func (q creatorSettingQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all CreatorSetting records in the query.
@@ -268,31 +193,6 @@ func (q creatorSettingQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q creatorSettingQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q creatorSettingQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q creatorSettingQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -418,34 +318,6 @@ func (creatorSettingL) LoadCreatorChannel(e boil.Executor, singular bool, maybeC
 	return nil
 }
 
-// SetCreatorChannelG of the creatorSetting to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelCreatorSettings.
-// Uses the global database handle.
-func (o *CreatorSetting) SetCreatorChannelG(insert bool, related *Channel) error {
-	return o.SetCreatorChannel(boil.GetDB(), insert, related)
-}
-
-// SetCreatorChannelP of the creatorSetting to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelCreatorSettings.
-// Panics on error.
-func (o *CreatorSetting) SetCreatorChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetCreatorChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCreatorChannelGP of the creatorSetting to the related item.
-// Sets o.R.CreatorChannel to related.
-// Adds o to related.R.CreatorChannelCreatorSettings.
-// Uses the global database handle and panics on error.
-func (o *CreatorSetting) SetCreatorChannelGP(insert bool, related *Channel) {
-	if err := o.SetCreatorChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetCreatorChannel of the creatorSetting to the related item.
 // Sets o.R.CreatorChannel to related.
 // Adds o to related.R.CreatorChannelCreatorSettings.
@@ -499,31 +371,6 @@ func CreatorSettings(mods ...qm.QueryMod) creatorSettingQuery {
 	return creatorSettingQuery{NewQuery(mods...)}
 }
 
-// FindCreatorSettingG retrieves a single record by ID.
-func FindCreatorSettingG(iD uint64, selectCols ...string) (*CreatorSetting, error) {
-	return FindCreatorSetting(boil.GetDB(), iD, selectCols...)
-}
-
-// FindCreatorSettingP retrieves a single record by ID with an executor, and panics on error.
-func FindCreatorSettingP(exec boil.Executor, iD uint64, selectCols ...string) *CreatorSetting {
-	retobj, err := FindCreatorSetting(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindCreatorSettingGP retrieves a single record by ID, and panics on error.
-func FindCreatorSettingGP(iD uint64, selectCols ...string) *CreatorSetting {
-	retobj, err := FindCreatorSetting(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindCreatorSetting retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindCreatorSetting(exec boil.Executor, iD uint64, selectCols ...string) (*CreatorSetting, error) {
@@ -548,27 +395,6 @@ func FindCreatorSetting(exec boil.Executor, iD uint64, selectCols ...string) (*C
 	}
 
 	return creatorSettingObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *CreatorSetting) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *CreatorSetting) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *CreatorSetting) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -673,30 +499,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single CreatorSetting record using the global executor.
-// See Update for more documentation.
-func (o *CreatorSetting) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the CreatorSetting, and panics on error.
-// See Update for more documentation.
-func (o *CreatorSetting) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single CreatorSetting record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *CreatorSetting) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the CreatorSetting.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -748,19 +550,6 @@ func (o *CreatorSetting) Update(exec boil.Executor, columns boil.Columns) error 
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q creatorSettingQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q creatorSettingQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q creatorSettingQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -771,27 +560,6 @@ func (q creatorSettingQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o CreatorSettingSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o CreatorSettingSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o CreatorSettingSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -836,26 +604,6 @@ func (o CreatorSettingSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *CreatorSetting) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *CreatorSetting) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *CreatorSetting) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLCreatorSettingUniqueColumns = []string{
@@ -1002,32 +750,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single CreatorSetting record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *CreatorSetting) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single CreatorSetting record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *CreatorSetting) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single CreatorSetting record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *CreatorSetting) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single CreatorSetting record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *CreatorSetting) Delete(exec boil.Executor) error {
@@ -1051,14 +773,6 @@ func (o *CreatorSetting) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q creatorSettingQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q creatorSettingQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1073,27 +787,6 @@ func (q creatorSettingQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o CreatorSettingSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o CreatorSettingSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o CreatorSettingSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1124,29 +817,6 @@ func (o CreatorSettingSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *CreatorSetting) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no CreatorSetting provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *CreatorSetting) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *CreatorSetting) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *CreatorSetting) Reload(exec boil.Executor) error {
@@ -1157,34 +827,6 @@ func (o *CreatorSetting) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *CreatorSettingSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty CreatorSettingSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *CreatorSettingSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *CreatorSettingSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1214,31 +856,6 @@ func (o *CreatorSettingSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// CreatorSettingExistsG checks if the CreatorSetting row exists.
-func CreatorSettingExistsG(iD uint64) (bool, error) {
-	return CreatorSettingExists(boil.GetDB(), iD)
-}
-
-// CreatorSettingExistsP checks if the CreatorSetting row exists. Panics on error.
-func CreatorSettingExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := CreatorSettingExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// CreatorSettingExistsGP checks if the CreatorSetting row exists. Panics on error.
-func CreatorSettingExistsGP(iD uint64) bool {
-	e, err := CreatorSettingExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // CreatorSettingExists checks if the CreatorSetting row exists.

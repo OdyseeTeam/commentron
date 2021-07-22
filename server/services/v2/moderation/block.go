@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -40,7 +41,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	}
 
 	// Only get the block list they were invited to.
-	participatingBlockedList, err := creatorChannel.BlockedListInvite().OneG()
+	participatingBlockedList, err := creatorChannel.BlockedListInvite().One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -51,7 +52,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	}
 	blockedEntry, err := model.BlockedEntries(
 		model.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.BlockedChannelID)),
-		model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).OneG()
+		model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).One(db.RO)
 	if err != nil && err != sql.ErrNoRows {
 		return errors.Err(err)
 	}
@@ -66,7 +67,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 			CreatorChannelID: null.StringFrom(creatorChannel.ClaimID),
 			BlockedListID:    blocklistID,
 		}
-		err := blockedEntry.InsertG(boil.Infer())
+		err := blockedEntry.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -80,7 +81,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	} else {
 		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOutHrs) * time.Hour))
 	}
-	isMod, err := modChannel.ModChannelModerators().ExistsG()
+	isMod, err := modChannel.ModChannelModerators().Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -99,7 +100,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		blockedEntry.DelegatedModeratorChannelID = null.StringFrom(modChannel.ClaimID)
 	}
 
-	err = blockedEntry.UpdateG(boil.Infer())
+	err = blockedEntry.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -109,11 +110,11 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 			return api.StatusError{Err: errors.Err("cannot delete all comments of user without admin priviledges"), Status: http.StatusForbidden}
 		}
 
-		comments, err := model.Comments(model.CommentWhere.ChannelID.EQ(null.StringFrom(bannedChannel.ClaimID))).AllG()
+		comments, err := model.Comments(model.CommentWhere.ChannelID.EQ(null.StringFrom(bannedChannel.ClaimID))).All(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
-		err = comments.DeleteAllG()
+		err = comments.DeleteAll(db.RW)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -156,7 +157,7 @@ func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		dmRels := model.DelegatedModeratorRels
 		dmWhere := model.DelegatedModeratorWhere
 		loadCreatorChannels := qm.Load(dmRels.CreatorChannel, dmWhere.CreatorChannelID.EQ(creatorChannelID))
-		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels).ExistsG()
+		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels).Exists(db.RO)
 		if err != nil {
 			return nil, nil, errors.Err(err)
 		}
@@ -177,7 +178,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 		return err
 	}
 
-	isMod, err := modChannel.ModChannelModerators().ExistsG()
+	isMod, err := modChannel.ModChannelModerators().Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -186,7 +187,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	var blockedByCreator model.BlockedEntrySlice
 	var blockedGlobally model.BlockedEntrySlice
 
-	blockedByMod, err = modChannel.CreatorChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(false))).AllG()
+	blockedByMod, err = modChannel.CreatorChannelBlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(false))).All(db.RO)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -197,7 +198,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 	}
 
 	if isMod {
-		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		blockedGlobally, err = model.BlockedEntries(qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel), model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).All(db.RO)
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
@@ -212,7 +213,7 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 
 func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, error) {
 	var blockedByCreator model.BlockedEntrySlice
-	moderations, err := modChannel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).AllG()
+	moderations, err := modChannel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).All(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Err(err)
 	}
@@ -220,7 +221,7 @@ func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, er
 	for _, m := range moderations {
 		creatorIDs = append(creatorIDs, m.CreatorChannelID)
 	}
-	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.CreatorChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel)).AllG()
+	blockedByCreator, err = model.BlockedEntries(qm.WhereIn(model.BlockedEntryColumns.CreatorChannelID+" IN ?", creatorIDs...), qm.Load(model.BlockedEntryRels.BlockedChannel), qm.Load(model.BlockedEntryRels.CreatorChannel)).All(db.RO)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Err(err)
 	}

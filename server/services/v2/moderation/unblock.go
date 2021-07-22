@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -32,12 +33,12 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 		return errors.Err(err)
 	}
 
-	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).AllG()
+	entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(creatorChannel.ClaimID))).All(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
 
-	isMod, err := modChannel.ModChannelModerators().ExistsG()
+	isMod, err := modChannel.ModChannelModerators().Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -48,11 +49,11 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 	}
 
 	if args.GlobalUnBlock {
-		entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).AllG()
+		entries, err := bannedChannel.BlockedChannelBlockedEntries(model.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true))).All(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
-		err = entries.DeleteAllG()
+		err = entries.DeleteAll(db.RW)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -60,7 +61,7 @@ func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 		if len(entries) > 0 {
 			for _, be := range entries {
 				if be.CreatorChannelID.String == creatorChannel.ClaimID {
-					err := be.DeleteG()
+					err := be.Delete(db.RW)
 					if err != nil {
 						return errors.Err(err)
 					}

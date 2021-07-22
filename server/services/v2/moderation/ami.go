@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
@@ -24,7 +25,7 @@ func amI(_ *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIRespons
 	if err != nil {
 		return errors.Err(err)
 	}
-	moderations, err := channel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).AllG()
+	moderations, err := channel.ModChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.CreatorChannel)).All(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -39,7 +40,7 @@ func amI(_ *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIRespons
 	reply.ChannelID = args.ChannelID
 	reply.AuthorizedChannels = approvedChannels
 
-	moderator, err := model.Moderators(model.ModeratorWhere.ModChannelID.EQ(null.StringFrom(args.ChannelID)), model.ModeratorWhere.ModLevel.EQ(1)).OneG()
+	moderator, err := model.Moderators(model.ModeratorWhere.ModChannelID.EQ(null.StringFrom(args.ChannelID)), model.ModeratorWhere.ModLevel.EQ(1)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}

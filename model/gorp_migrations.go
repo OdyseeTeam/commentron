@@ -102,31 +102,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single gorpMigration record from the query using the global executor.
-func (q gorpMigrationQuery) OneG() (*GorpMigration, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single gorpMigration record from the query using the global executor, and panics on error.
-func (q gorpMigrationQuery) OneGP() *GorpMigration {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single gorpMigration record from the query, and panics on error.
-func (q gorpMigrationQuery) OneP(exec boil.Executor) *GorpMigration {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single gorpMigration record from the query.
 func (q gorpMigrationQuery) One(exec boil.Executor) (*GorpMigration, error) {
 	o := &GorpMigration{}
@@ -144,31 +119,6 @@ func (q gorpMigrationQuery) One(exec boil.Executor) (*GorpMigration, error) {
 	return o, nil
 }
 
-// AllG returns all GorpMigration records from the query using the global executor.
-func (q gorpMigrationQuery) AllG() (GorpMigrationSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all GorpMigration records from the query using the global executor, and panics on error.
-func (q gorpMigrationQuery) AllGP() GorpMigrationSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all GorpMigration records from the query, and panics on error.
-func (q gorpMigrationQuery) AllP(exec boil.Executor) GorpMigrationSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all GorpMigration records from the query.
 func (q gorpMigrationQuery) All(exec boil.Executor) (GorpMigrationSlice, error) {
 	var o []*GorpMigration
@@ -179,31 +129,6 @@ func (q gorpMigrationQuery) All(exec boil.Executor) (GorpMigrationSlice, error) 
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all GorpMigration records in the query, and panics on error.
-func (q gorpMigrationQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all GorpMigration records in the query using the global executor, and panics on error.
-func (q gorpMigrationQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all GorpMigration records in the query, and panics on error.
-func (q gorpMigrationQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all GorpMigration records in the query.
@@ -219,31 +144,6 @@ func (q gorpMigrationQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q gorpMigrationQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q gorpMigrationQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q gorpMigrationQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -266,31 +166,6 @@ func (q gorpMigrationQuery) Exists(exec boil.Executor) (bool, error) {
 func GorpMigrations(mods ...qm.QueryMod) gorpMigrationQuery {
 	mods = append(mods, qm.From("`gorp_migrations`"))
 	return gorpMigrationQuery{NewQuery(mods...)}
-}
-
-// FindGorpMigrationG retrieves a single record by ID.
-func FindGorpMigrationG(iD string, selectCols ...string) (*GorpMigration, error) {
-	return FindGorpMigration(boil.GetDB(), iD, selectCols...)
-}
-
-// FindGorpMigrationP retrieves a single record by ID with an executor, and panics on error.
-func FindGorpMigrationP(exec boil.Executor, iD string, selectCols ...string) *GorpMigration {
-	retobj, err := FindGorpMigration(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindGorpMigrationGP retrieves a single record by ID, and panics on error.
-func FindGorpMigrationGP(iD string, selectCols ...string) *GorpMigration {
-	retobj, err := FindGorpMigration(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
 }
 
 // FindGorpMigration retrieves a single record by ID with an executor.
@@ -317,27 +192,6 @@ func FindGorpMigration(exec boil.Executor, iD string, selectCols ...string) (*Go
 	}
 
 	return gorpMigrationObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *GorpMigration) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *GorpMigration) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *GorpMigration) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -431,30 +285,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single GorpMigration record using the global executor.
-// See Update for more documentation.
-func (o *GorpMigration) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the GorpMigration, and panics on error.
-// See Update for more documentation.
-func (o *GorpMigration) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single GorpMigration record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *GorpMigration) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the GorpMigration.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -506,19 +336,6 @@ func (o *GorpMigration) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q gorpMigrationQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q gorpMigrationQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q gorpMigrationQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -529,27 +346,6 @@ func (q gorpMigrationQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o GorpMigrationSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o GorpMigrationSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o GorpMigrationSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -594,26 +390,6 @@ func (o GorpMigrationSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *GorpMigration) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *GorpMigration) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *GorpMigration) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLGorpMigrationUniqueColumns = []string{
@@ -749,32 +525,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single GorpMigration record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *GorpMigration) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single GorpMigration record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *GorpMigration) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single GorpMigration record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *GorpMigration) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single GorpMigration record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *GorpMigration) Delete(exec boil.Executor) error {
@@ -798,14 +548,6 @@ func (o *GorpMigration) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q gorpMigrationQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q gorpMigrationQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -820,27 +562,6 @@ func (q gorpMigrationQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o GorpMigrationSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o GorpMigrationSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o GorpMigrationSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -871,29 +592,6 @@ func (o GorpMigrationSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *GorpMigration) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no GorpMigration provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *GorpMigration) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *GorpMigration) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *GorpMigration) Reload(exec boil.Executor) error {
@@ -904,34 +602,6 @@ func (o *GorpMigration) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *GorpMigrationSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty GorpMigrationSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *GorpMigrationSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *GorpMigrationSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -961,31 +631,6 @@ func (o *GorpMigrationSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// GorpMigrationExistsG checks if the GorpMigration row exists.
-func GorpMigrationExistsG(iD string) (bool, error) {
-	return GorpMigrationExists(boil.GetDB(), iD)
-}
-
-// GorpMigrationExistsP checks if the GorpMigration row exists. Panics on error.
-func GorpMigrationExistsP(exec boil.Executor, iD string) bool {
-	e, err := GorpMigrationExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// GorpMigrationExistsGP checks if the GorpMigration row exists. Panics on error.
-func GorpMigrationExistsGP(iD string) bool {
-	e, err := GorpMigrationExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // GorpMigrationExists checks if the GorpMigration row exists.

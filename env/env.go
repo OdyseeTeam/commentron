@@ -8,7 +8,8 @@ import (
 
 // Config holds the environment configuration used by lighthouse.
 type Config struct {
-	MySQLDsn                string `env:"MYSQL_DSN"`
+	MySQLDsnRW              string `env:"MYSQL_DSN_RW"`
+	MySQLDsnRO              string `env:"MYSQL_DSN_RO"`
 	IsTestMode              bool   `env:"IS_TEST"`
 	SDKUrl                  string `env:"SDK_URL"`
 	SlackHookURL            string `env:"SLACKHOOKURL"`

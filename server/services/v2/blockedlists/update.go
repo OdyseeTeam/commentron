@@ -4,16 +4,16 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lbryio/lbry.go/extras/api"
-
-	"github.com/volatiletech/sqlboiler/boil"
-
+	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+
+	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/lbryio/commentron/commentapi"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply *commentapi.SharedBlockedList) error {
@@ -26,7 +26,7 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 		return err
 	}
 
-	list, err := model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).OneG()
+	list, err := model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -36,7 +36,7 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 			return api.StatusError{Err: errors.Err("a name must be specified if a new list will get created")}
 		}
 		list = &model.BlockedList{ChannelID: ownerChannel.ClaimID, Name: *args.Name}
-		err := list.InsertG(boil.Infer())
+		err := list.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -71,20 +71,20 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 		list.CurseJarAmount.SetValid(*args.CurseJarAmount)
 	}
 
-	err = list.UpdateG(boil.Infer())
+	err = list.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
 	}
 
 	if created {
 		blockedList := map[string]interface{}{model.BlockedEntryColumns.BlockedListID: list.ID}
-		err := ownerChannel.CreatorChannelBlockedEntries().UpdateAllG(blockedList)
+		err := ownerChannel.CreatorChannelBlockedEntries().UpdateAll(db.RW, blockedList)
 		if err != nil {
 			return errors.Err(err)
 		}
 		ownerChannel.BlockedListID.SetValid(list.ID)
 		ownerChannel.BlockedListInviteID.SetValid(list.ID)
-		err = ownerChannel.UpdateG(boil.Whitelist(model.BlockedListColumns.ChannelID, model.BlockedListColumns.Name))
+		err = ownerChannel.Update(db.RW, boil.Whitelist(model.BlockedListColumns.ChannelID, model.BlockedListColumns.Name))
 		if err != nil {
 			return errors.Err(err)
 		}

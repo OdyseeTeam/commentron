@@ -4,16 +4,16 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lbryio/lbry.go/extras/api"
-
-	"github.com/volatiletech/sqlboiler/queries/qm"
-
+	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+
+	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/lbryio/commentron/commentapi"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 type delegatedModLevel int
@@ -40,7 +40,7 @@ func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	}
 	exists, err := creatorChannel.CreatorChannelDelegatedModerators(
 		model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID),
-		model.DelegatedModeratorWhere.CreatorChannelID.EQ(creatorChannel.ClaimID)).ExistsG()
+		model.DelegatedModeratorWhere.CreatorChannelID.EQ(creatorChannel.ClaimID)).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -53,7 +53,7 @@ func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 		Permissons:   uint64(defaultLevel),
 	}
 
-	err = creatorChannel.AddCreatorChannelDelegatedModeratorsG(true, delegatedModerator)
+	err = creatorChannel.AddCreatorChannelDelegatedModerators(db.RW, true, delegatedModerator)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -82,7 +82,7 @@ func removeDelegate(_ *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 		return errors.Err(err)
 	}
 
-	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).OneG()
+	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -91,7 +91,7 @@ func removeDelegate(_ *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 		return errors.Err("Mod channel %s is not a moderator for channel %s", args.ModChannelName, args.CreatorChannelName)
 	}
 
-	err = modEntry.DeleteG()
+	err = modEntry.Delete(db.RW)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -115,7 +115,7 @@ func listDelegates(_ *http.Request, args *commentapi.ListDelegatesArgs, reply *c
 		return err
 	}
 
-	delegatedModEntries, err := creatorChannel.CreatorChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.ModChannel)).AllG()
+	delegatedModEntries, err := creatorChannel.CreatorChannelDelegatedModerators(qm.Load(model.DelegatedModeratorRels.ModChannel)).All(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
@@ -43,7 +44,7 @@ func (c *Service) List(r *http.Request, args *commentapi.ListArgs, reply *commen
 
 // GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
 func (c *Service) GetChannelFromCommentID(_ *http.Request, args *commentapi.ChannelArgs, reply *commentapi.ChannelResponse) error {
-	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(m.CommentRels.Channel)).OneG()
+	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(args.CommentID), qm.Load(m.CommentRels.Channel)).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		return api.StatusError{Err: errors.Err("could not find comment for comment id"), Status: http.StatusBadRequest}
 	}

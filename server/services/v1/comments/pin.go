@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -13,7 +14,7 @@ import (
 
 func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, error) {
 	var item commentapi.CommentItem
-	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID)).OneG()
+	comment, err := model.Comments(model.CommentWhere.CommentID.EQ(args.CommentID)).One(db.RO)
 	if err != nil {
 		return item, errors.Err(err)
 	}
@@ -26,14 +27,14 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 		return item, errors.Err("could not resolve claim from comment")
 	}
 
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).OneG()
+	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
 			ClaimID: args.ChannelID,
 			Name:    args.ChannelName,
 		}
 		err = nil
-		err := channel.InsertG(boil.Infer())
+		err := channel.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return item, errors.Err(err)
 		}
@@ -52,7 +53,7 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 		return item, err
 	}
 	comment.IsPinned = !args.Remove
-	err = comment.UpdateG(boil.Infer())
+	err = comment.Update(db.RW, boil.Infer())
 	if err != nil {
 		return item, errors.Err(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
@@ -19,7 +20,7 @@ import (
 )
 
 func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {
-	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).AllG()
+	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -38,7 +39,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		qm.Load("Comment")}
 	if args.Types != nil {
 		typeNames := util.StringSplitArg(util.StrFromPtr(args.Types), ",")
-		types, err := model.ReactionTypes(qm.WhereIn(model.ReactionTypeColumns.Name+" IN ?", typeNames...)).AllG()
+		types, err := model.ReactionTypes(qm.WhereIn(model.ReactionTypeColumns.Name+" IN ?", typeNames...)).All(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -52,14 +53,14 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		myfilters = append(myfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 		allfilters = append(allfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 	}
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(util.StrFromPtr(args.ChannelID))).OneG()
+	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(util.StrFromPtr(args.ChannelID))).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
 			ClaimID: util.StrFromPtr(args.ChannelID),
 			Name:    util.StrFromPtr(args.ChannelName),
 		}
 		err = nil
-		err := channel.InsertG(boil.Infer())
+		err := channel.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -72,7 +73,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
 		if chanErr == nil {
 			allfilters = append(allfilters, qm.Where(model.ReactionColumns.ChannelID+" != ?", channel.ClaimID))
-			reactionlist, err := channel.Reactions(myfilters...).AllG()
+			reactionlist, err := channel.Reactions(myfilters...).All(db.RO)
 			if err != nil {
 				return errors.Err(err)
 			}
@@ -83,7 +84,7 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		}
 	}
 
-	reactionlist, err := model.Reactions(allfilters...).AllG()
+	reactionlist, err := model.Reactions(allfilters...).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -130,7 +131,7 @@ var reactionTypeCache = ccache.New(ccache.Configure().MaxSize(100))
 
 func getReactionTypes() (model.ReactionTypeSlice, error) {
 	v, err := reactionTypeCache.Fetch("all", 30*time.Minute, func() (interface{}, error) {
-		rts, err := model.ReactionTypes().AllG()
+		rts, err := model.ReactionTypes().All(db.RO)
 		if err != nil {
 			return nil, errors.Err(err)
 		}

@@ -8,10 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/config"
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
@@ -33,6 +32,7 @@ import (
 	"github.com/stripe/stripe-go/paymentintent"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
@@ -41,14 +41,14 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFrom(args.ChannelID).String)).OneG()
+	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFrom(args.ChannelID).String)).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &m.Channel{
 			ClaimID: null.StringFrom(args.ChannelID).String,
 			Name:    null.StringFrom(args.ChannelName).String,
 		}
 		err = nil
-		err := channel.InsertG(boil.Infer())
+		err := channel.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -84,7 +84,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return err
 	}
 
-	err = request.comment.InsertG(boil.Infer())
+	err = request.comment.Insert(db.RW, boil.Infer())
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func createComment(request *createRequest) error {
 }
 
 func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).OneG()
+	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -164,7 +164,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 }
 
 func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
-	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).ExistsG()
+	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -178,7 +178,7 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 		item.IsCreator = channelID == signingChannel.ClaimID
 		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
 		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
-		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).ExistsG()
+		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -213,7 +213,7 @@ func sendMessage(item commentapi.CommentItem, nType string, claimID string) {
 }
 
 func checkForDuplicate(commentID string) error {
-	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).OneG()
+	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -249,7 +249,7 @@ func blockedByCreator(request *createRequest) error {
 	creatorFilter := m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID))
 	userFilter := m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))
 	blockedListFilter := m.BlockedEntryWhere.BlockedListID.EQ(request.creatorChannel.BlockedListID)
-	blockedEntry, err := m.BlockedEntries(creatorFilter, userFilter).OneG()
+	blockedEntry, err := m.BlockedEntries(creatorFilter, userFilter).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -258,7 +258,7 @@ func blockedByCreator(request *createRequest) error {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	}
 
-	blockedListEntry, err := m.BlockedEntries(blockedListFilter, userFilter, qm.Load(m.BlockedEntryRels.BlockedList), qm.Load(m.BlockedEntryRels.CreatorChannel)).OneG()
+	blockedListEntry, err := m.BlockedEntries(blockedListFilter, userFilter, qm.Load(m.BlockedEntryRels.BlockedList), qm.Load(m.BlockedEntryRels.CreatorChannel)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -274,7 +274,7 @@ func blockedByCreator(request *createRequest) error {
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
 
-	settings, err := request.creatorChannel.CreatorChannelCreatorSettings().OneG()
+	settings, err := request.creatorChannel.CreatorChannelCreatorSettings().One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -299,7 +299,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		}
 	}
 	if !settings.SlowModeMinGap.IsZero() {
-		isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).ExistsG()
+		isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -314,7 +314,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		for _, tag := range request.signingChannel.Value.Tags {
 			if tag == "comments-disabled" {
 				settings.CommentsEnabled.SetValid(false)
-				err := settings.UpdateG(boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
+				err := settings.Update(db.RW, boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
 				if err != nil {
 					return errors.Err(err)
 				}

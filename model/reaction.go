@@ -142,31 +142,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single reaction record from the query using the global executor.
-func (q reactionQuery) OneG() (*Reaction, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single reaction record from the query using the global executor, and panics on error.
-func (q reactionQuery) OneGP() *Reaction {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single reaction record from the query, and panics on error.
-func (q reactionQuery) OneP(exec boil.Executor) *Reaction {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single reaction record from the query.
 func (q reactionQuery) One(exec boil.Executor) (*Reaction, error) {
 	o := &Reaction{}
@@ -184,31 +159,6 @@ func (q reactionQuery) One(exec boil.Executor) (*Reaction, error) {
 	return o, nil
 }
 
-// AllG returns all Reaction records from the query using the global executor.
-func (q reactionQuery) AllG() (ReactionSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all Reaction records from the query using the global executor, and panics on error.
-func (q reactionQuery) AllGP() ReactionSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all Reaction records from the query, and panics on error.
-func (q reactionQuery) AllP(exec boil.Executor) ReactionSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all Reaction records from the query.
 func (q reactionQuery) All(exec boil.Executor) (ReactionSlice, error) {
 	var o []*Reaction
@@ -219,31 +169,6 @@ func (q reactionQuery) All(exec boil.Executor) (ReactionSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all Reaction records in the query, and panics on error.
-func (q reactionQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all Reaction records in the query using the global executor, and panics on error.
-func (q reactionQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all Reaction records in the query, and panics on error.
-func (q reactionQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all Reaction records in the query.
@@ -259,31 +184,6 @@ func (q reactionQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table, and panics on error.
-func (q reactionQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q reactionQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q reactionQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -627,34 +527,6 @@ func (reactionL) LoadReactionType(e boil.Executor, singular bool, maybeReaction 
 	return nil
 }
 
-// SetChannelG of the reaction to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle.
-func (o *Reaction) SetChannelG(insert bool, related *Channel) error {
-	return o.SetChannel(boil.GetDB(), insert, related)
-}
-
-// SetChannelP of the reaction to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Reactions.
-// Panics on error.
-func (o *Reaction) SetChannelP(exec boil.Executor, insert bool, related *Channel) {
-	if err := o.SetChannel(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetChannelGP of the reaction to the related item.
-// Sets o.R.Channel to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle and panics on error.
-func (o *Reaction) SetChannelGP(insert bool, related *Channel) {
-	if err := o.SetChannel(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetChannel of the reaction to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.Reactions.
@@ -702,34 +574,6 @@ func (o *Reaction) SetChannel(exec boil.Executor, insert bool, related *Channel)
 	return nil
 }
 
-// RemoveChannelG relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle.
-func (o *Reaction) RemoveChannelG(related *Channel) error {
-	return o.RemoveChannel(boil.GetDB(), related)
-}
-
-// RemoveChannelP relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Panics on error.
-func (o *Reaction) RemoveChannelP(exec boil.Executor, related *Channel) {
-	if err := o.RemoveChannel(exec, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// RemoveChannelGP relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-// Uses the global database handle and panics on error.
-func (o *Reaction) RemoveChannelGP(related *Channel) {
-	if err := o.RemoveChannel(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // RemoveChannel relationship.
 // Sets o.R.Channel to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -759,34 +603,6 @@ func (o *Reaction) RemoveChannel(exec boil.Executor, related *Channel) error {
 		break
 	}
 	return nil
-}
-
-// SetCommentG of the reaction to the related item.
-// Sets o.R.Comment to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle.
-func (o *Reaction) SetCommentG(insert bool, related *Comment) error {
-	return o.SetComment(boil.GetDB(), insert, related)
-}
-
-// SetCommentP of the reaction to the related item.
-// Sets o.R.Comment to related.
-// Adds o to related.R.Reactions.
-// Panics on error.
-func (o *Reaction) SetCommentP(exec boil.Executor, insert bool, related *Comment) {
-	if err := o.SetComment(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCommentGP of the reaction to the related item.
-// Sets o.R.Comment to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle and panics on error.
-func (o *Reaction) SetCommentGP(insert bool, related *Comment) {
-	if err := o.SetComment(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetComment of the reaction to the related item.
@@ -834,34 +650,6 @@ func (o *Reaction) SetComment(exec boil.Executor, insert bool, related *Comment)
 	}
 
 	return nil
-}
-
-// SetReactionTypeG of the reaction to the related item.
-// Sets o.R.ReactionType to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle.
-func (o *Reaction) SetReactionTypeG(insert bool, related *ReactionType) error {
-	return o.SetReactionType(boil.GetDB(), insert, related)
-}
-
-// SetReactionTypeP of the reaction to the related item.
-// Sets o.R.ReactionType to related.
-// Adds o to related.R.Reactions.
-// Panics on error.
-func (o *Reaction) SetReactionTypeP(exec boil.Executor, insert bool, related *ReactionType) {
-	if err := o.SetReactionType(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetReactionTypeGP of the reaction to the related item.
-// Sets o.R.ReactionType to related.
-// Adds o to related.R.Reactions.
-// Uses the global database handle and panics on error.
-func (o *Reaction) SetReactionTypeGP(insert bool, related *ReactionType) {
-	if err := o.SetReactionType(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetReactionType of the reaction to the related item.
@@ -917,31 +705,6 @@ func Reactions(mods ...qm.QueryMod) reactionQuery {
 	return reactionQuery{NewQuery(mods...)}
 }
 
-// FindReactionG retrieves a single record by ID.
-func FindReactionG(iD uint64, selectCols ...string) (*Reaction, error) {
-	return FindReaction(boil.GetDB(), iD, selectCols...)
-}
-
-// FindReactionP retrieves a single record by ID with an executor, and panics on error.
-func FindReactionP(exec boil.Executor, iD uint64, selectCols ...string) *Reaction {
-	retobj, err := FindReaction(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindReactionGP retrieves a single record by ID, and panics on error.
-func FindReactionGP(iD uint64, selectCols ...string) *Reaction {
-	retobj, err := FindReaction(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindReaction retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindReaction(exec boil.Executor, iD uint64, selectCols ...string) (*Reaction, error) {
@@ -966,27 +729,6 @@ func FindReaction(exec boil.Executor, iD uint64, selectCols ...string) (*Reactio
 	}
 
 	return reactionObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *Reaction) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *Reaction) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *Reaction) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -1091,30 +833,6 @@ CacheNoHooks:
 	return nil
 }
 
-// UpdateG a single Reaction record using the global executor.
-// See Update for more documentation.
-func (o *Reaction) UpdateG(columns boil.Columns) error {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the Reaction, and panics on error.
-// See Update for more documentation.
-func (o *Reaction) UpdateP(exec boil.Executor, columns boil.Columns) {
-	err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateGP a single Reaction record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *Reaction) UpdateGP(columns boil.Columns) {
-	err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Update uses an executor to update the Reaction.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -1166,19 +884,6 @@ func (o *Reaction) Update(exec boil.Executor, columns boil.Columns) error {
 	return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q reactionQuery) UpdateAllP(exec boil.Executor, cols M) {
-	err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q reactionQuery) UpdateAllG(cols M) error {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q reactionQuery) UpdateAll(exec boil.Executor, cols M) error {
 	queries.SetUpdate(q.Query, cols)
@@ -1189,27 +894,6 @@ func (q reactionQuery) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o ReactionSlice) UpdateAllG(cols M) error {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o ReactionSlice) UpdateAllGP(cols M) {
-	err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o ReactionSlice) UpdateAllP(exec boil.Executor, cols M) {
-	err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -1254,26 +938,6 @@ func (o ReactionSlice) UpdateAll(exec boil.Executor, cols M) error {
 	}
 
 	return nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *Reaction) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *Reaction) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *Reaction) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLReactionUniqueColumns = []string{
@@ -1420,32 +1084,6 @@ CacheNoHooks:
 	return nil
 }
 
-// DeleteG deletes a single Reaction record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *Reaction) DeleteG() error {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single Reaction record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Reaction) DeleteP(exec boil.Executor) {
-	err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteGP deletes a single Reaction record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Reaction) DeleteGP() {
-	err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Delete deletes a single Reaction record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *Reaction) Delete(exec boil.Executor) error {
@@ -1469,14 +1107,6 @@ func (o *Reaction) Delete(exec boil.Executor) error {
 	return nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q reactionQuery) DeleteAllP(exec boil.Executor) {
-	err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // DeleteAll deletes all matching rows.
 func (q reactionQuery) DeleteAll(exec boil.Executor) error {
 	if q.Query == nil {
@@ -1491,27 +1121,6 @@ func (q reactionQuery) DeleteAll(exec boil.Executor) error {
 	}
 
 	return nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o ReactionSlice) DeleteAllG() error {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o ReactionSlice) DeleteAllP(exec boil.Executor) {
-	err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o ReactionSlice) DeleteAllGP() {
-	err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1542,29 +1151,6 @@ func (o ReactionSlice) DeleteAll(exec boil.Executor) error {
 	return nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *Reaction) ReloadG() error {
-	if o == nil {
-		return errors.New("model: no Reaction provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *Reaction) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *Reaction) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Reaction) Reload(exec boil.Executor) error {
@@ -1575,34 +1161,6 @@ func (o *Reaction) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *ReactionSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("model: empty ReactionSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ReactionSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *ReactionSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1632,31 +1190,6 @@ func (o *ReactionSlice) ReloadAll(exec boil.Executor) error {
 	*o = slice
 
 	return nil
-}
-
-// ReactionExistsG checks if the Reaction row exists.
-func ReactionExistsG(iD uint64) (bool, error) {
-	return ReactionExists(boil.GetDB(), iD)
-}
-
-// ReactionExistsP checks if the Reaction row exists. Panics on error.
-func ReactionExistsP(exec boil.Executor, iD uint64) bool {
-	e, err := ReactionExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ReactionExistsGP checks if the Reaction row exists. Panics on error.
-func ReactionExistsGP(iD uint64) bool {
-	e, err := ReactionExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // ReactionExists checks if the Reaction row exists.
