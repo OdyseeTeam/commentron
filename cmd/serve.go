@@ -21,6 +21,7 @@ func init() {
 		logrus.Panic(err)
 	}
 	rootCmd.AddCommand(serveCmd)
+	rootCmd.AddCommand(testCmd)
 }
 
 var serveCmd = &cobra.Command{

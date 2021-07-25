@@ -14,9 +14,11 @@ services:
 before_install:
   - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS commentron;'
   - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS social;'
-  - mysql -u root -e "CREATE USER 'lbry'@'localhost' IDENTIFIED BY 'lbry';"
-  - mysql -u root -e "GRANT ALL ON commentron.* TO 'lbry'@'localhost';"
-  - mysql -u root -e "GRANT ALL ON social.* TO 'lbry'@'localhost';"
+  - mysql -u root -e "CREATE USER 'lbry-rw'@'localhost' IDENTIFIED BY 'lbry';"
+  - mysql -u root -e "CREATE USER 'lbry-ro'@'localhost' IDENTIFIED BY 'lbry';"
+  - mysql -u root -e "GRANT ALL ON commentron.* TO 'lbry-rw'@'localhost';"
+  - mysql -u root -e "GRANT SELECT ON commentron.* TO 'lbry-ro'@'localhost';"
+  - mysql -u root -e "GRANT ALL ON social.* TO 'lbry-rw'@'localhost';"
   - sudo service mysql restart
 
 cache:
@@ -36,6 +38,7 @@ script:
   - git diff --exit-code
   - ./scripts/gen_models.sh
   - git diff --exit-code
+  - ./bin/commentron test
 
 deploy:
   # creates and publishes new docker image per branch
