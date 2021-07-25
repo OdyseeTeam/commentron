@@ -12,7 +12,11 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
+// RW this db is used for read-write calls, it can be used for RO calls too but to load balance use the RO please.
 var RW boil.Executor
+
+// RO this db can only be used for read-only calls. Calls made that trigger a RW will break replication if successful
+// but also should actually produce an error from mysql.
 var RO boil.Executor
 
 // Init initializes a database connection based on the dsn provided. It also sets it as the global db connection.
