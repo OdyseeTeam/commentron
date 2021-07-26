@@ -14,7 +14,6 @@ import (
 
 	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -69,7 +68,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterSuperChats)
 	}
 	var superChatAmount null.Uint64
-	result := m.Comments(totalSuperChatAmountQuery...).QueryRow(boil.GetDB())
+	result := m.Comments(totalSuperChatAmountQuery...).QueryRow(db.RO)
 	err := result.Scan(&superChatAmount)
 	if err != nil {
 		return errors.Err(err)
