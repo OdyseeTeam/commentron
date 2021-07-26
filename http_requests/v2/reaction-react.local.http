@@ -12,9 +12,10 @@ Content-Type: application/json
   "id": 1,
   "method": "reaction.React",
   "params": {
-    "comment_ids": "16b55ecafb338dab63ef0819339d5070b06f227a18caedf843d0752003368ed4",
+    "comment_ids": "000067a7b808987952c189f3511aa2d74b4b746187cb2c421863f99d6cfb6faa",
     "channel_name": "@dtrdtr",
-    "channel_id": "d97913f183fa3f4c7133f6492963371b9021cf64"
+    "channel_id": "d97913f183fa3f4c7133f6492963371b9021cf64",
+    "type": "like"
   }
 }
 

@@ -17,7 +17,7 @@ func WithTx(exec boil.Executor, currentTx boil.Transactor, f TxFunc) (err error)
 	if currentTx != nil {
 		tx = currentTx
 	} else {
-		creator, ok := exec.(boil.Beginner)
+		creator, ok := exec.(*QueryLogger)
 		if !ok {
 			return errors.Err("database does not support transactions")
 		}
