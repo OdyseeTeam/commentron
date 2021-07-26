@@ -70,7 +70,7 @@ func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 }
 func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, commentIDs []interface{}, comments model.CommentSlice) (commentapi.Reactions, error) {
 	var modifiedReactions = newReactions(strings.Split(args.CommentIDs, ","), &args.Type)
-	err := db.WithTx(nil, func(tx boil.Transactor) error {
+	err := db.WithTx(db.RW, nil, func(tx boil.Transactor) error {
 		if len(args.ClearTypes) > 0 {
 			typeNames := util.StringSplitArg(args.ClearTypes, ",")
 			reactionTypes, err := model.ReactionTypes(qm.WhereIn(model.ReactionTypeColumns.Name+" IN ?", typeNames...)).All(tx)
