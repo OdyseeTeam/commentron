@@ -4,15 +4,16 @@
 # * 'gtrp' and 'gtr' create a GET request with or without query parameters;
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
-POST https://comments.odysee.com/api/v2
+POST http://localhost:5900/api/v2
 Content-Type: application/json
 
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "comment.List",
+  "method": "setting.Get",
   "params": {
-    "claim_id": "ac238ef610dd176f361809993325bc8041d1a7b0"
+    "channel_name": "@LBRYBeamer",
+    "channel_id": "05bb9e310c6e9f0e62f5f8892de23133633e4449"
   }
 }
 

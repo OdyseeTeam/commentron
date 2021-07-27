@@ -3,6 +3,8 @@ package settings
 import (
 	"net/http"
 
+	"github.com/lbryio/lbry.go/extras/util"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
@@ -18,7 +20,7 @@ import (
 // Service is the service struct defined for the comment package for rpc service "moderation.*"
 type Service struct{}
 
-// List returns the list of user settings applicable to them.
+// List returns the list of user settings applicable to them for the creator to manage
 func (s *Service) List(r *http.Request, args *commentapi.ListSettingsArgs, reply *commentapi.ListSettingsResponse) error {
 	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
@@ -28,13 +30,32 @@ func (s *Service) List(r *http.Request, args *commentapi.ListSettingsArgs, reply
 	if err != nil {
 		return err
 	}
+	authorized := true
 
 	settings, err := helper.FindOrCreateSettings(creatorChannel)
 	if err != nil {
 		return err
 	}
 
-	applySettingsToReply(settings, reply)
+	applySettingsToReply(settings, reply, authorized)
+
+	return nil
+}
+
+// Get returns the list of creator settings for users
+func (s *Service) Get(r *http.Request, args *commentapi.ListSettingsArgs, reply *commentapi.ListSettingsResponse) error {
+	creatorChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+	if err != nil {
+		return errors.Err(err)
+	}
+	authorized := false
+
+	settings, err := helper.FindOrCreateSettings(creatorChannel)
+	if err != nil {
+		return err
+	}
+
+	applySettingsToReply(settings, reply, authorized)
 
 	return nil
 }
@@ -49,6 +70,7 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	if err != nil {
 		return err
 	}
+	authorized := true
 
 	settings, err := helper.FindOrCreateSettings(creatorChannel)
 	if err != nil {
@@ -92,14 +114,18 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		return errors.Err(err)
 	}
 
-	applySettingsToReply(settings, reply)
+	applySettingsToReply(settings, reply, authorized)
 
 	return nil
 }
 
-func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.ListSettingsResponse) {
-	if settings.MutedWords.Valid {
+func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.ListSettingsResponse, authorized bool) {
+	// RETURN ONLY INF AUTHORIZED TO SEE
+	if settings.MutedWords.Valid && authorized {
 		reply.Words = &settings.MutedWords.String
+	}
+	if settings.IsFiltersEnabled.Valid && authorized {
+		reply.FiltersEnabled = &settings.IsFiltersEnabled.Bool
 	}
 	if settings.CommentsEnabled.Valid {
 		reply.CommentsEnabled = &settings.CommentsEnabled.Bool
@@ -115,4 +141,8 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	if settings.SlowModeMinGap.Valid {
 		reply.SlowModeMinGap = &settings.SlowModeMinGap.Uint64
 	}
+	if settings.CurseJarAmount.Valid {
+		reply.CurseJarAmount = util.PtrToUint64(settings.CurseJarAmount.Uint64)
+	}
+
 }

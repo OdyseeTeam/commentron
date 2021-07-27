@@ -20,15 +20,14 @@ type ListSettingsArgs struct {
 
 // ListSettingsResponse returns all the settings for creator/user
 type ListSettingsResponse struct {
-	Authorization
 	// CSV list of containing words to block comment on content
-	Words                 *string  `json:"words"`
+	Words                 *string  `json:"words,omitempty"`
 	CommentsEnabled       *bool    `json:"comments_enabled"`
 	MinTipAmountComment   *float64 `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat *float64 `json:"min_tip_amount_super_chat"`
 	SlowModeMinGap        *uint64  `json:"slow_mode_min_gap"`
 	CurseJarAmount        *uint64  `json:"curse_jar_amount"`
-	FiltersEnabled        *bool    `json:"filters_enabled"`
+	FiltersEnabled        *bool    `json:"filters_enabled,omitempty"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
