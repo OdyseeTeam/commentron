@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
@@ -152,8 +153,10 @@ Comments:
 					for _, entry := range blockedFrom {
 						if creatorChannel != nil && creatorChannel.BlockedListID.Valid {
 							if creatorChannel.BlockedListID == entry.BlockedListID {
-								blockedCommentCnt++
-								continue Comments
+								if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) > time.Duration(0)) {
+									blockedCommentCnt++
+									continue Comments
+								}
 							}
 						}
 						if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {

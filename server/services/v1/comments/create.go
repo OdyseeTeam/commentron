@@ -246,6 +246,9 @@ func blockedByCreator(request *createRequest) error {
 		return nil
 	}
 	request.creatorChannel, err = helper.FindOrCreateChannel(request.signingChannel.ClaimID, request.signingChannel.Name)
+	if err != nil {
+		return errors.Err(err)
+	}
 	creatorFilter := m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID))
 	userFilter := m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))
 	blockedListFilter := m.BlockedEntryWhere.BlockedListID.EQ(request.creatorChannel.BlockedListID)
@@ -254,8 +257,12 @@ func blockedByCreator(request *createRequest) error {
 		return errors.Err(err)
 	}
 
-	if blockedEntry != nil {
+	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
+	} else if blockedEntry.Expiry.Valid && (blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) > time.Duration(0)) {
+		timeLeft := time.Since(blockedEntry.Expiry.Time)
+		message := fmt.Sprintf("publisher %s has given you a temporary ban with %g hrs remaining.", request.creatorChannel.Name, timeLeft.Hours())
+		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
 
 	blockedListEntry, err := m.BlockedEntries(blockedListFilter, userFilter, qm.Load(m.BlockedEntryRels.BlockedList), qm.Load(m.BlockedEntryRels.CreatorChannel)).One(db.RO)
@@ -268,10 +275,11 @@ func blockedByCreator(request *createRequest) error {
 		if blockedListEntry.R.CreatorChannel != nil {
 			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
 		}
-		timeLeft := time.Since(blockedListEntry.Expiry.Time)
-
-		message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment until %g hrs has passed.", blockedByChannel, blockedListName, timeLeft.Hours())
-		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
+		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) > time.Duration(0) {
+			timeLeft := time.Since(blockedListEntry.Expiry.Time)
+			message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment until %g hrs has passed.", blockedByChannel, blockedListName, timeLeft.Hours())
+			return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
+		}
 	}
 
 	settings, err := request.creatorChannel.CreatorChannelCreatorSettings().One(db.RO)
