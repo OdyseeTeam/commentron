@@ -231,7 +231,6 @@ type createRequest struct {
 	comment        *m.Comment
 	creatorChannel *m.Channel
 	signingChannel *jsonrpc.Claim
-	supportAmt     null.Uint64
 	currency       string
 	isFiat         bool
 }
@@ -259,7 +258,7 @@ func blockedByCreator(request *createRequest) error {
 
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
-	} else if blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) > time.Duration(0) {
+	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) > time.Duration(0) {
 		timeLeft := time.Since(blockedEntry.Expiry.Time)
 		message := fmt.Sprintf("publisher %s has given you a temporary ban with %g hrs remaining.", request.creatorChannel.Name, timeLeft.Hours())
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
@@ -293,16 +292,16 @@ func blockedByCreator(request *createRequest) error {
 }
 
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
-	if !settings.MinTipAmountSuperChat.IsZero() && !request.supportAmt.IsZero() && request.args.PaymentIntentID == nil {
-		if request.supportAmt.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+	if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
+		if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
 			return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to comment"), Status: http.StatusBadRequest}
 		}
 	}
 	if !settings.MinTipAmountComment.IsZero() {
-		if request.supportAmt.IsZero() {
+		if request.comment.Amount.IsZero() {
 			return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 		}
-		if request.supportAmt.Uint64 < settings.MinTipAmountComment.Uint64 {
+		if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
 			return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
 		}
 	}
