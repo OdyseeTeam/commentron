@@ -52,10 +52,15 @@ var RPCPort int
 
 const promPath = "/metrics"
 
+var corsHandler = cors.New(cors.Options{
+	AllowedHeaders: []string{"Authorization", "*"},
+	MaxAge:         1728000,
+}).Handler
+
 // Start starts the rpc server after any configuration
 func Start() {
 	logrus.SetOutput(os.Stdout)
-	chain := alice.New(cors.Default().Handler)
+	chain := alice.New(corsHandler)
 	router := mux.NewRouter()
 	router.Handle("/", state())
 	router.HandleFunc("/debug/pprof/profile", pprof.Profile)
