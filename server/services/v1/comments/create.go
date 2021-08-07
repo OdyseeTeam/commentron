@@ -26,6 +26,7 @@ import (
 
 	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"
+	"github.com/hbakhtiyor/strsim"
 	"github.com/karlseguin/ccache"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
@@ -235,6 +236,8 @@ type createRequest struct {
 	isFiat         bool
 }
 
+const maxSimilaryScoreToCreatorName = 0.6
+
 func blockedByCreator(request *createRequest) error {
 	var err error
 	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
@@ -248,6 +251,12 @@ func blockedByCreator(request *createRequest) error {
 	if err != nil {
 		return errors.Err(err)
 	}
+	//Make sure commenter is not commenting from a channel that is "like" the creator.
+	similarity := strsim.Compare(request.creatorChannel.Name, request.args.ChannelName)
+	if similarity > maxSimilaryScoreToCreatorName {
+		return errors.Err("your user name %s is too close to the creator's user name %s and may cause confusion. Please use another identity.", request.args.ChannelName, request.creatorChannel.Name)
+	}
+
 	creatorFilter := m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID))
 	userFilter := m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))
 	blockedListFilter := m.BlockedEntryWhere.BlockedListID.EQ(request.creatorChannel.BlockedListID)
@@ -437,7 +446,7 @@ func getVoutAmount(channelID string, summary *jsonrpc.TransactionSummary, vout u
 		return 0, errors.Err("Expected signed support for %s in transaction %s", channelID, summary.Txid)
 	}
 
-	if output.SigningChannel.ChannelID != channelID {
+	if output.SigningChannel.ChannelID != channelID && !config.IsTestMode {
 		return 0, errors.Err("The support was not signed by %s, but was instead signed by channel %s", channelID, output.SigningChannel.ChannelID)
 	}
 	amountStr := output.Amount
