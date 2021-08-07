@@ -15,7 +15,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/rpc v1.2.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf // indirect
+	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/johntdyer/slackrus v0.0.0-20180518184837-f7aae3243a07
 	github.com/jteeuwen/go-bindata v3.0.7+incompatible
