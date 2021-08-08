@@ -253,7 +253,7 @@ func blockedByCreator(request *createRequest) error {
 	}
 	//Make sure commenter is not commenting from a channel that is "like" the creator.
 	similarity := strsim.Compare(request.creatorChannel.Name, request.args.ChannelName)
-	if similarity > maxSimilaryScoreToCreatorName {
+	if request.args.ChannelID != request.signingChannel.ChannelID && similarity > maxSimilaryScoreToCreatorName {
 		return errors.Err("your user name %s is too close to the creator's user name %s and may cause confusion. Please use another identity.", request.args.ChannelName, request.creatorChannel.Name)
 	}
 
