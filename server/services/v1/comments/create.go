@@ -26,7 +26,6 @@ import (
 
 	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"
-	"github.com/hbakhtiyor/strsim"
 	"github.com/karlseguin/ccache"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
@@ -236,7 +235,7 @@ type createRequest struct {
 	isFiat         bool
 }
 
-const maxSimilaryScoreToCreatorName = 0.6
+//const maxSimilaryScoreToCreatorName = 0.6
 
 func blockedByCreator(request *createRequest) error {
 	var err error
@@ -251,11 +250,11 @@ func blockedByCreator(request *createRequest) error {
 	if err != nil {
 		return errors.Err(err)
 	}
-	//Make sure commenter is not commenting from a channel that is "like" the creator.
+	/*//Make sure commenter is not commenting from a channel that is "like" the creator.
 	similarity := strsim.Compare(request.creatorChannel.Name, request.args.ChannelName)
 	if request.args.ChannelID != request.signingChannel.ChannelID && similarity > maxSimilaryScoreToCreatorName {
 		return errors.Err("your user name %s is too close to the creator's user name %s and may cause confusion. Please use another identity.", request.args.ChannelName, request.creatorChannel.Name)
-	}
+	}*/
 
 	creatorFilter := m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(request.signingChannel.ClaimID))
 	userFilter := m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))
