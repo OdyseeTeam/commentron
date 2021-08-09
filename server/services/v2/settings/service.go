@@ -83,6 +83,9 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 
 	if args.SlowModeMinGap != nil {
 		settings.SlowModeMinGap.SetValid(*args.SlowModeMinGap)
+		if *args.SlowModeMinGap == 0 {
+			settings.SlowModeMinGap.Valid = false
+		}
 	}
 
 	if args.MinTipAmountSuperChat != nil {
@@ -90,7 +93,10 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		if err != nil {
 			return errors.Err(err)
 		}
-		settings.MinTipAmountSuperChat.SetValid(uint64(lbc.ToBTC()))
+		settings.MinTipAmountSuperChat.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+		if lbc == 0.0 {
+			settings.MinTipAmountSuperChat.Valid = false
+		}
 	}
 
 	if args.MinTipAmountComment != nil {
@@ -98,11 +104,17 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		if err != nil {
 			return errors.Err(err)
 		}
-		settings.MinTipAmountComment.SetValid(uint64(lbc.ToBTC()))
+		settings.MinTipAmountComment.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+		if lbc == 0.0 {
+			settings.MinTipAmountComment.Valid = false
+		}
 	}
 
 	if args.CurseJarAmount != nil { // Coming with Appeal process
 		settings.CurseJarAmount.SetValid(*args.CurseJarAmount)
+		if *args.CurseJarAmount == 0.0 {
+			settings.CurseJarAmount.Valid = false
+		}
 	}
 
 	if args.FiltersEnabled != nil { // Future feature to be developed
