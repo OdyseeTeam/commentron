@@ -303,7 +303,7 @@ func blockedByCreator(request *createRequest) error {
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
 		if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
-			return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to comment"), Status: http.StatusBadRequest}
+			return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
 		}
 	}
 	if !settings.MinTipAmountComment.IsZero() {
