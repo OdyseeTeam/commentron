@@ -301,28 +301,36 @@ func blockedByCreator(request *createRequest) error {
 }
 
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
-	if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
-		if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
-			return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
-		}
+	isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
+	if err != nil {
+		return errors.Err(err)
 	}
-	if !settings.MinTipAmountComment.IsZero() {
-		if request.comment.Amount.IsZero() {
-			return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
+		if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
+			if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+				return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+			}
 		}
-		if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
-			return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+		if !settings.MinTipAmountComment.IsZero() {
+			if request.comment.Amount.IsZero() {
+				return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+			}
+			if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
+				return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+			}
 		}
-	}
-	if !settings.SlowModeMinGap.IsZero() {
-		isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
-		if err != nil {
-			return errors.Err(err)
-		}
-		if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
+		if !settings.SlowModeMinGap.IsZero() {
 			err := checkMinGap(request.args.ChannelID+request.creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
 			if err != nil {
 				return err
+			}
+		}
+		if !settings.MutedWords.IsZero() {
+			blockedWords := strings.Split(settings.MutedWords.String, ",")
+			for _, blockedWord := range blockedWords {
+				if strings.Contains(request.args.CommentText, blockedWord) {
+					return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", request.signingChannel.Name)}
+				}
 			}
 		}
 	}
@@ -339,14 +347,6 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	}
 	if !settings.CommentsEnabled.Bool {
 		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
-	}
-	if !settings.MutedWords.IsZero() {
-		blockedWords := strings.Split(settings.MutedWords.String, ",")
-		for _, blockedWord := range blockedWords {
-			if strings.Contains(request.args.CommentText, blockedWord) {
-				return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", request.signingChannel.Name)}
-			}
-		}
 	}
 	return nil
 }
