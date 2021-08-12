@@ -3,6 +3,7 @@ package comments
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -267,9 +268,9 @@ func blockedByCreator(request *createRequest) error {
 
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
-	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) > time.Duration(0) {
+	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) < time.Duration(0) {
 		timeLeft := time.Since(blockedEntry.Expiry.Time)
-		message := fmt.Sprintf("publisher %s has given you a temporary ban with %g hrs remaining.", request.creatorChannel.Name, timeLeft.Hours())
+		message := fmt.Sprintf("publisher %s has given you a temporary ban with %g hrs remaining.", request.creatorChannel.Name, math.Ceil(timeLeft.Hours()))
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
 
@@ -283,7 +284,7 @@ func blockedByCreator(request *createRequest) error {
 		if blockedListEntry.R.CreatorChannel != nil {
 			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
 		}
-		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) > time.Duration(0) {
+		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) < time.Duration(0) {
 			timeLeft := time.Since(blockedListEntry.Expiry.Time)
 			message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment until %g hrs has passed.", blockedByChannel, blockedListName, timeLeft.Hours())
 			return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
