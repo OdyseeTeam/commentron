@@ -96,9 +96,11 @@ type BlockedChannel struct {
 	BlockedChannelID   string `json:"blocked_channel_id"`
 	BlockedChannelName string `json:"blocked_channel_name"`
 	//In cases of moderation delegation this could be "other than" the creator
-	BlockedByChannelID   string    `json:"blocked_by_channel_id"`
-	BlockedByChannelName string    `json:"blocked_by_channel_name"`
-	BlockedAt            time.Time `json:"blocked_at"`
+	BlockedByChannelID   string        `json:"blocked_by_channel_id"`
+	BlockedByChannelName string        `json:"blocked_by_channel_name"`
+	BlockedAt            time.Time     `json:"blocked_at"`
+	BlockedFor           time.Duration `json:"banned_for,omitempty"`
+	BlcokRemaining       time.Duration `json:"ban_remaining"`
 }
 
 // AddDelegateArgs Arguments to delagate moderation to another channel for your channel.

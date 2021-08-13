@@ -236,12 +236,22 @@ func populateBlockedChannelsReply(blockedBy *model.Channel, blocked model.Blocke
 			if b.R.CreatorChannel != nil && blockedBy == nil {
 				blockedByChannel = b.R.CreatorChannel
 			}
+			var blockedFor time.Duration
+			var blockRemaining time.Duration
+			if b.Expiry.Valid {
+				blockedFor = b.Expiry.Time.Sub(b.CreatedAt)
+				if b.Expiry.Time.After(time.Now()) {
+					blockRemaining = b.Expiry.Time.Sub(time.Now())
+				}
+			}
 			blockedChannels = append(blockedChannels, commentapi.BlockedChannel{
 				BlockedChannelID:     b.R.BlockedChannel.ClaimID,
 				BlockedChannelName:   b.R.BlockedChannel.Name,
 				BlockedByChannelID:   blockedByChannel.ClaimID,
 				BlockedByChannelName: blockedByChannel.Name,
 				BlockedAt:            b.CreatedAt,
+				BlockedFor:           blockedFor,
+				BlcokRemaining:       blockRemaining,
 			})
 		}
 	}
