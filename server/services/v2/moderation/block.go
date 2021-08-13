@@ -78,7 +78,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		return api.StatusError{Err: errors.Err("the block list rules you are participating have their time out hours settings per strike. You must stop participating in the shared blocked list to customize timeouts"), Status: http.StatusBadRequest}
 	} else if participatingBlockedList != nil {
 		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(blockedEntry.Strikes.Int, participatingBlockedList)))
-	} else {
+	} else if args.TimeOutHrs > 0 {
 		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOutHrs) * time.Hour))
 	}
 	isMod, err := modChannel.ModChannelModerators().Exists(db.RO)
