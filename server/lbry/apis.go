@@ -28,6 +28,11 @@ type CommentResponse struct {
 
 // Notify notifies internal-apis of a new comment when one is recieved.
 func (c apiClient) Notify(options NotifyOptions) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Error("recovered from failed notification to internal-apis: ", r)
+		}
+	}()
 	err := notify(options)
 	if err != nil {
 		logrus.Error("API Notification: ", errors.FullTrace(err))
