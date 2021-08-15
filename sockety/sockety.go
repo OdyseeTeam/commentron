@@ -19,7 +19,7 @@ var socketyClient *socketyapi.Client
 
 // SendNotification sends the notification to socket using client
 func SendNotification(args socketyapi.SendNotificationArgs) {
-	if Token == "" || URL == "" {
+	if config.SocketyToken == "" || URL == "" {
 		return
 	}
 	defer catchPanic()

@@ -140,6 +140,16 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			}
 			go updateCommentScoring(reactionType, p)
 			addTo(modifiedReactions[p.CommentID], reactionType.Name)
+			go sockety.SendNotification(socketyapi.SendNotificationArgs{
+				Service: socketyapi.Commentron,
+				Type:    "reaction",
+				IDs:     []string{p.CommentID, p.LbryClaimID, "reactions"},
+				Data: map[string]interface{}{
+					"commenter_channel_id": p.ChannelID.String,
+					"claim_id":             p.LbryClaimID,
+					"comment_id":           p.CommentID,
+					"reaction_type":        reactionType.Name},
+			})
 		}
 		return nil
 	})
@@ -184,14 +194,4 @@ func updateCommentScoring(reactionType *model.ReactionType, comment *model.Comme
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] controversy scoring:", comment.CommentID), err))
 	}
-	go sockety.SendNotification(socketyapi.SendNotificationArgs{
-		Service: socketyapi.Commentron,
-		Type:    "reaction",
-		IDs:     []string{comment.CommentID, comment.LbryClaimID, "reactions"},
-		Data: map[string]interface{}{
-			"commenter_channel_id": comment.ChannelID.String,
-			"claim_id":             comment.LbryClaimID,
-			"comment_id":           comment.CommentID,
-			"reaction_type":        reactionType.Name},
-	})
 }
