@@ -314,8 +314,8 @@ github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04 h1:Nze+C2Hb
 github.com/lbryio/ozzo-validation v0.0.0-20170323141101-d1008ad1fd04/go.mod h1:fbG/dzobG8r95KzMwckXiLMHfFjZaBRQqC9hPs2XAQ4=
 github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec h1:z/71pO8vDAtNIDgc7srmt0zhgmS/rBm5UWkoVoLUj20=
 github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec/go.mod h1:fbG/dzobG8r95KzMwckXiLMHfFjZaBRQqC9hPs2XAQ4=
-github.com/lbryio/sockety v0.0.0-20210420202033-b3118f701d17 h1:KexFeMvcwXofJNmdXMgogOgrrZvccO5RxMARcqNDUY4=
-github.com/lbryio/sockety v0.0.0-20210420202033-b3118f701d17/go.mod h1:lqM8md4af1ZAL7zL7P5w7j9OmRJzmI0HEYvNgdl2VO4=
+github.com/lbryio/sockety v0.0.0-20210726164138-c31f4c02bdcf h1:UEimJtZqFrj+pmdUeNtrl5dYXUO6Yy83VWcrIMq6Ttk=
+github.com/lbryio/sockety v0.0.0-20210726164138-c31f4c02bdcf/go.mod h1:lqM8md4af1ZAL7zL7P5w7j9OmRJzmI0HEYvNgdl2VO4=
 github.com/lbryio/types v0.0.0-20190422033210-321fb2abda9c/go.mod h1:CG3wsDv5BiVYQd5i1Jp7wGsaVyjZTJshqXeWMVKsISE=
 github.com/lbryio/types v0.0.0-20201019032447-f0b4476ef386 h1:JOQkGpeCM9FWkEHRx+kRPqySPCXElNW1em1++7tVS4M=
 github.com/lbryio/types v0.0.0-20201019032447-f0b4476ef386/go.mod h1:CG3wsDv5BiVYQd5i1Jp7wGsaVyjZTJshqXeWMVKsISE=

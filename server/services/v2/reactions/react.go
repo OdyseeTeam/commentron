@@ -13,12 +13,14 @@ import (
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
-	"github.com/sirupsen/logrus"
+	"github.com/lbryio/commentron/sockety"
 
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+	"github.com/lbryio/sockety/socketyapi"
 
+	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -182,4 +184,14 @@ func updateCommentScoring(reactionType *model.ReactionType, comment *model.Comme
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] controversy scoring:", comment.CommentID), err))
 	}
+	go sockety.SendNotification(socketyapi.SendNotificationArgs{
+		Service: socketyapi.Commentron,
+		Type:    "reaction",
+		IDs:     []string{comment.CommentID, comment.LbryClaimID, "reactions"},
+		Data: map[string]interface{}{
+			"commenter_channel_id": comment.ChannelID.String,
+			"claim_id":             comment.LbryClaimID,
+			"comment_id":           comment.CommentID,
+			"reaction_type":        reactionType.Name},
+	})
 }

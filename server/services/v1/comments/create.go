@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hbakhtiyor/strsim"
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/db"
@@ -18,6 +17,7 @@ import (
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/commentron/server/websocket"
+	"github.com/lbryio/commentron/sockety"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -28,6 +28,7 @@ import (
 
 	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"
+	"github.com/hbakhtiyor/strsim"
 	"github.com/karlseguin/ccache"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
@@ -195,23 +196,13 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 		Data: map[string]interface{}{"comment": item},
 	}, claimID)
 
-	go sendMessage(item, "delta", claimID)
-
-}
-
-func sendMessage(item commentapi.CommentItem, nType string, claimID string) {
-	resp, err := socketyapi.NewClient("https://sockety.lbry.com", config.SocketyToken).SendNotification(socketyapi.SendNotificationArgs{
+	go sockety.SendNotification(socketyapi.SendNotificationArgs{
 		Service: socketyapi.Commentron,
-		Type:    nType,
-		IDs:     []string{claimID},
+		Type:    "delta",
+		IDs:     []string{claimID, "comments"},
 		Data:    map[string]interface{}{"comment": item},
 	})
-	if err != nil {
-		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendTo: ", err)))
-	}
-	if resp != nil && resp.Error != nil {
-		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error))))
-	}
+
 }
 
 func checkForDuplicate(commentID string) error {

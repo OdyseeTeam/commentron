@@ -8,7 +8,11 @@ import (
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/sockety"
+
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/sockety/socketyapi"
+
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
@@ -59,6 +63,11 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	}
 
 	item = populateItem(comment, channel, 0)
-	go sendMessage(item, "pinned", comment.LbryClaimID)
+	go sockety.SendNotification(socketyapi.SendNotificationArgs{
+		Service: socketyapi.Commentron,
+		Type:    "pinned",
+		IDs:     []string{comment.LbryClaimID, "pins"},
+		Data:    map[string]interface{}{"comment": item},
+	})
 	return item, nil
 }
