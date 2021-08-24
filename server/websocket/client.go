@@ -47,7 +47,6 @@ type Client struct {
 }
 
 func (c *Client) handleMessage(message []byte) {
-	return
 	/* We don't handle in bound messages
 	rm := &PushNotification{}
 	err := json.Unmarshal(message, rm)

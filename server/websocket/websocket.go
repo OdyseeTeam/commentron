@@ -43,7 +43,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		_, writeErr := fmt.Fprintf(w, err.Error())
+		_, writeErr := fmt.Fprintf(w, `%v`, err.Error())
 		if writeErr != nil {
 			logrus.Error(errors.FullTrace(err), writeErr.Error())
 		}
@@ -52,7 +52,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logrus.Error(errors.FullTrace(err))
-		_, err := fmt.Fprintf(w, err.Error())
+		_, err := fmt.Fprintf(w, `%v`, err.Error())
 		if err != nil {
 			logrus.Error(errors.FullTrace(err))
 		}

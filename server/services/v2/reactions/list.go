@@ -109,11 +109,12 @@ func newReactions(commentIDs []string, types *string) commentapi.Reactions {
 	} else {
 		reactionTypes = strings.Split(*types, ",")
 	}
+	//TODO: rt declared but not used?, something wrong here.
 	r := make(map[string]commentapi.CommentReaction, len(commentIDs))
 	for _, c := range commentIDs {
 		r[c] = make(map[string]int)
-		for _, t := range reactionTypes {
-			r[c][t] = 0
+		for _, rt := range reactionTypes {
+			r[c][rt] = 0
 		}
 	}
 	return r
