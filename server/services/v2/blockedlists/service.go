@@ -28,3 +28,8 @@ func (s Service) Accept(r *http.Request, args *commentapi.SharedBlockedListInvit
 func (s Service) Get(r *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *commentapi.SharedBlockedListGetResponse) error {
 	return get(r, args, reply)
 }
+
+// ListInvites returns a list of all invites a user has been sent for acceptance or rejection.
+func (s Service) ListInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
+	return listInvites(r, args, reply)
+}

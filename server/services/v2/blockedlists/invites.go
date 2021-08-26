@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/volatiletech/sqlboiler/queries/qm"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
@@ -16,6 +18,47 @@ import (
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
+
+func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
+	ownerChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+	if err != nil {
+		return errors.Err(err)
+	}
+	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
+	if err != nil {
+		return err
+	}
+
+	invites, err := model.BlockedListInvites(
+		qm.Load(model.BlockedListInviteRels.BlockedList),
+		qm.Load(model.BlockedListInviteRels.InviterChannel),
+		model.BlockedListInviteWhere.InvitedChannelID.EQ(ownerChannel.ClaimID)).All(db.RO)
+
+	var invitations []commentapi.SharedBlockedListInvitation
+	for _, invite := range invites {
+		if invite.R.BlockedList != nil && invite.R.InviterChannel != nil {
+			list := commentapi.SharedBlockedList{}
+			err = populateSharedBlockedList(&list, invite.R.BlockedList)
+			if err != nil {
+				return errors.Err(err)
+			}
+			invitations = append(invitations, commentapi.SharedBlockedListInvitation{
+				BlockedList: list,
+				Invitation: commentapi.SharedBlockedListInvitedMember{
+					InvitedByChannelName: invite.R.InviterChannel.Name,
+					InvitedByChannelID:   invite.R.InviterChannel.ClaimID,
+					InvitedChannelName:   ownerChannel.Name,
+					InvitedChannelID:     ownerChannel.ClaimID,
+					Status:               commentapi.InviteMemberStatusFrom(invite.Accepted),
+					InviteMessage:        invite.Message,
+				},
+			})
+		}
+	}
+
+	reply.Invitations = invitations
+	return nil
+}
 
 func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply *commentapi.SharedBlockedListInviteResponse) error {
 	err := lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)

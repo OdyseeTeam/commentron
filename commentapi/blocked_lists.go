@@ -98,6 +98,16 @@ type SharedBlockedListGetArgs struct {
 	Status              InviteMemberStatus `json:"status"`
 }
 
+// SharedBlockedListListInvitesArgs arguments for blocklist.ListInvites
+type SharedBlockedListListInvitesArgs struct {
+	Authorization // Authorization is required if no id is passed in, to return owner info
+}
+
+// SharedBlockedListListInvitesResponse response for blocklist.ListInvites
+type SharedBlockedListListInvitesResponse struct {
+	Invitations []SharedBlockedListInvitation `json:"invitations"`
+}
+
 // InviteMemberStatus status of invited member
 type InviteMemberStatus int
 
@@ -124,12 +134,18 @@ const (
 	None
 )
 
+// SharedBlockedListInvitation represents an invitation to a specific shared blocked list and the status
+type SharedBlockedListInvitation struct {
+	BlockedList SharedBlockedList              `json:"shared_blocked_list"`
+	Invitation  SharedBlockedListInvitedMember `json:"invitation"`
+}
+
 // SharedBlockedListInvitedMember representation of an InvitedMember
 type SharedBlockedListInvitedMember struct {
 	InvitedByChannelName string `json:"invited_by_channel_name"`
 	InvitedByChannelID   string `json:"invited_by_channel_id"`
-	InviterChannelName   string `json:"inviter_channel_name"`
-	InviterChannelID     string `json:"inviter_channel_id"`
+	InvitedChannelName   string `json:"invited_channel_name"`
+	InvitedChannelID     string `json:"invited_channel_id"`
 	Status               string `json:"status"`
 	InviteMessage        string `json:"message"`
 }
