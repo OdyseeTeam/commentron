@@ -93,6 +93,7 @@ type SharedBlockedListRescindResponse struct {
 
 // SharedBlockedListGetArgs arguments for blocklist.Get
 type SharedBlockedListGetArgs struct {
+	Authorization                          // Authorization is required if no id is passed in, to return owner info
 	SharedBlockedListID uint64             `json:"blocked_list_id"`
 	Status              InviteMemberStatus `json:"status"`
 }

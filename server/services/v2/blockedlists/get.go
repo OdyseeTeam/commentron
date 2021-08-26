@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/helper"
+	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
@@ -16,9 +19,28 @@ import (
 )
 
 func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *commentapi.SharedBlockedListGetResponse) error {
-	list, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return errors.Err(err)
+	var list *model.BlockedList
+	var err error
+	var ownerChannel *model.Channel
+	if args.SharedBlockedListID != 0 {
+		list, err = model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+	} else {
+		ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+		if err != nil {
+			return err
+		}
+
+		list, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
 	}
 
 	if list == nil {
@@ -39,7 +61,7 @@ func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 		return err
 	}
 	var invitedMembers []commentapi.SharedBlockedListInvitedMember
-	if args.Status != commentapi.None {
+	if args.Status != commentapi.None && ownerChannel != nil {
 		invites, err := list.BlockedListInvites(acceptedFilter,
 			qm.Load(model.BlockedListInviteRels.InvitedChannel),
 			qm.Load(model.BlockedListInviteRels.InviterChannel)).All(db.RO)
