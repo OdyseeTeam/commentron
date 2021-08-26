@@ -84,7 +84,7 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 		}
 		ownerChannel.BlockedListID.SetValid(list.ID)
 		ownerChannel.BlockedListInviteID.SetValid(list.ID)
-		err = ownerChannel.Update(db.RW, boil.Whitelist(model.BlockedListColumns.ChannelID, model.BlockedListColumns.Name))
+		err = ownerChannel.Update(db.RW, boil.Infer())
 		if err != nil {
 			return errors.Err(err)
 		}
