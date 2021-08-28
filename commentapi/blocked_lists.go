@@ -33,6 +33,7 @@ func (a SharedBlockedListUpdateArgs) Validate() api.StatusError {
 
 // SharedBlockedList default representation of a shared blocked
 type SharedBlockedList struct {
+	ID uint64 `json:"id"`
 	// A user friendly identifier for the owner/users
 	Name *string `json:"name"`
 	// The category of block list this is so others search

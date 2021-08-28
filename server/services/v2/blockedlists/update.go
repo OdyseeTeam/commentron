@@ -94,6 +94,7 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 }
 
 func populateSharedBlockedList(list *commentapi.SharedBlockedList, modelList *model.BlockedList) error {
+	list.ID = modelList.ID
 	list.Name = &modelList.Name
 	list.Description = &modelList.Description
 	list.Category = &modelList.Category
