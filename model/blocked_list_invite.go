@@ -106,8 +106,8 @@ type blockedListInviteL struct{}
 
 var (
 	blockedListInviteAllColumns            = []string{"id", "blocked_list_id", "inviter_channel_id", "invited_channel_id", "accepted", "message", "created_at", "updated_at"}
-	blockedListInviteColumnsWithoutDefault = []string{"blocked_list_id", "inviter_channel_id", "invited_channel_id", "message"}
-	blockedListInviteColumnsWithDefault    = []string{"id", "accepted", "created_at", "updated_at"}
+	blockedListInviteColumnsWithoutDefault = []string{"blocked_list_id", "inviter_channel_id", "invited_channel_id", "accepted", "message"}
+	blockedListInviteColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	blockedListInvitePrimaryKeyColumns     = []string{"id"}
 )
 
