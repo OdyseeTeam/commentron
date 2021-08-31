@@ -80,7 +80,11 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(blockedEntry.Strikes.Int, participatingBlockedList)))
 	} else if args.TimeOut > 0 {
 		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOut) * time.Second))
+	} else if participatingBlockedList == nil { // Only reset expiry if not participating in shared blockedlist, this should never exist from check above!
+		blockedEntry.Expiry.Valid = false
+		blockedEntry.Expiry.Time = time.Time{}
 	}
+
 	isMod, err := modChannel.ModChannelModerators().Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
@@ -204,11 +208,22 @@ func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *comme
 		}
 	}
 
-	reply.BlockedChannels = populateBlockedChannelsReply(modChannel, blockedByMod)
-	reply.DelegatedBlockedChannels = populateBlockedChannelsReply(nil, blockedByCreator)
-	reply.GloballyBlockedChannels = populateBlockedChannelsReply(modChannel, blockedGlobally)
+	reply.BlockedChannels = populateBlockedChannelsReply(modChannel, filterBlocks(blockedByMod))
+	reply.DelegatedBlockedChannels = populateBlockedChannelsReply(nil, filterBlocks(blockedByCreator))
+	reply.GloballyBlockedChannels = populateBlockedChannelsReply(modChannel, filterBlocks(blockedGlobally))
 
 	return nil
+}
+
+func filterBlocks(list model.BlockedEntrySlice) model.BlockedEntrySlice {
+	var out model.BlockedEntrySlice
+	for _, l := range list {
+		if l.Expiry.Valid && l.Expiry.Time.Before(time.Now()) {
+			continue
+		}
+		out = append(out, l)
+	}
+	return out
 }
 
 func getDelegatedEntries(modChannel *model.Channel) (model.BlockedEntrySlice, error) {
