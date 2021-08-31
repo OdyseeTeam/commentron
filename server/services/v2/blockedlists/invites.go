@@ -138,16 +138,20 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 		return errors.Err(err)
 	}
 
-	if invite == nil {
-		return api.StatusError{Err: errors.Err("channel %s does not have an invite for the shared block list %s to accept", args.ChannelName)}
-	}
-
 	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return api.StatusError{Err: errors.Err("there is no shared block list with id %d", args.SharedBlockedListID), Status: http.StatusBadRequest}
 		}
 		return errors.Err(err)
+	}
+
+	if blockedList == nil {
+		return api.StatusError{Err: errors.Err("blocked list id %d does not exist", args.SharedBlockedListID), Status: http.StatusBadRequest}
+	}
+
+	if invite == nil {
+		return api.StatusError{Err: errors.Err("channel %s does not have an invite for the shared block list %s to accept", args.ChannelName, blockedList.Name)}
 	}
 
 	var blockedListID = null.Uint64{}
