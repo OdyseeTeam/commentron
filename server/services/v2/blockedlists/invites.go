@@ -65,12 +65,27 @@ func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply
 	if err != nil {
 		return err
 	}
-	blockedList, err := model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return api.StatusError{Err: errors.Err("there is no shared block list with id %d", args.SharedBlockedListID), Status: http.StatusBadRequest}
+	var blockedList *model.BlockedList
+	var ownerChannel *model.Channel
+	if args.SharedBlockedListID != 0 {
+		blockedList, err = model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
 		}
-		return errors.Err(err)
+	} else {
+		ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+		if err != nil {
+			return err
+		}
+
+		blockedList, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
 	}
 
 	inviter, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
