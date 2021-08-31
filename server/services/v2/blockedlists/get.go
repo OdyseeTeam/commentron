@@ -47,24 +47,21 @@ func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 		return api.StatusError{Err: errors.Err("blocked list not found"), Status: http.StatusNotFound}
 	}
 
-	var acceptedFilter qm.QueryMod
-	if args.Status == commentapi.Pending {
-		acceptedFilter = model.BlockedListInviteWhere.Accepted.EQ(null.Bool{})
-	} else if args.Status == commentapi.Accepted {
-		acceptedFilter = model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))
-	} else if args.Status == commentapi.Rejected {
-		acceptedFilter = model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(false))
-	}
-
 	err = populateSharedBlockedList(&reply.BlockedList, list)
 	if err != nil {
 		return err
 	}
 	var invitedMembers []commentapi.SharedBlockedListInvitedMember
 	if args.Status != commentapi.None && ownerChannel != nil {
-		invites, err := list.BlockedListInvites(acceptedFilter,
-			qm.Load(model.BlockedListInviteRels.InvitedChannel),
-			qm.Load(model.BlockedListInviteRels.InviterChannel)).All(db.RO)
+		invitesFilters := []qm.QueryMod{qm.Load(model.BlockedListInviteRels.InvitedChannel), qm.Load(model.BlockedListInviteRels.InviterChannel)}
+		if args.Status == commentapi.Pending {
+			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.Bool{}))
+		} else if args.Status == commentapi.Accepted {
+			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true)))
+		} else if args.Status == commentapi.Rejected {
+			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true)))
+		}
+		invites, err := list.BlockedListInvites(invitesFilters...).All(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
