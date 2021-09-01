@@ -29,7 +29,6 @@ func FormatDur(duration time.Duration) string {
 	} else {
 		return fmt.Sprintf("%d year%s,%d month%s,%d day%s", seconds/year, mult(seconds/year > 1), (seconds-(seconds/year*year))/month, mult((seconds-(seconds/year*year))/month > 1), (seconds-(seconds/month*month))/day, mult((seconds-(seconds/month*month))/day > 1))
 	}
-	return "unknown"
 }
 
 func mult(isMultiple bool) string {
