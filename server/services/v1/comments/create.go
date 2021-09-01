@@ -3,7 +3,6 @@ package comments
 import (
 	"database/sql"
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -260,8 +259,8 @@ func blockedByCreator(request *createRequest) error {
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) < time.Duration(0) {
-		timeLeft := time.Since(blockedEntry.Expiry.Time)
-		message := fmt.Sprintf("publisher %s has given you a temporary ban with %g hrs remaining.", request.creatorChannel.Name, math.Ceil(timeLeft.Hours()))
+		timeLeft := helper.FormatDur(time.Since(blockedEntry.Expiry.Time))
+		message := fmt.Sprintf("publisher %s has given you a temporary ban with %s remaining.", request.creatorChannel.Name, timeLeft)
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
 
