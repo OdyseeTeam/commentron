@@ -13,6 +13,7 @@ const (
 	year   = 60 * 60 * 24 * 365
 )
 
+// FormatDur returns a formatted duration
 func FormatDur(duration time.Duration) string {
 	seconds := uint64(duration.Seconds())
 	if seconds < minute {
