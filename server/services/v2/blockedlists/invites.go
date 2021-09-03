@@ -179,7 +179,15 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 
 		if len(acceptedInvites) > 0 {
 			blockedListInviteCol := map[string]interface{}{model.BlockedListInviteColumns.Accepted: null.BoolFrom(false)}
-			acceptedInvites.UpdateAll(db.RW, blockedListInviteCol)
+			err := acceptedInvites.UpdateAll(db.RW, blockedListInviteCol)
+			if err != nil {
+				return errors.Err(err)
+			}
+		}
+		invite.Accepted.SetValid(true)
+		err = invite.Update(db.RW, boil.Infer())
+		if err != nil {
+			return errors.Err(err)
 		}
 	}
 
@@ -195,5 +203,6 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 	if err != nil {
 		return errors.Err(err)
 	}
+
 	return nil
 }
