@@ -153,7 +153,7 @@ Comments:
 					for _, entry := range blockedFrom {
 						if creatorChannel != nil && creatorChannel.BlockedListID.Valid {
 							if creatorChannel.BlockedListID == entry.BlockedListID {
-								if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) > time.Duration(0)) {
+								if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
 									blockedCommentCnt++
 									continue Comments
 								}
