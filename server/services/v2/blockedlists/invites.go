@@ -187,7 +187,7 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 			}
 		}
 		blockedListID = null.Uint64From(blockedList.ID)
-		acceptedInvites, err := channel.BlockedListInvite(model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))).All(db.RO)
+		acceptedInvites, err := channel.InvitedChannelBlockedListInvites(model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))).All(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
