@@ -56,7 +56,8 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	if err != nil && err != sql.ErrNoRows {
 		return errors.Err(err)
 	}
-
+	strikes := 0
+	insert := false
 	if blockedEntry == nil {
 		blocklistID := null.Uint64{}
 		if participatingBlockedList != nil {
@@ -67,17 +68,15 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 			CreatorChannelID: null.StringFrom(creatorChannel.ClaimID),
 			BlockedListID:    blocklistID,
 		}
-		err := blockedEntry.Insert(db.RW, boil.Infer())
-		if err != nil {
-			return errors.Err(err)
-		}
+		insert = true
 	} else {
 		blockedEntry.Strikes.SetValid(blockedEntry.Strikes.Int + 1)
+		strikes = blockedEntry.Strikes.Int
 	}
 	if participatingBlockedList != nil && args.TimeOut > 0 {
 		return api.StatusError{Err: errors.Err("the block list rules you are participating have their time out hours settings per strike. You must stop participating in the shared blocked list to customize timeouts"), Status: http.StatusBadRequest}
 	} else if participatingBlockedList != nil {
-		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(blockedEntry.Strikes.Int, participatingBlockedList)))
+		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(strikes, participatingBlockedList)))
 	} else if args.TimeOut > 0 {
 		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOut) * time.Second))
 	} else if participatingBlockedList == nil { // Only reset expiry if not participating in shared blockedlist, this should never exist from check above!
@@ -104,10 +103,18 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		blockedEntry.DelegatedModeratorChannelID = null.StringFrom(modChannel.ClaimID)
 	}
 
-	err = blockedEntry.Update(db.RW, boil.Infer())
-	if err != nil {
-		return errors.Err(err)
+	if insert {
+		err := blockedEntry.Insert(db.RW, boil.Infer())
+		if err != nil {
+			return errors.Err(err)
+		}
+	} else {
+		err = blockedEntry.Update(db.RW, boil.Infer())
+		if err != nil {
+			return errors.Err(err)
+		}
 	}
+
 	var deletedCommentIDs []string
 	if args.DeleteAll {
 		if !isMod {
