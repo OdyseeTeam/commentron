@@ -168,7 +168,7 @@ func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		dmRels := model.DelegatedModeratorRels
 		dmWhere := model.DelegatedModeratorWhere
 		loadCreatorChannels := qm.Load(dmRels.CreatorChannel, dmWhere.CreatorChannelID.EQ(creatorChannelID))
-		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels).Exists(db.RO)
+		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels, dmWhere.CreatorChannelID.EQ(creatorChannelID)).Exists(db.RO)
 		if err != nil {
 			return nil, nil, errors.Err(err)
 		}
