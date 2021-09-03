@@ -30,6 +30,12 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
+	if args.Remove {
+		err := list.Delete(db.RW)
+		if err != nil {
+			return errors.Err(err)
+		}
+	}
 	var created bool
 	if list == nil {
 		if args.Name == nil {

@@ -16,6 +16,7 @@ import (
 type SharedBlockedListUpdateArgs struct {
 	Authorization
 	SharedBlockedList
+	Remove bool `json:"remove"`
 }
 
 // Validate validates the data in the update args
