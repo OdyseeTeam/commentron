@@ -3,6 +3,7 @@ package blockedlists
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
@@ -42,6 +43,14 @@ func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesA
 			if err != nil {
 				return errors.Err(err)
 			}
+
+			if invite.R.BlockedList.InviteExpiration.Valid {
+				expiresAt := invite.CreatedAt.Add(time.Duration(invite.R.BlockedList.InviteExpiration.Uint64) * time.Hour)
+				if time.Now().After(expiresAt) {
+					continue
+				}
+			}
+
 			invitations = append(invitations, commentapi.SharedBlockedListInvitation{
 				BlockedList: list,
 				Invitation: commentapi.SharedBlockedListInvitedMember{
@@ -171,6 +180,12 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 
 	var blockedListID = null.Uint64{}
 	if args.Accepted {
+		if blockedList.InviteExpiration.Valid {
+			expiresAt := invite.CreatedAt.Add(time.Duration(blockedList.InviteExpiration.Uint64) * time.Hour)
+			if time.Now().After(expiresAt) {
+				return api.StatusError{Err: errors.Err("the invite expired at %s, and cannot be accepted", expiresAt.Format("2006-01-02 3:04:05 pm"))}
+			}
+		}
 		blockedListID = null.Uint64From(blockedList.ID)
 		acceptedInvites, err := channel.BlockedListInvite(model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))).All(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
