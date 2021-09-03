@@ -259,7 +259,7 @@ func blockedByCreator(request *createRequest) error {
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) < time.Duration(0) {
-		timeLeft := helper.FormatDur(time.Since(blockedEntry.Expiry.Time))
+		timeLeft := helper.FormatDur(blockedEntry.Expiry.Time.Sub(time.Now()))
 		message := fmt.Sprintf("publisher %s has given you a temporary ban with %s remaining.", request.creatorChannel.Name, timeLeft)
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
