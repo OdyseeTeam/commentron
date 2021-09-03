@@ -31,7 +31,11 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 		return errors.Err(err)
 	}
 	if args.Remove {
-		err := list.Delete(db.RW)
+		err := list.BlockedListInvites().DeleteAll(db.RW)
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = list.Delete(db.RW)
 		if err != nil {
 			return errors.Err(err)
 		}
