@@ -160,8 +160,10 @@ Comments:
 							}
 						}
 						if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
-							blockedCommentCnt++
-							continue Comments
+							if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
+								blockedCommentCnt++
+								continue Comments
+							}
 						}
 					}
 				}
