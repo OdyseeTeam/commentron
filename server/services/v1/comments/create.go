@@ -275,7 +275,8 @@ func blockedByCreator(request *createRequest) error {
 			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
 		}
 		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) < time.Duration(0) {
-			timeLeft := helper.FormatDur(blockedEntry.Expiry.Time.Sub(time.Now()))
+			expiresIn := blockedListEntry.Expiry.Time.Sub(time.Now())
+			timeLeft := helper.FormatDur(expiresIn)
 			message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment with %s remaining.", blockedByChannel, blockedListName, timeLeft)
 			return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 		}
