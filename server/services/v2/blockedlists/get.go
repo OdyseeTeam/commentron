@@ -69,14 +69,12 @@ func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 		for _, invite := range invites {
 			if invite.R != nil && invite.R.InvitedChannel != nil {
 				member := commentapi.SharedBlockedListInvitedMember{
-					InvitedChannelName: invite.R.InvitedChannel.Name,
-					InvitedChannelID:   invite.R.InvitedChannel.ClaimID,
-					Status:             commentapi.InviteMemberStatusFrom(invite.Accepted),
-					InviteMessage:      invite.Message,
-				}
-				if invite.R.InviterChannel != nil {
-					member.InvitedByChannelName = invite.R.InviterChannel.Name
-					member.InvitedByChannelID = invite.R.InviterChannel.ClaimID
+					InvitedByChannelName: invite.R.InviterChannel.Name,
+					InvitedByChannelID:   invite.R.InviterChannel.ClaimID,
+					InvitedChannelName:   invite.R.InvitedChannel.Name,
+					InvitedChannelID:     invite.R.InvitedChannel.ClaimID,
+					Status:               commentapi.InviteMemberStatusFrom(invite.Accepted),
+					InviteMessage:        invite.Message,
 				}
 				invitedMembers = append(invitedMembers, member)
 			}

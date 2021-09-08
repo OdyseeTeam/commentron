@@ -221,3 +221,50 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 
 	return nil
 }
+
+func rescind(_ *http.Request, args *commentapi.SharedBlockedListRescindArgs, _ *commentapi.SharedBlockedListRescindResponse) error {
+	var list *model.BlockedList
+	var err error
+	var ownerChannel *model.Channel
+
+	ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+	if err != nil {
+		return errors.Err(err)
+	}
+	err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	if err != nil {
+		return err
+	}
+
+	list, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if list == nil {
+		return api.StatusError{Err: errors.Err("blocked list not found"), Status: http.StatusNotFound}
+	}
+
+	invite, err := ownerChannel.InvitedChannelBlockedListInvites(model.BlockedListInviteWhere.InvitedChannelID.EQ(args.InvitedChannelID), qm.Load(model.BlockedListInviteRels.InvitedChannel)).One(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if invite == nil {
+		return api.StatusError{Err: errors.Err("invite for %s not found", args.InvitedChannelName), Status: http.StatusBadRequest}
+	}
+
+	invitedChannel := invite.R.InvitedChannel
+	invitedChannel.BlockedListID = null.Uint64{}
+	err = invitedChannel.Update(db.RW, boil.Whitelist(model.BlockedListInviteColumns.BlockedListID))
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	err = invite.Delete(db.RW)
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	return nil
+}

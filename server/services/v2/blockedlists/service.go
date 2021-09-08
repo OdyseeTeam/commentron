@@ -33,3 +33,8 @@ func (s Service) Get(r *http.Request, args *commentapi.SharedBlockedListGetArgs,
 func (s Service) ListInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
 	return listInvites(r, args, reply)
 }
+
+// Rescind removes the association if already accepted of the invite and deletes it.
+func (s Service) Rescind(r *http.Request, args *commentapi.SharedBlockedListRescindArgs, reply *commentapi.SharedBlockedListRescindResponse) error {
+	return rescind(r, args, reply)
+}
