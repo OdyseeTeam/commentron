@@ -178,32 +178,65 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 		return api.StatusError{Err: errors.Err("channel %s does not have an invite for the shared block list %s to accept", args.ChannelName, blockedList.Name)}
 	}
 
-	var blockedListID = null.Uint64{}
-	if args.Accepted {
-		if blockedList.InviteExpiration.Valid {
-			expiresAt := invite.CreatedAt.Add(time.Duration(blockedList.InviteExpiration.Uint64) * time.Hour)
-			if time.Now().After(expiresAt) {
-				return api.StatusError{Err: errors.Err("the invite expired at %s, and cannot be accepted", expiresAt.Format("2006-01-02 3:04:05 pm"))}
-			}
-		}
-		blockedListID = null.Uint64From(blockedList.ID)
-		acceptedInvites, err := channel.InvitedChannelBlockedListInvites(model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))).All(db.RO)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return errors.Err(err)
-		}
+	if !args.Accepted {
+		return rejectInvite(channel, blockedList, invite)
+	}
 
-		if len(acceptedInvites) > 0 {
-			blockedListInviteCol := map[string]interface{}{model.BlockedListInviteColumns.Accepted: null.BoolFrom(false)}
-			err := acceptedInvites.UpdateAll(db.RW, blockedListInviteCol)
-			if err != nil {
-				return errors.Err(err)
-			}
+	return acceptInvite(channel, blockedList, invite)
+}
+
+func rejectInvite(channel *model.Channel, blockedList *model.BlockedList, invite *model.BlockedListInvite) error {
+	if channel.BlockedListID.IsZero() {
+		return errors.Err("there is no blocked list currently contributing to reject an accepted invite")
+	}
+	if !invite.Accepted.Bool {
+		return api.StatusError{Err: errors.Err("you have not accepted the invite yet")}
+	}
+
+	theirSBL, err := model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(channel.ClaimID)).One(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+	blockListID := null.Uint64{}
+	if theirSBL != nil {
+		blockListID = null.Uint64From(theirSBL.ID)
+	}
+
+	//Set blocks to their shared blocked list.
+	blockedListCol := map[string]interface{}{model.BlockedEntryColumns.BlockedListID: blockListID}
+	err = channel.CreatorChannelBlockedEntries().UpdateAll(db.RW, blockedListCol)
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	invite.Accepted.SetValid(false)
+	return errors.Err(invite.Update(db.RW, boil.Infer()))
+}
+
+func acceptInvite(channel *model.Channel, blockedList *model.BlockedList, invite *model.BlockedListInvite) error {
+	if blockedList.InviteExpiration.Valid {
+		expiresAt := invite.CreatedAt.Add(time.Duration(blockedList.InviteExpiration.Uint64) * time.Hour)
+		if time.Now().After(expiresAt) {
+			return api.StatusError{Err: errors.Err("the invite expired at %s, and cannot be accepted", expiresAt.Format("2006-01-02 3:04:05 pm"))}
 		}
-		invite.Accepted.SetValid(true)
-		err = invite.Update(db.RW, boil.Infer())
+	}
+	blockedListID := null.Uint64From(blockedList.ID)
+	acceptedInvites, err := channel.InvitedChannelBlockedListInvites(model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true))).All(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if len(acceptedInvites) > 0 {
+		blockedListInviteCol := map[string]interface{}{model.BlockedListInviteColumns.Accepted: null.BoolFrom(false)}
+		err := acceptedInvites.UpdateAll(db.RW, blockedListInviteCol)
 		if err != nil {
 			return errors.Err(err)
 		}
+	}
+	invite.Accepted.SetValid(true)
+	err = invite.Update(db.RW, boil.Infer())
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	blockedListCol := map[string]interface{}{model.BlockedEntryColumns.BlockedListID: blockedListID}
@@ -218,7 +251,6 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 	if err != nil {
 		return errors.Err(err)
 	}
-
 	return nil
 }
 
