@@ -179,13 +179,13 @@ func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs,
 	}
 
 	if !args.Accepted {
-		return rejectInvite(channel, blockedList, invite)
+		return rejectInvite(channel, invite)
 	}
 
 	return acceptInvite(channel, blockedList, invite)
 }
 
-func rejectInvite(channel *model.Channel, blockedList *model.BlockedList, invite *model.BlockedListInvite) error {
+func rejectInvite(channel *model.Channel, invite *model.BlockedListInvite) error {
 	if channel.BlockedListID.IsZero() {
 		return errors.Err("there is no blocked list currently contributing to reject an accepted invite")
 	}
