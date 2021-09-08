@@ -245,7 +245,7 @@ func rescind(_ *http.Request, args *commentapi.SharedBlockedListRescindArgs, _ *
 		return api.StatusError{Err: errors.Err("blocked list not found"), Status: http.StatusNotFound}
 	}
 
-	invite, err := ownerChannel.InvitedChannelBlockedListInvites(model.BlockedListInviteWhere.InvitedChannelID.EQ(args.InvitedChannelID), qm.Load(model.BlockedListInviteRels.InvitedChannel)).One(db.RO)
+	invite, err := ownerChannel.InviterChannelBlockedListInvites(model.BlockedListInviteWhere.InvitedChannelID.EQ(args.InvitedChannelID), qm.Load(model.BlockedListInviteRels.InvitedChannel)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
