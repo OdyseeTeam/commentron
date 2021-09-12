@@ -2,6 +2,7 @@ package commentapi
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/volatiletech/null"
 
@@ -114,7 +115,13 @@ type SharedBlockedListListInvitesResponse struct {
 type InviteMemberStatus int
 
 // InviteMemberStatusFrom from a `null.Bool` it provides the functional value
-func InviteMemberStatusFrom(v null.Bool) string {
+func InviteMemberStatusFrom(v null.Bool, createdAt time.Time, expired null.Uint64) string {
+	if expired.Valid {
+		expiresAt := createdAt.Add(time.Duration(expired.Uint64) * time.Hour)
+		if time.Now().After(expiresAt) {
+			return "expired"
+		}
+	}
 	if v.Valid && v.Bool {
 		return "accepted"
 	} else if v.Valid && !v.Bool {

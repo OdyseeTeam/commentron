@@ -58,7 +58,7 @@ func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesA
 					InvitedByChannelID:   invite.R.InviterChannel.ClaimID,
 					InvitedChannelName:   ownerChannel.Name,
 					InvitedChannelID:     ownerChannel.ClaimID,
-					Status:               commentapi.InviteMemberStatusFrom(invite.Accepted),
+					Status:               commentapi.InviteMemberStatusFrom(invite.Accepted, invite.CreatedAt, null.Uint64FromPtr(list.InviteExpiration)),
 					InviteMessage:        invite.Message,
 				},
 			})
