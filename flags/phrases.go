@@ -44,4 +44,7 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`.*@EvaElfie.*`),
 	regexp.MustCompile(`.*@niggertown.*`),
 	regexp.MustCompile(`.*generating extra cash online from home more.*`),
+	regexp.MustCompile(`.*[Ww]orks[Ss]ilver.*`),
+	regexp.MustCompile(`.*[Ww]ork[Jj]oin.*`),
+	regexp.MustCompile(`.*[Jj]ob[Cc]ash.*`),
 }
