@@ -45,7 +45,7 @@ func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 		return errors.Err(err)
 	}
 	if exists {
-		return errors.Err("channel %s already is a moderation for %s", args.ModChannelName, args.CreatorChannelName)
+		return errors.Err("channel %s already is a moderator for %s", args.ModChannelName, args.CreatorChannelName)
 	}
 
 	delegatedModerator := &model.DelegatedModerator{
