@@ -119,16 +119,20 @@ const (
 
 // ListArgs arguments for the comment.List rpc call
 type ListArgs struct {
-	ChannelName   *string `json:"channel_name"`    // signing channel name of claim
-	ChannelID     *string `json:"channel_id"`      // signing channel claim id of claim
-	ClaimID       *string `json:"claim_id"`        // claim id of claim being commented on
-	AuthorClaimID *string `json:"author_claim_id"` // filters comments to just this author
-	ParentID      *string `json:"parent_id"`       // filters comments to those under this thread
-	Page          int     `json:"page"`            // pagination: which page of results
-	PageSize      int     `json:"page_size"`       // pagination: nr of comments to show in a page (max 200)
-	TopLevel      bool    `json:"top_level"`       // filters to only top level comments
-	Hidden        bool    `json:"hidden"`          // if true will show hidden comments as well
-	SortBy        Sort    `json:"sort_by"`         // can be popularity, controversy, default is time (newest)
+	RequestorChannelName string  `json:"requestor_channel_name"` // Used for Author ID filter authorization Only your comments!
+	RequestorChannelID   string  `json:"requestor_channel_id"`   // Used for Author ID filter authorization
+	ChannelName          *string `json:"channel_name"`           // signing channel name of claim
+	ChannelID            *string `json:"channel_id"`             // signing channel claim id of claim
+	ClaimID              *string `json:"claim_id"`               // claim id of claim being commented on
+	AuthorClaimID        *string `json:"author_claim_id"`        // filters comments to just this author
+	ParentID             *string `json:"parent_id"`              // filters comments to those under this thread
+	Page                 int     `json:"page"`                   // pagination: which page of results
+	PageSize             int     `json:"page_size"`              // pagination: nr of comments to show in a page (max 200)
+	TopLevel             bool    `json:"top_level"`              // filters to only top level comments
+	Hidden               bool    `json:"hidden"`                 // if true will show hidden comments as well
+	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
+	Signature            string  `json:"signature"`
+	SigningTS            string  `json:"signing_ts"`
 }
 
 // AbandonArgs are the arguments passed to comment.Abandon RPC call. If creator args are passed

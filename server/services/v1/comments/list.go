@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
@@ -25,6 +27,20 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	creatorChannel, err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
 	if err != nil {
 		return err
+	}
+
+	if args.AuthorClaimID != nil {
+		ownerChannel, err := helper.FindOrCreateChannel(args.RequestorChannelID, args.RequestorChannelName)
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+		if ownerChannel.ClaimID != *args.AuthorClaimID {
+			return api.StatusError{Err: errors.Err("you can only view your comments, not others"), Status: http.StatusBadRequest}
+		}
 	}
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
@@ -87,6 +103,9 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	}
 
 	items, blockedCommentCnt, err := getItems(comments, creatorChannel)
+	if err != nil {
+		logrus.Error(errors.FullTrace(err))
+	}
 
 	totalFilteredItems = totalFilteredItems - blockedCommentCnt
 	reply.Items = items
@@ -147,7 +166,7 @@ Comments:
 			if len(blockedFrom) > 0 {
 				channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
 				if err != nil {
-					return items, blockedCommentCnt, errors.Err(err)
+					//cannot find claim commented on in SDK, ignore, nil channel by default
 				}
 				if channel != nil {
 					for _, entry := range blockedFrom {
