@@ -211,6 +211,10 @@ func rejectInvite(channel *model.Channel, invite *model.BlockedListInvite) error
 
 	channel.BlockedListID = blockListID
 	channel.BlockedListInviteID = blockListID
+	err = channel.Update(db.RW, boil.Infer())
+	if err != nil {
+		return errors.Err(err)
+	}
 
 	invite.Accepted.SetValid(false)
 	return errors.Err(invite.Update(db.RW, boil.Whitelist(model.BlockedListInviteColumns.Accepted)))
