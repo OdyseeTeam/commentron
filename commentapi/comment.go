@@ -115,6 +115,8 @@ const (
 	Controversy
 	// Popularity sorts the comments by how popular it is
 	Popularity
+	// NewestNoPins sorts the comments by newest first but removes the presort for pinned comments
+	NewestNoPins
 )
 
 // ListArgs arguments for the comment.List rpc call

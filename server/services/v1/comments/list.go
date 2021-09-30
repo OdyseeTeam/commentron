@@ -127,6 +127,8 @@ func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
 		} else if sort == commentapi.Oldest {
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" ASC"))
+		} else if sort == commentapi.NewestNoPins {
+			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" DESC"))
 		}
 	} else {
 		queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
