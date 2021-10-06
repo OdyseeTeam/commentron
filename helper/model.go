@@ -16,6 +16,9 @@ import (
 
 // FindOrCreateChannel gets the channel from commentron database or creates it and returns it
 func FindOrCreateChannel(channelClaimID, channelName string) (*model.Channel, error) {
+	if channelName == "" {
+		return nil, errors.Err("channel name cannot be blank")
+	}
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(channelClaimID)).One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		channel = &model.Channel{
