@@ -43,18 +43,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	channel, err := m.Channels(m.ChannelWhere.ClaimID.EQ(null.StringFrom(args.ChannelID).String)).One(db.RO)
-	if errors.Is(err, sql.ErrNoRows) {
-		channel = &m.Channel{
-			ClaimID: null.StringFrom(args.ChannelID).String,
-			Name:    null.StringFrom(args.ChannelName).String,
-		}
-		err = nil
-		err := channel.Insert(db.RW, boil.Infer())
-		if err != nil {
-			return errors.Err(err)
-		}
-	}
+	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
 		return errors.Err(err)
 	}

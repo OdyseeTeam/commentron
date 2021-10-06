@@ -1,10 +1,11 @@
 package reactions
 
 import (
-	"database/sql"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/lbryio/commentron/helper"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
@@ -15,7 +16,6 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/util"
 
 	"github.com/karlseguin/ccache"
-	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -53,23 +53,13 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 		myfilters = append(myfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 		allfilters = append(allfilters, qm.WhereIn(model.ReactionColumns.ReactionTypeID+" IN ?", typeIDs...))
 	}
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(util.StrFromPtr(args.ChannelID))).One(db.RO)
-	if errors.Is(err, sql.ErrNoRows) {
-		channel = &model.Channel{
-			ClaimID: util.StrFromPtr(args.ChannelID),
-			Name:    util.StrFromPtr(args.ChannelName),
-		}
-		err = nil
-		err := channel.Insert(db.RW, boil.Infer())
+
+	var userReactions commentapi.Reactions
+	if args.ChannelName != nil {
+		channel, err := helper.FindOrCreateChannel(util.StrFromPtr(args.ChannelID), util.StrFromPtr(args.ChannelName))
 		if err != nil {
 			return errors.Err(err)
 		}
-	}
-	if err != nil {
-		return errors.Err(err)
-	}
-	var userReactions commentapi.Reactions
-	if args.ChannelName != nil {
 		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
 		if chanErr == nil {
 			allfilters = append(allfilters, qm.Where(model.ReactionColumns.ChannelID+" != ?", channel.ClaimID))

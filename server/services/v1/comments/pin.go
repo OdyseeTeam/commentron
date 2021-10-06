@@ -1,8 +1,9 @@
 package comments
 
 import (
-	"database/sql"
 	"net/http"
+
+	"github.com/lbryio/commentron/helper"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
@@ -31,18 +32,7 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 		return item, errors.Err("could not resolve claim from comment")
 	}
 
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).One(db.RO)
-	if errors.Is(err, sql.ErrNoRows) {
-		channel = &model.Channel{
-			ClaimID: args.ChannelID,
-			Name:    args.ChannelName,
-		}
-		err = nil
-		err := channel.Insert(db.RW, boil.Infer())
-		if err != nil {
-			return item, errors.Err(err)
-		}
-	}
+	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	claimChannel := claim.SigningChannel
 	if claimChannel == nil {
 		if claim.ValueType == "channel" {
