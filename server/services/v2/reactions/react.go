@@ -43,17 +43,9 @@ func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	if len(commentIDs) > 1 {
 		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
 	}
-	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(args.ChannelID)).One(db.RO)
-	if errors.Is(err, sql.ErrNoRows) {
-		channel = &model.Channel{
-			ClaimID: args.ChannelID,
-			Name:    args.ChannelName,
-		}
-		err = nil
-		err := channel.Insert(db.RW, boil.Infer())
-		if err != nil {
-			return errors.Err(err)
-		}
+	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+	if err != nil {
+		return errors.Err(err)
 	}
 	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
