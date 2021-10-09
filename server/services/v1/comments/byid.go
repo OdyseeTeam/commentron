@@ -42,7 +42,7 @@ func byID(_ *http.Request, args *commentapi.ByIDArgs) (commentapi.CommentItem, [
 			if parentComment.R != nil && parentComment.R.Channel != nil {
 				parentChannel = parentComment.R.Channel
 			}
-			parentReplies, err := comment.ParentComments().Count(db.RO)
+			parentReplies, err := parentComment.ParentComments().Count(db.RO)
 			if err != nil && errors.Is(err, sql.ErrNoRows) {
 				return commentapi.CommentItem{}, nil, errors.Err(err)
 			}
