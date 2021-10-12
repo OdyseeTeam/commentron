@@ -24,6 +24,9 @@ var ValidateSignatures bool
 
 // ValidateSignature validates the signature was signed by the channel reference.
 func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
+	if config.IsTestMode {
+		return nil
+	}
 	channel, err := SDK.GetClaim(channelClaimID)
 	if err != nil {
 		return errors.Err(err)
@@ -40,11 +43,7 @@ func ValidateSignature(channelClaimID, signature, signingTS, data string) error 
 	//		return errors.Err("validation is disallowed for non controlling channels")
 	//	}
 	pk := channel.Value.GetChannel().GetPublicKey()
-	err = validateSignature(channelClaimID, signature, signingTS, data, pk)
-	if config.IsTestMode {
-		return nil
-	}
-	return err
+	return validateSignature(channelClaimID, signature, signingTS, data, pk)
 }
 
 // ValidateSignatureFromClaim validates the signature was signed by the channel reference.
