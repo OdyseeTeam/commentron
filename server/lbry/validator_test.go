@@ -4,15 +4,19 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/lbryio/commentron/helper"
 
-	"github.com/lbryio/lbry.go/v2/schema/keys"
-
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/lbryio/lbry.go/v2/schema/keys"
 )
 
 func TestValidateSignature1(t *testing.T) {
@@ -105,5 +109,62 @@ func TestSignatures(t *testing.T) {
 	valid := ecdsa.Verify(private.PubKey().ToECDSA(), digest[:], sig.R, sig.S)
 	if !valid {
 		t.Error("sig not valid")
+	}
+}
+
+func TestHandleCQResult(t *testing.T) {
+	result := `{
+  "success": true,
+  "error": null,
+  "data": [
+    {
+      "certificate": "{\"version\":1,\"keyType\":3,\"publicKey\":\"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE+DmCzZztuP1uyBUk/OsLeexlcl3KD4uEmd70rS88+v1AbhUYTB4GB9P+p/Wlrnh3NaiRc5Tm3ldtcwhM6WFmbQ==\"}"
+    }
+  ]
+}`
+	resultBytes := []byte(result)
+
+	var certResp cqResponse
+	err := json.Unmarshal(resultBytes, &certResp)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(certResp.Data) > 0 {
+		cert := &certificate{}
+		err := json.Unmarshal([]byte(certResp.Data[0].Certificate), cert)
+		if err != nil {
+			t.Error(err)
+		}
+
+		expected := "3056301006072a8648ce3d020106052b8104000a03420004f83982cd9cedb8fd6ec81524fceb0b79ec65725dca0f8b8499def4ad2f3cfafd406e15184c1e0607d3fea7f5a5ae787735a8917394e6de576d73084ce961666d"
+
+		if expected != hex.EncodeToString(cert.PublicKey) {
+			println("SDK:", expected)
+			println("CQ:", hex.EncodeToString(cert.PublicKey))
+			t.Error("expected does not match what came")
+		}
+	}
+
+}
+
+func getResponseFromCQ(t *testing.T) {
+	//func TestGetResponseFromCQ(t *testing.T) {
+	channelClaimID := "7aa832fdb1b7c122dce61dde8bc0497b5057d1f" //4"
+	c := http.Client{Timeout: 1 * time.Second}
+	sql := fmt.Sprintf(`SELECT certificate FROM claim WHERE claim_id = "%s"`, channelClaimID)
+	response, err := c.Get(fmt.Sprintf("https://chainquery.lbry.com/api/sql?query=%s", url.QueryEscape(sql)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer helper.CloseBody(response.Body)
+	b, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var certResp cqResponse
+	err = json.Unmarshal(b, &certResp)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
