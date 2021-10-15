@@ -13,12 +13,13 @@ Content-Type: application/json
   "method": "comment.Create",
   "params": {
     "claim_id": "85f25238e4d2fc8e79772673d67c4cbe5dbe3006",
-    "comment": "This is literally, t comment I have EVER seen.",
+    "comment": "<stkr>:mysticker:<stkr>",
     "channel_id": "144b700dc39e97bb2347fbd9453d985eab79757f",
     "channel_name": "@🌹❤️😍Amirul😍❤️🌹",
     "support_tx_id": "dbf429961fdfde983d45da87d16febc3fd69be0f706d5aa71fceb5973c769265",
     "signature": "e8ad5dbd660365efd1646a9b5d82323efc550712a7a291aa3e715e31641cc57b18241a132ebed28a848086fca6e200a735281c631c7474b01b4c32851ea3dd57",
-    "signing_ts": "1561669624"
+    "signing_ts": "1561669624",
+    "sticker": true
   }
 }
 

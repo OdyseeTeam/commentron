@@ -2,12 +2,15 @@ package commentapi
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/lbryio/commentron/validator"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
 )
+
+var StickerRE = regexp.MustCompile(`^<stkr>:(?P<sticker>[a-zA-Z0-9]+):<stkr>$`)
 
 // CommentItem is the data structure of a comment returned from commentron
 type CommentItem struct {
@@ -63,6 +66,7 @@ type CreateArgs struct {
 	ParentID        *string `json:"parent_id"`
 	ChannelID       string  `json:"channel_id"`
 	ChannelName     string  `json:"channel_name"`
+	Sticker         bool    `json:"sticker"`
 	SupportTxID     *string `json:"support_tx_id"`
 	SupportVout     *uint64 `json:"support_vout"`
 	PaymentIntentID *string `json:"payment_intent_id"`

@@ -129,6 +129,10 @@ func createComment(request *createRequest) error {
 	return nil
 }
 
+var allowedStickers = map[string]bool{
+	"mysticker": true,
+}
+
 func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -149,6 +153,18 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
+	}
+	matches := commentapi.StickerRE.FindStringSubmatch(args.CommentText)
+	if len(matches) > 0 && !args.Sticker {
+		return errors.Err("a sticker cannot be passed with the sticker flag true")
+	}
+	if args.Sticker {
+		if len(matches) != 2 {
+			return errors.Err("invalid sticker code")
+		}
+		if _, ok := allowedStickers[matches[1]]; !ok {
+			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
+		}
 	}
 
 	return nil
