@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/env"
+	"github.com/lbryio/commentron/jobs"
 	"github.com/lbryio/commentron/server"
 	"github.com/lbryio/commentron/server/lbry"
 	"github.com/pkg/profile"
@@ -39,6 +40,7 @@ var serveCmd = &cobra.Command{
 		}
 		config.InitializeConfiguration(conf)
 		lbry.Init(conf)
+		jobs.StartJobs()
 		server.Start()
 	},
 }
