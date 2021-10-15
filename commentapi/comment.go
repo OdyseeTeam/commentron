@@ -10,6 +10,7 @@ import (
 	v "github.com/lbryio/ozzo-validation"
 )
 
+// StickerRE is the regex for a valid sticker as a comment.
 var StickerRE = regexp.MustCompile(`^<stkr>:(?P<sticker>[a-zA-Z0-9]+):<stkr>$`)
 
 // CommentItem is the data structure of a comment returned from commentron

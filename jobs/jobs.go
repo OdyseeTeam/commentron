@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// StartJobs runs all the background jobs of Commentron
 func StartJobs() {
 	scheduler := gocron.NewScheduler(time.UTC)
 
