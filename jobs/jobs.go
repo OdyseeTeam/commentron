@@ -13,8 +13,11 @@ import (
 func StartJobs() {
 	scheduler := gocron.NewScheduler(time.UTC)
 
-	scheduler.Every(1).Hours().Do(removeFlagged)
-
+	_, err := scheduler.Every(1).Hours().Do(removeFlagged)
+	if err != nil {
+		logrus.Error(err)
+	}
+	scheduler.StartAsync()
 }
 
 func removeFlagged() {
