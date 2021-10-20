@@ -129,10 +129,6 @@ func createComment(request *createRequest) error {
 	return nil
 }
 
-var allowedStickers = map[string]bool{
-	"mysticker": true,
-}
-
 func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -162,8 +158,12 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		if len(matches) != 2 {
 			return errors.Err("invalid sticker code")
 		}
-		if _, ok := allowedStickers[matches[1]]; !ok {
+		paid, ok := allowedStickers[matches[1]]
+		if !ok {
 			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
+		}
+		if paid && (args.PaymentIntentID == nil || args.SupportTxID == nil) {
+			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
 
