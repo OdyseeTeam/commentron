@@ -48,4 +48,6 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`.*[Ww]ork[Jj]oin.*`),
 	regexp.MustCompile(`.*[Jj]ob[Cc]ash.*`),
 	regexp.MustCompile(`.*[Jj]ob[Aa]pp.*`),
+	regexp.MustCompile(`.*for more info visit any tab this site*`),
+	regexp.MustCompile(`.*started earning \$.*hour.* in my free time*`),
 }
