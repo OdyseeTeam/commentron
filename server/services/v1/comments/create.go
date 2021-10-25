@@ -162,7 +162,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		if !ok {
 			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
 		}
-		if paid && (args.PaymentIntentID == nil || args.SupportTxID == nil) {
+		if paid && args.PaymentIntentID == nil && args.SupportTxID == nil {
 			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
