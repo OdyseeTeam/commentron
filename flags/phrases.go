@@ -51,4 +51,5 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`.*for more info visit any tab this site*`),
 	regexp.MustCompile(`.*started earning \$.* hour.* in my free time*`),
 	regexp.MustCompile(`.*making over \$.* a month working part time*`),
+	regexp.MustCompile(`.*making about \$.*-\$.* per month and you can too*`),
 }
