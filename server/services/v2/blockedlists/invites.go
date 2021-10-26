@@ -294,6 +294,7 @@ func rescind(_ *http.Request, args *commentapi.SharedBlockedListRescindArgs, _ *
 	}
 
 	invitedChannel := invite.R.InvitedChannel
+	invitedChannel.BlockedListInviteID = null.Uint64{}
 	invitedChannel.BlockedListID = null.Uint64{}
 	err = invitedChannel.Update(db.RW, boil.Whitelist(model.BlockedListInviteColumns.BlockedListID))
 	if err != nil {
