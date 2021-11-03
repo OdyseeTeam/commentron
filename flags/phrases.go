@@ -60,5 +60,8 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`.*earning .*http.*`),
 	regexp.MustCompile(`.*money .*http.*`),
 	regexp.MustCompile(`.*euros .*http.*`),
-	regexp.MustCompile(`.*job .*http.*`),
+	regexp.MustCompile(`.*job .*http:.*`),
+	regexp.MustCompile(`.*income  .*http:.*`),
+	regexp.MustCompile(`.*cash .*http:.*`),
+	regexp.MustCompile(`.*earn .*http:.*`),
 }
