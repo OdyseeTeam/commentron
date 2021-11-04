@@ -42,6 +42,8 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 	return nil
 }
 
+// GetModerator returns the validated moderator and the creator which delegated the moderator. If a creator is not passed
+// the moderator will be returned as the creator and will be equal.
 func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannelName string) (*model.Channel, *model.Channel, error) {
 	modChannel, err := FindOrCreateChannel(modChannelID, modChannelName)
 	if err != nil {
