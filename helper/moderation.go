@@ -50,7 +50,7 @@ func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		return nil, nil, errors.Err(err)
 	}
 	var creatorChannel = modChannel
-	if creatorChannelID != "" && creatorChannelName != "" {
+	if creatorChannelID != "" && creatorChannelName != "" && creatorChannelID != modChannelID {
 		creatorChannel, err = FindOrCreateChannel(creatorChannelID, creatorChannelName)
 		if err != nil {
 			return nil, nil, errors.Err(err)
