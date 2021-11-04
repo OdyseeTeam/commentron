@@ -39,7 +39,7 @@ func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesA
 	for _, invite := range invites {
 		if invite.R.BlockedList != nil && invite.R.InviterChannel != nil {
 			list := commentapi.SharedBlockedList{}
-			err = populateSharedBlockedList(&list, invite.R.BlockedList)
+			err = PopulateSharedBlockedList(&list, invite.R.BlockedList)
 			if err != nil {
 				return errors.Err(err)
 			}

@@ -47,7 +47,7 @@ func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 		return api.StatusError{Err: errors.Err("blocked list not found"), Status: http.StatusNotFound}
 	}
 
-	err = populateSharedBlockedList(&reply.BlockedList, list)
+	err = PopulateSharedBlockedList(&reply.BlockedList, list)
 	if err != nil {
 		return err
 	}

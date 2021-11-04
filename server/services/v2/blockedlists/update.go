@@ -100,10 +100,11 @@ func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply
 		}
 	}
 
-	return populateSharedBlockedList(reply, list)
+	return PopulateSharedBlockedList(reply, list)
 }
 
-func populateSharedBlockedList(list *commentapi.SharedBlockedList, modelList *model.BlockedList) error {
+// PopulateSharedBlockedList populates the information from a blocked list into a an api response format
+func PopulateSharedBlockedList(list *commentapi.SharedBlockedList, modelList *model.BlockedList) error {
 	list.ID = modelList.ID
 	list.Name = &modelList.Name
 	list.Description = &modelList.Description
