@@ -13,6 +13,8 @@ type BlockArgs struct {
 	//Creator that Moderator is delegated from. Used for delegated moderation
 	CreatorChannelID   string `json:"creator_channel_id"`
 	CreatorChannelName string `json:"creator_channel_name"`
+	// ID of comment to remove as part of this block
+	OffendingCommentID string `json:"offending_comment_id"`
 	// Blocks identity from comment universally, requires Admin rights on commentron instance
 	BlockAll bool `json:"block_all"`
 	// Measured in seconds for the amount of time a channel is blocked for.
