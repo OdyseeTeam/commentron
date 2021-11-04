@@ -12,7 +12,8 @@ Content-Type: application/json
   "id": 1,
   "method": "comment.ByID",
   "params": {
-    "comment_id": "16b55ecafb338dab63ef0819339d5070b06f227a18caedf843d0752003368ed4"
+    "comment_id": "63377560f995f63c81eda3c0e50448ee0c102373c40ab2153c291f0da2a6f1a9",
+    "with_ancestors": true
   }
 }
 

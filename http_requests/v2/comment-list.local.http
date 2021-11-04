@@ -12,8 +12,14 @@ Content-Type: application/json
   "id": 1,
   "method": "comment.List",
   "params": {
-    "claim_id": "0671a386089113c200050aef29fe5604ded0e362",
-    "top_level": true
+    "page":1,
+    "page_size":10,
+    "sort_by":0,
+    "author_claim_id": "cb7ea953be131d156a780ff400414a187123e589",
+    "requestor_channel_name":"@thomas.zarebczan",
+    "requestor_channel_id":"cb7ea953be131d156a780ff400414a187123e589",
+    "signature":"fb31a514a13194b22dc111118de253dbdcecf922dead14747f835266a33eff820b62da0e76c638698294194131bf576d08d6870cfabac9a9ca666b49400ad225",
+    "signing_ts":"1632928896"
   }
 }
 
