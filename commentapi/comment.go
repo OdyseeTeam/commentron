@@ -146,11 +146,8 @@ type ListArgs struct {
 // the signing channel of the content of the comment is checked these args and signature
 // verification happens against the creators public key for authorization.
 type AbandonArgs struct {
-	CommentID          string  `json:"comment_id"`
-	Signature          string  `json:"signature"`
-	SigningTS          string  `json:"signing_ts"`
-	CreatorChannelID   *string `json:"creator_channel_id"`
-	CreatorChannelName *string `json:"creator_channel_name"`
+	ModAuthorization
+	CommentID string `json:"comment_id"`
 }
 
 // AbandonResponse the response to the abandon call
