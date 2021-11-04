@@ -31,7 +31,7 @@ func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	modChannel, creatorChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
+	modChannel, creatorChannel, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return err
 	}
@@ -154,33 +154,8 @@ func getStrikeDuration(strike int, list *model.BlockedList) time.Duration {
 	}
 }
 
-func getModerator(modChannelID, modChannelName, creatorChannelID, creatorChannelName string) (*model.Channel, *model.Channel, error) {
-	modChannel, err := helper.FindOrCreateChannel(modChannelID, modChannelName)
-	if err != nil {
-		return nil, nil, errors.Err(err)
-	}
-	var creatorChannel = modChannel
-	if creatorChannelID != "" && creatorChannelName != "" {
-		creatorChannel, err = helper.FindOrCreateChannel(creatorChannelID, creatorChannelName)
-		if err != nil {
-			return nil, nil, errors.Err(err)
-		}
-		dmRels := model.DelegatedModeratorRels
-		dmWhere := model.DelegatedModeratorWhere
-		loadCreatorChannels := qm.Load(dmRels.CreatorChannel, dmWhere.CreatorChannelID.EQ(creatorChannelID))
-		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels, dmWhere.CreatorChannelID.EQ(creatorChannelID)).Exists(db.RO)
-		if err != nil {
-			return nil, nil, errors.Err(err)
-		}
-		if !exists {
-			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator", modChannel.Name, creatorChannel.Name)
-		}
-	}
-	return modChannel, creatorChannel, nil
-}
-
 func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
-	modChannel, _, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
+	modChannel, _, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return err
 	}

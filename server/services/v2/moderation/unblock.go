@@ -19,7 +19,7 @@ import (
 
 func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
 
-	modChannel, creatorChannel, err := getModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
+	modChannel, creatorChannel, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
 	if err != nil {
 		return err
 	}

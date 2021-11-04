@@ -5,10 +5,12 @@ import (
 	"net/http"
 
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/model"
 	m "github.com/lbryio/commentron/model"
 
-	"github.com/lbryio/lbry.go/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 
 	"github.com/volatiletech/null"
 )
@@ -38,4 +40,29 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 		}
 	}
 	return nil
+}
+
+func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannelName string) (*model.Channel, *model.Channel, error) {
+	modChannel, err := FindOrCreateChannel(modChannelID, modChannelName)
+	if err != nil {
+		return nil, nil, errors.Err(err)
+	}
+	var creatorChannel = modChannel
+	if creatorChannelID != "" && creatorChannelName != "" {
+		creatorChannel, err = FindOrCreateChannel(creatorChannelID, creatorChannelName)
+		if err != nil {
+			return nil, nil, errors.Err(err)
+		}
+		dmRels := model.DelegatedModeratorRels
+		dmWhere := model.DelegatedModeratorWhere
+		loadCreatorChannels := qm.Load(dmRels.CreatorChannel, dmWhere.CreatorChannelID.EQ(creatorChannelID))
+		exists, err := modChannel.ModChannelDelegatedModerators(loadCreatorChannels, dmWhere.CreatorChannelID.EQ(creatorChannelID)).Exists(db.RO)
+		if err != nil {
+			return nil, nil, errors.Err(err)
+		}
+		if !exists {
+			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator", modChannel.Name, creatorChannel.Name)
+		}
+	}
+	return modChannel, creatorChannel, nil
 }
