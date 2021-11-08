@@ -27,7 +27,7 @@ var allowedStickers = map[string]bool{
 	"PREGNANT_WOMAN_BLONDE":                 false,
 	"PREGNANT_WOMAN_BROWN_HAIR":             false,
 	"PREGNANT_WOMAN_RED_HAIR":               false,
-	"EGIRL":                                 false,
+	"BAN":                                   false,
 	"TRASH":                                 false,
 	"TRAP":                                  false,
 	"BULL_RIDE":                             false,
