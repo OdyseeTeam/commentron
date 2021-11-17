@@ -39,7 +39,7 @@ func (c *Service) Create(r *http.Request, args *commentapi.CreateArgs, reply *co
 
 // List lists comments based on filters and arguments passed. The returned result is dynamic based on the args passed
 func (c *Service) List(r *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
-	return list(r, args, reply)
+	return getCachedList(r, args, reply)
 }
 
 // GetChannelFromCommentID gets the channel info for a specific comment, this is really only used by the sdk
@@ -122,5 +122,5 @@ func (c *Service) Pin(r *http.Request, args *commentapi.PinArgs, reply *commenta
 
 // SuperChatList returns comments that are super chat only.
 func (c *Service) SuperChatList(r *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
-	return superChatList(r, args, reply)
+	return getCachedSuperChatList(r, args, reply)
 }

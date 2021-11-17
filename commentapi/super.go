@@ -1,5 +1,13 @@
 package commentapi
 
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+
+	"github.com/lbryio/lbry.go/v2/extras/errors"
+)
+
 // SuperListArgs arguments for the comment.List rpc call
 type SuperListArgs struct {
 	ClaimID       *string `json:"claim_id"`
@@ -41,4 +49,18 @@ func (c *SuperListArgs) ApplyDefaults() {
 	if c.PageSize > 500 {
 		c.PageSize = 500
 	}
+}
+
+//Key returns the hash of the list args struct for caching
+func (c *SuperListArgs) Key() (string, error) {
+	a, err := json.Marshal(c)
+	if err != nil {
+		return "", errors.Prefix("could not marshall args: ", err)
+	}
+	sha256 := sha256.New()
+	_, err = sha256.Write(a)
+	if err != nil {
+		return "", errors.Prefix("could not hash json form of list args: ", err)
+	}
+	return hex.EncodeToString(sha256.Sum(nil)), nil
 }

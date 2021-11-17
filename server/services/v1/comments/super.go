@@ -3,6 +3,9 @@ package comments
 import (
 	"math"
 	"net/http"
+	"time"
+
+	"github.com/karlseguin/ccache"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
@@ -112,5 +115,36 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	reply.HasHiddenComments = hasHiddenComments
 	reply.TotalAmount = btcutil.Amount(superChatAmount.Uint64).ToBTC()
 
+	return nil
+}
+
+var superChatListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
+
+func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
+	key, err := args.Key()
+	if err != nil {
+		return err
+	}
+	item, err := superChatListCache.Fetch(key, 1*time.Minute, func() (interface{}, error) {
+		err := superChatList(r, args, reply)
+		if err != nil {
+			return nil, err
+		}
+		return reply, nil
+	})
+	if err != nil {
+		return err
+	}
+	cachedReply, ok := item.Value().(*commentapi.SuperListResponse)
+	if !ok {
+		return errors.Prefix("could not convert item to ListResponse: ", err)
+	}
+	reply.PageSize = cachedReply.PageSize
+	reply.Page = cachedReply.Page
+	reply.Items = cachedReply.Items
+	reply.TotalItems = cachedReply.TotalItems
+	reply.HasHiddenComments = cachedReply.HasHiddenComments
+	reply.TotalPages = cachedReply.TotalPages
+	reply.TotalAmount = cachedReply.TotalAmount
 	return nil
 }

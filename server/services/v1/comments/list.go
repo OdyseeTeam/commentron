@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/karlseguin/ccache"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/lbryio/commentron/commentapi"
@@ -116,6 +118,37 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	reply.TotalPages = int(math.Ceil(float64(totalFilteredItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
 
+	return nil
+}
+
+var commentListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
+
+func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
+	key, err := args.Key()
+	if err != nil {
+		return err
+	}
+	item, err := commentListCache.Fetch(key, 1*time.Minute, func() (interface{}, error) {
+		err := list(r, args, reply)
+		if err != nil {
+			return nil, err
+		}
+		return reply, nil
+	})
+	if err != nil {
+		return err
+	}
+	cachedReply, ok := item.Value().(*commentapi.ListResponse)
+	if !ok {
+		return errors.Prefix("could not convert item to ListResponse: ", err)
+	}
+	reply.PageSize = cachedReply.PageSize
+	reply.Page = cachedReply.Page
+	reply.Items = cachedReply.Items
+	reply.TotalItems = cachedReply.TotalItems
+	reply.HasHiddenComments = cachedReply.HasHiddenComments
+	reply.TotalFilteredItems = cachedReply.TotalFilteredItems
+	reply.TotalPages = cachedReply.TotalPages
 	return nil
 }
 

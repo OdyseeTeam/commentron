@@ -1,6 +1,9 @@
 package commentapi
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"regexp"
 
@@ -140,6 +143,20 @@ type ListArgs struct {
 	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
 	Signature            string  `json:"signature"`
 	SigningTS            string  `json:"signing_ts"`
+}
+
+//Key returns the hash of the list args struct for caching
+func (c *ListArgs) Key() (string, error) {
+	a, err := json.Marshal(c)
+	if err != nil {
+		return "", errors.Prefix("could not marshall args: ", err)
+	}
+	sha256 := sha256.New()
+	_, err = sha256.Write(a)
+	if err != nil {
+		return "", errors.Prefix("could not hash json form of list args: ", err)
+	}
+	return hex.EncodeToString(sha256.Sum(nil)), nil
 }
 
 // AbandonArgs are the arguments passed to comment.Abandon RPC call. If creator args are passed
