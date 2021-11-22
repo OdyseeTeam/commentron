@@ -40,7 +40,7 @@ var allowedStickers = map[string]bool{
 	"TAYLOR_SWITFT":                         false,
 	"DONALD_TRUMP":                          false,
 	"KURT_COBAIN":                           false,
-	"CHE_GUERRERA":                          false,
+	"CHE_GUEVARA":                           false,
 	"BILL_COSBY":                            false,
 	"CHRIS_CHAN":                            false,
 	// PAID STICKERS
