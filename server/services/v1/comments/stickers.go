@@ -37,7 +37,7 @@ var allowedStickers = map[string]bool{
 	"KANYE_WEST":                            false,
 	"BILL_CLINTON":                          false,
 	"EPSTEIN_ISLAND":                        false,
-	"TAYLOR_SWITFT":                         false,
+	"TAYLOR_SWIFT":                          false,
 	"DONALD_TRUMP":                          false,
 	"KURT_COBAIN":                           false,
 	"CHE_GUEVARA":                           false,
