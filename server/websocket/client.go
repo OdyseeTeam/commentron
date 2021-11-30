@@ -68,7 +68,7 @@ func (c *Client) read() {
 	defer func() {
 		c.hub.unregister <- c
 		err := c.conn.Close()
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 			logrus.Error(errors.FullTrace(err))
 		}
 	}()
