@@ -43,6 +43,9 @@ var allowedStickers = map[string]bool{
 	"CHE_GUEVARA":                           false,
 	"BILL_COSBY":                            false,
 	"CHRIS_CHAN":                            false,
+	"EGG_CARTON":                            false,
+	"MOUNT_RUSHMORE":                        false,
+	"MONEY_PRINTER":                         false,
 	// PAID STICKERS
 	"TIP_HAND_FLIP":      true,
 	"TIP_HAND_FLIP_COIN": true,
