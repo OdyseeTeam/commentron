@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lbryio/commentron/server/services/v2/appeals"
+
 	"github.com/lbryio/commentron/config"
 
 	"github.com/lbryio/commentron/metrics"
@@ -208,6 +210,7 @@ func v2RPCServer() http.Handler {
 	settingService := new(settings.Service)
 	verifyService := new(verify.Service)
 	blockedlistService := new(blockedlists.Service)
+	appealsService := new(appeals.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -234,6 +237,10 @@ func v2RPCServer() http.Handler {
 		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}
 	err = rpcServer.RegisterService(blockedlistService, "blockedlist")
+	if err != nil {
+		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(appealsService, "appeals")
 	if err != nil {
 		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}

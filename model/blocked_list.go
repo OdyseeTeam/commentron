@@ -571,7 +571,7 @@ func (blockedListL) LoadBlockedListAppeals(e boil.Executor, singular bool, maybe
 			}
 
 			for _, a := range args {
-				if a == obj.ID {
+				if queries.Equal(a, obj.ID) {
 					continue Outer
 				}
 			}
@@ -619,7 +619,7 @@ func (blockedListL) LoadBlockedListAppeals(e boil.Executor, singular bool, maybe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if local.ID == foreign.BlockedListID {
+			if queries.Equal(local.ID, foreign.BlockedListID) {
 				local.R.BlockedListAppeals = append(local.R.BlockedListAppeals, foreign)
 				if foreign.R == nil {
 					foreign.R = &blockedListAppealR{}
@@ -1075,7 +1075,7 @@ func (o *BlockedList) AddBlockedListAppeals(exec boil.Executor, insert bool, rel
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.BlockedListID = o.ID
+			queries.Assign(&rel.BlockedListID, o.ID)
 			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1096,7 +1096,7 @@ func (o *BlockedList) AddBlockedListAppeals(exec boil.Executor, insert bool, rel
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.BlockedListID = o.ID
+			queries.Assign(&rel.BlockedListID, o.ID)
 		}
 	}
 
@@ -1117,6 +1117,76 @@ func (o *BlockedList) AddBlockedListAppeals(exec boil.Executor, insert bool, rel
 			rel.R.BlockedList = o
 		}
 	}
+	return nil
+}
+
+// SetBlockedListAppeals removes all previously related items of the
+// blocked_list replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.BlockedList's BlockedListAppeals accordingly.
+// Replaces o.R.BlockedListAppeals with related.
+// Sets related.R.BlockedList's BlockedListAppeals accordingly.
+func (o *BlockedList) SetBlockedListAppeals(exec boil.Executor, insert bool, related ...*BlockedListAppeal) error {
+	query := "update `blocked_list_appeal` set `blocked_list_id` = null where `blocked_list_id` = ?"
+	values := []interface{}{o.ID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.BlockedListAppeals {
+			queries.SetScanner(&rel.BlockedListID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.BlockedList = nil
+		}
+
+		o.R.BlockedListAppeals = nil
+	}
+	return o.AddBlockedListAppeals(exec, insert, related...)
+}
+
+// RemoveBlockedListAppeals relationships from objects passed in.
+// Removes related items from R.BlockedListAppeals (uses pointer comparison, removal does not keep order)
+// Sets related.R.BlockedList.
+func (o *BlockedList) RemoveBlockedListAppeals(exec boil.Executor, related ...*BlockedListAppeal) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.BlockedListID, nil)
+		if rel.R != nil {
+			rel.R.BlockedList = nil
+		}
+		if err = rel.Update(exec, boil.Whitelist("blocked_list_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.BlockedListAppeals {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.BlockedListAppeals)
+			if ln > 1 && i < ln-1 {
+				o.R.BlockedListAppeals[i] = o.R.BlockedListAppeals[ln-1]
+			}
+			o.R.BlockedListAppeals = o.R.BlockedListAppeals[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 
