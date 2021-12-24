@@ -23,74 +23,153 @@ import (
 
 // CreatorSetting is an object representing the database table.
 type CreatorSetting struct {
-	ID                    uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatorChannelID      string      `boil:"creator_channel_id" json:"creator_channel_id" toml:"creator_channel_id" yaml:"creator_channel_id"`
-	CommentsEnabled       null.Bool   `boil:"comments_enabled" json:"comments_enabled,omitempty" toml:"comments_enabled" yaml:"comments_enabled,omitempty"`
-	MinTipAmountComment   null.Uint64 `boil:"min_tip_amount_comment" json:"min_tip_amount_comment,omitempty" toml:"min_tip_amount_comment" yaml:"min_tip_amount_comment,omitempty"`
-	MinTipAmountSuperChat null.Uint64 `boil:"min_tip_amount_super_chat" json:"min_tip_amount_super_chat,omitempty" toml:"min_tip_amount_super_chat" yaml:"min_tip_amount_super_chat,omitempty"`
-	MutedWords            null.String `boil:"muted_words" json:"muted_words,omitempty" toml:"muted_words" yaml:"muted_words,omitempty"`
-	CreatedAt             time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt             time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	SlowModeMinGap        null.Uint64 `boil:"slow_mode_min_gap" json:"slow_mode_min_gap,omitempty" toml:"slow_mode_min_gap" yaml:"slow_mode_min_gap,omitempty"`
-	CurseJarAmount        null.Uint64 `boil:"curse_jar_amount" json:"curse_jar_amount,omitempty" toml:"curse_jar_amount" yaml:"curse_jar_amount,omitempty"`
-	IsFiltersEnabled      null.Bool   `boil:"is_filters_enabled" json:"is_filters_enabled,omitempty" toml:"is_filters_enabled" yaml:"is_filters_enabled,omitempty"`
+	ID                         uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatorChannelID           string      `boil:"creator_channel_id" json:"creator_channel_id" toml:"creator_channel_id" yaml:"creator_channel_id"`
+	CommentsEnabled            null.Bool   `boil:"comments_enabled" json:"comments_enabled,omitempty" toml:"comments_enabled" yaml:"comments_enabled,omitempty"`
+	MinTipAmountComment        null.Uint64 `boil:"min_tip_amount_comment" json:"min_tip_amount_comment,omitempty" toml:"min_tip_amount_comment" yaml:"min_tip_amount_comment,omitempty"`
+	MinTipAmountSuperChat      null.Uint64 `boil:"min_tip_amount_super_chat" json:"min_tip_amount_super_chat,omitempty" toml:"min_tip_amount_super_chat" yaml:"min_tip_amount_super_chat,omitempty"`
+	MutedWords                 null.String `boil:"muted_words" json:"muted_words,omitempty" toml:"muted_words" yaml:"muted_words,omitempty"`
+	CreatedAt                  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                  time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	SlowModeMinGap             null.Uint64 `boil:"slow_mode_min_gap" json:"slow_mode_min_gap,omitempty" toml:"slow_mode_min_gap" yaml:"slow_mode_min_gap,omitempty"`
+	CurseJarAmount             null.Uint64 `boil:"curse_jar_amount" json:"curse_jar_amount,omitempty" toml:"curse_jar_amount" yaml:"curse_jar_amount,omitempty"`
+	IsFiltersEnabled           null.Bool   `boil:"is_filters_enabled" json:"is_filters_enabled,omitempty" toml:"is_filters_enabled" yaml:"is_filters_enabled,omitempty"`
+	ChatOverlay                bool        `boil:"chat_overlay" json:"chat_overlay" toml:"chat_overlay" yaml:"chat_overlay"`
+	ChatOverlayPosition        string      `boil:"chat_overlay_position" json:"chat_overlay_position" toml:"chat_overlay_position" yaml:"chat_overlay_position"`
+	ChatRemoveComment          int64       `boil:"chat_remove_comment" json:"chat_remove_comment" toml:"chat_remove_comment" yaml:"chat_remove_comment"`
+	StickerOverlay             bool        `boil:"sticker_overlay" json:"sticker_overlay" toml:"sticker_overlay" yaml:"sticker_overlay"`
+	StickerOverlayKeep         bool        `boil:"sticker_overlay_keep" json:"sticker_overlay_keep" toml:"sticker_overlay_keep" yaml:"sticker_overlay_keep"`
+	StickerOverlayRemove       int64       `boil:"sticker_overlay_remove" json:"sticker_overlay_remove" toml:"sticker_overlay_remove" yaml:"sticker_overlay_remove"`
+	ViewercountOverlay         bool        `boil:"viewercount_overlay" json:"viewercount_overlay" toml:"viewercount_overlay" yaml:"viewercount_overlay"`
+	ViewercountOverlayPosition string      `boil:"viewercount_overlay_position" json:"viewercount_overlay_position" toml:"viewercount_overlay_position" yaml:"viewercount_overlay_position"`
+	ViewercountChatBot         bool        `boil:"viewercount_chat_bot" json:"viewercount_chat_bot" toml:"viewercount_chat_bot" yaml:"viewercount_chat_bot"`
+	TipgoalOverlay             bool        `boil:"tipgoal_overlay" json:"tipgoal_overlay" toml:"tipgoal_overlay" yaml:"tipgoal_overlay"`
+	TipgoalAmount              int64       `boil:"tipgoal_amount" json:"tipgoal_amount" toml:"tipgoal_amount" yaml:"tipgoal_amount"`
+	TipgoalOverlayPosition     string      `boil:"tipgoal_overlay_position" json:"tipgoal_overlay_position" toml:"tipgoal_overlay_position" yaml:"tipgoal_overlay_position"`
+	TipgoalPreviousDonations   bool        `boil:"tipgoal_previous_donations" json:"tipgoal_previous_donations" toml:"tipgoal_previous_donations" yaml:"tipgoal_previous_donations"`
+	TipgoalCurrency            string      `boil:"tipgoal_currency" json:"tipgoal_currency" toml:"tipgoal_currency" yaml:"tipgoal_currency"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CreatorSettingColumns = struct {
-	ID                    string
-	CreatorChannelID      string
-	CommentsEnabled       string
-	MinTipAmountComment   string
-	MinTipAmountSuperChat string
-	MutedWords            string
-	CreatedAt             string
-	UpdatedAt             string
-	SlowModeMinGap        string
-	CurseJarAmount        string
-	IsFiltersEnabled      string
+	ID                         string
+	CreatorChannelID           string
+	CommentsEnabled            string
+	MinTipAmountComment        string
+	MinTipAmountSuperChat      string
+	MutedWords                 string
+	CreatedAt                  string
+	UpdatedAt                  string
+	SlowModeMinGap             string
+	CurseJarAmount             string
+	IsFiltersEnabled           string
+	ChatOverlay                string
+	ChatOverlayPosition        string
+	ChatRemoveComment          string
+	StickerOverlay             string
+	StickerOverlayKeep         string
+	StickerOverlayRemove       string
+	ViewercountOverlay         string
+	ViewercountOverlayPosition string
+	ViewercountChatBot         string
+	TipgoalOverlay             string
+	TipgoalAmount              string
+	TipgoalOverlayPosition     string
+	TipgoalPreviousDonations   string
+	TipgoalCurrency            string
 }{
-	ID:                    "id",
-	CreatorChannelID:      "creator_channel_id",
-	CommentsEnabled:       "comments_enabled",
-	MinTipAmountComment:   "min_tip_amount_comment",
-	MinTipAmountSuperChat: "min_tip_amount_super_chat",
-	MutedWords:            "muted_words",
-	CreatedAt:             "created_at",
-	UpdatedAt:             "updated_at",
-	SlowModeMinGap:        "slow_mode_min_gap",
-	CurseJarAmount:        "curse_jar_amount",
-	IsFiltersEnabled:      "is_filters_enabled",
+	ID:                         "id",
+	CreatorChannelID:           "creator_channel_id",
+	CommentsEnabled:            "comments_enabled",
+	MinTipAmountComment:        "min_tip_amount_comment",
+	MinTipAmountSuperChat:      "min_tip_amount_super_chat",
+	MutedWords:                 "muted_words",
+	CreatedAt:                  "created_at",
+	UpdatedAt:                  "updated_at",
+	SlowModeMinGap:             "slow_mode_min_gap",
+	CurseJarAmount:             "curse_jar_amount",
+	IsFiltersEnabled:           "is_filters_enabled",
+	ChatOverlay:                "chat_overlay",
+	ChatOverlayPosition:        "chat_overlay_position",
+	ChatRemoveComment:          "chat_remove_comment",
+	StickerOverlay:             "sticker_overlay",
+	StickerOverlayKeep:         "sticker_overlay_keep",
+	StickerOverlayRemove:       "sticker_overlay_remove",
+	ViewercountOverlay:         "viewercount_overlay",
+	ViewercountOverlayPosition: "viewercount_overlay_position",
+	ViewercountChatBot:         "viewercount_chat_bot",
+	TipgoalOverlay:             "tipgoal_overlay",
+	TipgoalAmount:              "tipgoal_amount",
+	TipgoalOverlayPosition:     "tipgoal_overlay_position",
+	TipgoalPreviousDonations:   "tipgoal_previous_donations",
+	TipgoalCurrency:            "tipgoal_currency",
 }
 
 // Generated where
 
+type whereHelperint64 struct{ field string }
+
+func (w whereHelperint64) EQ(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint64) NEQ(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint64) LT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint64) LTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint64) GT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint64) GTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
 var CreatorSettingWhere = struct {
-	ID                    whereHelperuint64
-	CreatorChannelID      whereHelperstring
-	CommentsEnabled       whereHelpernull_Bool
-	MinTipAmountComment   whereHelpernull_Uint64
-	MinTipAmountSuperChat whereHelpernull_Uint64
-	MutedWords            whereHelpernull_String
-	CreatedAt             whereHelpertime_Time
-	UpdatedAt             whereHelpertime_Time
-	SlowModeMinGap        whereHelpernull_Uint64
-	CurseJarAmount        whereHelpernull_Uint64
-	IsFiltersEnabled      whereHelpernull_Bool
+	ID                         whereHelperuint64
+	CreatorChannelID           whereHelperstring
+	CommentsEnabled            whereHelpernull_Bool
+	MinTipAmountComment        whereHelpernull_Uint64
+	MinTipAmountSuperChat      whereHelpernull_Uint64
+	MutedWords                 whereHelpernull_String
+	CreatedAt                  whereHelpertime_Time
+	UpdatedAt                  whereHelpertime_Time
+	SlowModeMinGap             whereHelpernull_Uint64
+	CurseJarAmount             whereHelpernull_Uint64
+	IsFiltersEnabled           whereHelpernull_Bool
+	ChatOverlay                whereHelperbool
+	ChatOverlayPosition        whereHelperstring
+	ChatRemoveComment          whereHelperint64
+	StickerOverlay             whereHelperbool
+	StickerOverlayKeep         whereHelperbool
+	StickerOverlayRemove       whereHelperint64
+	ViewercountOverlay         whereHelperbool
+	ViewercountOverlayPosition whereHelperstring
+	ViewercountChatBot         whereHelperbool
+	TipgoalOverlay             whereHelperbool
+	TipgoalAmount              whereHelperint64
+	TipgoalOverlayPosition     whereHelperstring
+	TipgoalPreviousDonations   whereHelperbool
+	TipgoalCurrency            whereHelperstring
 }{
-	ID:                    whereHelperuint64{field: "`creator_setting`.`id`"},
-	CreatorChannelID:      whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
-	CommentsEnabled:       whereHelpernull_Bool{field: "`creator_setting`.`comments_enabled`"},
-	MinTipAmountComment:   whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_comment`"},
-	MinTipAmountSuperChat: whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_super_chat`"},
-	MutedWords:            whereHelpernull_String{field: "`creator_setting`.`muted_words`"},
-	CreatedAt:             whereHelpertime_Time{field: "`creator_setting`.`created_at`"},
-	UpdatedAt:             whereHelpertime_Time{field: "`creator_setting`.`updated_at`"},
-	SlowModeMinGap:        whereHelpernull_Uint64{field: "`creator_setting`.`slow_mode_min_gap`"},
-	CurseJarAmount:        whereHelpernull_Uint64{field: "`creator_setting`.`curse_jar_amount`"},
-	IsFiltersEnabled:      whereHelpernull_Bool{field: "`creator_setting`.`is_filters_enabled`"},
+	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
+	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
+	CommentsEnabled:            whereHelpernull_Bool{field: "`creator_setting`.`comments_enabled`"},
+	MinTipAmountComment:        whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_comment`"},
+	MinTipAmountSuperChat:      whereHelpernull_Uint64{field: "`creator_setting`.`min_tip_amount_super_chat`"},
+	MutedWords:                 whereHelpernull_String{field: "`creator_setting`.`muted_words`"},
+	CreatedAt:                  whereHelpertime_Time{field: "`creator_setting`.`created_at`"},
+	UpdatedAt:                  whereHelpertime_Time{field: "`creator_setting`.`updated_at`"},
+	SlowModeMinGap:             whereHelpernull_Uint64{field: "`creator_setting`.`slow_mode_min_gap`"},
+	CurseJarAmount:             whereHelpernull_Uint64{field: "`creator_setting`.`curse_jar_amount`"},
+	IsFiltersEnabled:           whereHelpernull_Bool{field: "`creator_setting`.`is_filters_enabled`"},
+	ChatOverlay:                whereHelperbool{field: "`creator_setting`.`chat_overlay`"},
+	ChatOverlayPosition:        whereHelperstring{field: "`creator_setting`.`chat_overlay_position`"},
+	ChatRemoveComment:          whereHelperint64{field: "`creator_setting`.`chat_remove_comment`"},
+	StickerOverlay:             whereHelperbool{field: "`creator_setting`.`sticker_overlay`"},
+	StickerOverlayKeep:         whereHelperbool{field: "`creator_setting`.`sticker_overlay_keep`"},
+	StickerOverlayRemove:       whereHelperint64{field: "`creator_setting`.`sticker_overlay_remove`"},
+	ViewercountOverlay:         whereHelperbool{field: "`creator_setting`.`viewercount_overlay`"},
+	ViewercountOverlayPosition: whereHelperstring{field: "`creator_setting`.`viewercount_overlay_position`"},
+	ViewercountChatBot:         whereHelperbool{field: "`creator_setting`.`viewercount_chat_bot`"},
+	TipgoalOverlay:             whereHelperbool{field: "`creator_setting`.`tipgoal_overlay`"},
+	TipgoalAmount:              whereHelperint64{field: "`creator_setting`.`tipgoal_amount`"},
+	TipgoalOverlayPosition:     whereHelperstring{field: "`creator_setting`.`tipgoal_overlay_position`"},
+	TipgoalPreviousDonations:   whereHelperbool{field: "`creator_setting`.`tipgoal_previous_donations`"},
+	TipgoalCurrency:            whereHelperstring{field: "`creator_setting`.`tipgoal_currency`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -114,9 +193,9 @@ func (*creatorSettingR) NewStruct() *creatorSettingR {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency"}
 	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled"}
-	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at"}
+	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 )
 

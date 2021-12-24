@@ -121,6 +121,65 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.IsFiltersEnabled.SetValid(*args.FiltersEnabled)
 	}
 
+	if args.ChatOverlay != nil {
+		settings.ChatOverlay = *args.ChatOverlay
+	}
+
+	if args.ChatOverlayPosition != nil {
+		settings.ChatOverlayPosition = *args.ChatOverlayPosition
+	}
+
+	if args.ChatRemoveComment != nil {
+		chatRemoveComment := int64(*args.ChatRemoveComment)
+		settings.ChatRemoveComment = chatRemoveComment
+	}
+
+	if args.StickerOverlay != nil {
+		settings.StickerOverlay = *args.StickerOverlay
+	}
+
+	if args.StickerOverlayKeep != nil {
+		settings.StickerOverlayKeep = *args.StickerOverlayKeep
+	}
+
+	if args.StickerOverlayRemove != nil {
+		stickerOverlayRemove := int64(*args.StickerOverlayRemove)
+		settings.StickerOverlayRemove = stickerOverlayRemove
+	}
+
+	if args.ViewercountOverlay != nil {
+		settings.ViewercountOverlay = *args.ViewercountOverlay
+	}
+
+	if args.ViewercountChatBot != nil {
+		settings.ViewercountChatBot = *args.ViewercountChatBot
+	}
+
+	if args.ViewercountOverlayPosition != nil {
+		settings.ViewercountOverlayPosition = *args.ViewercountOverlayPosition
+	}
+
+	if args.TipgoalOverlay != nil {
+		settings.TipgoalOverlay = *args.TipgoalOverlay
+	}
+
+	if args.TipgoalOverlayPosition != nil {
+		settings.TipgoalOverlayPosition = *args.TipgoalOverlayPosition
+	}
+
+	if args.TipgoalPreviousDonations != nil {
+		settings.TipgoalPreviousDonations = *args.TipgoalPreviousDonations
+	}
+
+	if args.TipgoalCurrency != nil {
+		settings.TipgoalCurrency = *args.TipgoalCurrency
+	}
+
+	if args.TipgoalAmount != nil {
+		tipGoalAmt := int64(*args.TipgoalAmount)
+		settings.TipgoalAmount = tipGoalAmt
+	}
+
 	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
@@ -156,5 +215,20 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	if settings.CurseJarAmount.Valid {
 		reply.CurseJarAmount = util.PtrToUint64(settings.CurseJarAmount.Uint64)
 	}
-
+	reply.ChatOverlay = &settings.ChatOverlay
+	reply.ChatOverlayPosition = &settings.ChatOverlayPosition
+	chatRemoveComment := uint64(settings.ChatRemoveComment)
+	reply.ChatRemoveComment = &chatRemoveComment
+	reply.StickerOverlay = &settings.StickerOverlay
+	reply.StickerOverlayKeep = &settings.StickerOverlayKeep
+	stickerOverlayRemove := uint64(settings.StickerOverlayRemove)
+	reply.StickerOverlayRemove = &stickerOverlayRemove
+	reply.ViewercountOverlay = &settings.ViewercountOverlay
+	reply.ViewercountOverlayPosition = &settings.ViewercountOverlayPosition
+	reply.ViewercountChatBot = &settings.ViewercountChatBot
+	reply.TipgoalOverlay = &settings.TipgoalOverlay
+	reply.TipgoalOverlayPosition = &settings.TipgoalOverlayPosition
+	tipgoalAmount := uint64(settings.TipgoalAmount)
+	reply.TipgoalAmount = &tipgoalAmount
+	reply.TipgoalCurrency = &settings.TipgoalCurrency
 }
