@@ -28,6 +28,7 @@ type Channel struct {
 	IsSpammer           null.Bool   `boil:"is_spammer" json:"is_spammer,omitempty" toml:"is_spammer" yaml:"is_spammer,omitempty"`
 	BlockedListInviteID null.Uint64 `boil:"blocked_list_invite_id" json:"blocked_list_invite_id,omitempty" toml:"blocked_list_invite_id" yaml:"blocked_list_invite_id,omitempty"`
 	BlockedListID       null.Uint64 `boil:"blocked_list_id" json:"blocked_list_id,omitempty" toml:"blocked_list_id" yaml:"blocked_list_id,omitempty"`
+	Sub                 null.String `boil:"sub" json:"sub,omitempty" toml:"sub" yaml:"sub,omitempty"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L channelL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,12 +40,14 @@ var ChannelColumns = struct {
 	IsSpammer           string
 	BlockedListInviteID string
 	BlockedListID       string
+	Sub                 string
 }{
 	ClaimID:             "claim_id",
 	Name:                "name",
 	IsSpammer:           "is_spammer",
 	BlockedListInviteID: "blocked_list_invite_id",
 	BlockedListID:       "blocked_list_id",
+	Sub:                 "sub",
 }
 
 // Generated where
@@ -55,12 +58,14 @@ var ChannelWhere = struct {
 	IsSpammer           whereHelpernull_Bool
 	BlockedListInviteID whereHelpernull_Uint64
 	BlockedListID       whereHelpernull_Uint64
+	Sub                 whereHelpernull_String
 }{
 	ClaimID:             whereHelperstring{field: "`channel`.`claim_id`"},
 	Name:                whereHelperstring{field: "`channel`.`name`"},
 	IsSpammer:           whereHelpernull_Bool{field: "`channel`.`is_spammer`"},
 	BlockedListInviteID: whereHelpernull_Uint64{field: "`channel`.`blocked_list_invite_id`"},
 	BlockedListID:       whereHelpernull_Uint64{field: "`channel`.`blocked_list_id`"},
+	Sub:                 whereHelpernull_String{field: "`channel`.`sub`"},
 }
 
 // ChannelRels is where relationship names are stored.
@@ -123,8 +128,8 @@ func (*channelR) NewStruct() *channelR {
 type channelL struct{}
 
 var (
-	channelAllColumns            = []string{"claim_id", "name", "is_spammer", "blocked_list_invite_id", "blocked_list_id"}
-	channelColumnsWithoutDefault = []string{"claim_id", "name", "blocked_list_invite_id", "blocked_list_id"}
+	channelAllColumns            = []string{"claim_id", "name", "is_spammer", "blocked_list_invite_id", "blocked_list_id", "sub"}
+	channelColumnsWithoutDefault = []string{"claim_id", "name", "blocked_list_invite_id", "blocked_list_id", "sub"}
 	channelColumnsWithDefault    = []string{"is_spammer"}
 	channelPrimaryKeyColumns     = []string{"claim_id"}
 )

@@ -7,6 +7,7 @@ require (
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/fatih/structs v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -33,6 +34,7 @@ require (
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
+	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
@@ -50,5 +52,6 @@ require (
 	golang.org/x/text v0.3.4 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
