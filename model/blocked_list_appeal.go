@@ -24,7 +24,7 @@ import (
 // BlockedListAppeal is an object representing the database table.
 type BlockedListAppeal struct {
 	ID             uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	BlockedListID  uint64      `boil:"blocked_list_id" json:"blocked_list_id" toml:"blocked_list_id" yaml:"blocked_list_id"`
+	BlockedListID  null.Uint64 `boil:"blocked_list_id" json:"blocked_list_id,omitempty" toml:"blocked_list_id" yaml:"blocked_list_id,omitempty"`
 	BlockedEntryID uint64      `boil:"blocked_entry_id" json:"blocked_entry_id" toml:"blocked_entry_id" yaml:"blocked_entry_id"`
 	Appeal         string      `boil:"appeal" json:"appeal" toml:"appeal" yaml:"appeal"`
 	Response       string      `boil:"response" json:"response" toml:"response" yaml:"response"`
@@ -66,7 +66,7 @@ var BlockedListAppealColumns = struct {
 
 var BlockedListAppealWhere = struct {
 	ID             whereHelperuint64
-	BlockedListID  whereHelperuint64
+	BlockedListID  whereHelpernull_Uint64
 	BlockedEntryID whereHelperuint64
 	Appeal         whereHelperstring
 	Response       whereHelperstring
@@ -77,7 +77,7 @@ var BlockedListAppealWhere = struct {
 	UpdatedAt      whereHelpertime_Time
 }{
 	ID:             whereHelperuint64{field: "`blocked_list_appeal`.`id`"},
-	BlockedListID:  whereHelperuint64{field: "`blocked_list_appeal`.`blocked_list_id`"},
+	BlockedListID:  whereHelpernull_Uint64{field: "`blocked_list_appeal`.`blocked_list_id`"},
 	BlockedEntryID: whereHelperuint64{field: "`blocked_list_appeal`.`blocked_entry_id`"},
 	Appeal:         whereHelperstring{field: "`blocked_list_appeal`.`appeal`"},
 	Response:       whereHelperstring{field: "`blocked_list_appeal`.`response`"},
@@ -254,7 +254,9 @@ func (blockedListAppealL) LoadBlockedList(e boil.Executor, singular bool, maybeB
 		if object.R == nil {
 			object.R = &blockedListAppealR{}
 		}
-		args = append(args, object.BlockedListID)
+		if !queries.IsNil(object.BlockedListID) {
+			args = append(args, object.BlockedListID)
+		}
 
 	} else {
 	Outer:
@@ -264,12 +266,14 @@ func (blockedListAppealL) LoadBlockedList(e boil.Executor, singular bool, maybeB
 			}
 
 			for _, a := range args {
-				if a == obj.BlockedListID {
+				if queries.Equal(a, obj.BlockedListID) {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.BlockedListID)
+			if !queries.IsNil(obj.BlockedListID) {
+				args = append(args, obj.BlockedListID)
+			}
 
 		}
 	}
@@ -316,7 +320,7 @@ func (blockedListAppealL) LoadBlockedList(e boil.Executor, singular bool, maybeB
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.BlockedListID == foreign.ID {
+			if queries.Equal(local.BlockedListID, foreign.ID) {
 				local.R.BlockedList = foreign
 				if foreign.R == nil {
 					foreign.R = &blockedListR{}
@@ -450,7 +454,7 @@ func (o *BlockedListAppeal) SetBlockedList(exec boil.Executor, insert bool, rela
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.BlockedListID = related.ID
+	queries.Assign(&o.BlockedListID, related.ID)
 	if o.R == nil {
 		o.R = &blockedListAppealR{
 			BlockedList: related,
@@ -467,6 +471,37 @@ func (o *BlockedListAppeal) SetBlockedList(exec boil.Executor, insert bool, rela
 		related.R.BlockedListAppeals = append(related.R.BlockedListAppeals, o)
 	}
 
+	return nil
+}
+
+// RemoveBlockedList relationship.
+// Sets o.R.BlockedList to nil.
+// Removes o from all passed in related items' relationships struct (Optional).
+func (o *BlockedListAppeal) RemoveBlockedList(exec boil.Executor, related *BlockedList) error {
+	var err error
+
+	queries.SetScanner(&o.BlockedListID, nil)
+	if err = o.Update(exec, boil.Whitelist("blocked_list_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.R.BlockedList = nil
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.BlockedListAppeals {
+		if queries.Equal(o.BlockedListID, ri.BlockedListID) {
+			continue
+		}
+
+		ln := len(related.R.BlockedListAppeals)
+		if ln > 1 && i < ln-1 {
+			related.R.BlockedListAppeals[i] = related.R.BlockedListAppeals[ln-1]
+		}
+		related.R.BlockedListAppeals = related.R.BlockedListAppeals[:ln-1]
+		break
+	}
 	return nil
 }
 

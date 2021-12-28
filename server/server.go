@@ -12,25 +12,22 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lbryio/commentron/config"
-
-	"github.com/lbryio/commentron/metrics"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	"github.com/lbryio/commentron/server/websocket"
-
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/config"
 	"github.com/lbryio/commentron/helper"
+	"github.com/lbryio/commentron/metrics"
 	"github.com/lbryio/commentron/server/services/v1/comments"
 	rpcHack "github.com/lbryio/commentron/server/services/v1/rpc"
 	jsonHack "github.com/lbryio/commentron/server/services/v1/rpc/json"
 	"github.com/lbryio/commentron/server/services/v1/status"
+	"github.com/lbryio/commentron/server/services/v2/appeals"
 	"github.com/lbryio/commentron/server/services/v2/blockedlists"
+	"github.com/lbryio/commentron/server/services/v2/channel"
 	"github.com/lbryio/commentron/server/services/v2/moderation"
 	"github.com/lbryio/commentron/server/services/v2/reactions"
 	"github.com/lbryio/commentron/server/services/v2/settings"
 	"github.com/lbryio/commentron/server/services/v2/verify"
+	"github.com/lbryio/commentron/server/websocket"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
@@ -40,6 +37,7 @@ import (
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
@@ -208,6 +206,8 @@ func v2RPCServer() http.Handler {
 	settingService := new(settings.Service)
 	verifyService := new(verify.Service)
 	blockedlistService := new(blockedlists.Service)
+	appealsService := new(appeals.Service)
+	channelService := new(channel.Service)
 
 	err := rpcServer.RegisterService(commentService, "comment")
 	if err != nil {
@@ -234,6 +234,14 @@ func v2RPCServer() http.Handler {
 		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}
 	err = rpcServer.RegisterService(blockedlistService, "blockedlist")
+	if err != nil {
+		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(appealsService, "appeals")
+	if err != nil {
+		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
+	}
+	err = rpcServer.RegisterService(channelService, "channel")
 	if err != nil {
 		logrus.Panicf("Error registering v2 verify service: %s", errors.FullTrace(err))
 	}

@@ -3,7 +3,7 @@ dist: xenial
 language: go
 go_import_path: github.com/lbryio/commentron
 
-go: 1.15
+go: 1.17
 
 install: true
 
