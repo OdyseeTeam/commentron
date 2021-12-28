@@ -63,20 +63,27 @@ type EditResponse struct {
 	*CommentItem
 }
 
+// MentionedChannel channels mentioned in comment
+type MentionedChannel struct {
+	ChannelName string `json:"channel_name"`
+	ChannelID   string `json:"channel_id"`
+}
+
 // CreateArgs arguments for the comment.Create rpc call
 type CreateArgs struct {
-	CommentText     string  `json:"comment"`
-	ClaimID         string  `json:"claim_id"`
-	ParentID        *string `json:"parent_id"`
-	ChannelID       string  `json:"channel_id"`
-	ChannelName     string  `json:"channel_name"`
-	Sticker         bool    `json:"sticker"`
-	SupportTxID     *string `json:"support_tx_id"`
-	SupportVout     *uint64 `json:"support_vout"`
-	PaymentIntentID *string `json:"payment_intent_id"`
-	Environment     *string `json:"environment"`
-	Signature       string  `json:"signature"`
-	SigningTS       string  `json:"signing_ts"`
+	CommentText       string             `json:"comment"`
+	ClaimID           string             `json:"claim_id"`
+	ParentID          *string            `json:"parent_id"`
+	ChannelID         string             `json:"channel_id"`
+	ChannelName       string             `json:"channel_name"`
+	Sticker           bool               `json:"sticker"`
+	SupportTxID       *string            `json:"support_tx_id"`
+	SupportVout       *uint64            `json:"support_vout"`
+	PaymentIntentID   *string            `json:"payment_intent_id"`
+	Environment       *string            `json:"environment"`
+	Signature         string             `json:"signature"`
+	SigningTS         string             `json:"signing_ts"`
+	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
 }
 
 // CreateResponse response for the comment.Create rpc call

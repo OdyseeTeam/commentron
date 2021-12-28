@@ -1,22 +1,27 @@
 package commentapi
 
+// AppealBlockListArgs arguments
 type AppealBlockListArgs struct {
 	Authorization
 }
 
+// AppealBlockListResponse response
 type AppealBlockListResponse struct {
 	Blocks []Appeal `json:"blocks"`
 }
 
+// AppealListArgs arguments
 type AppealListArgs struct {
 	ModAuthorization
 }
 
+// AppealListResponse response
 type AppealListResponse struct {
 	Appeals          []Appeal `json:"appeals"`
 	ModeratedAppeals []Appeal `json:"moderated_appeals"`
 }
 
+// AppealStatus status of appeal
 type AppealStatus int
 
 const (
@@ -30,6 +35,7 @@ const (
 	AppealRejected
 )
 
+// AppealRequest appeal request
 type AppealRequest struct {
 	AppealMessage   string       `json:"appeal_message"`
 	ResponseMessage string       `json:"response_message"`
@@ -37,12 +43,14 @@ type AppealRequest struct {
 	TxID            string       `json:"tx_id,omitempty"`
 }
 
+// Appeal structure for an appeal
 type Appeal struct {
 	BlockedList    SharedBlockedList `json:"blocked_list,omitempty"`
 	BlockedChannel BlockedChannel    `json:"blocked_channel"`
 	AppealRequest  AppealRequest     `json:"appeal_request,omitempty"`
 }
 
+// AppealFileArgs arguments
 type AppealFileArgs struct {
 	Authorization
 
@@ -53,6 +61,7 @@ type AppealFileArgs struct {
 	TxID                 string `json:"tx_id,omitempty"`
 }
 
+// AppealCloseArgs arguments
 type AppealCloseArgs struct {
 	Authorization
 

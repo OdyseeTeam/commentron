@@ -19,20 +19,22 @@ import (
 )
 
 const oauthClientID = "commentron"
-const oauthProviderUrl = "https://sso.odysee.com/auth/realms/Users"
+const oauthProviderURL = "https://sso.odysee.com/auth/realms/Users"
 
 var verifier *oidc.IDTokenVerifier
 
 func init() {
-	provider, err := oidc.NewProvider(context.Background(), oauthProviderUrl)
+	provider, err := oidc.NewProvider(context.Background(), oauthProviderURL)
 	if err != nil {
 		panic(err)
 	}
 	verifier = provider.Verifier(&oidc.Config{ClientID: oauthClientID})
 }
 
+// ErrNotOAuth missing oauth header
 var ErrNotOAuth = errors.Base("request does not contain oauth header")
 
+//ModAuthenticate authenticates a moderator
 func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorization) (*model.Channel, *model.Channel, *UserInfo, error) {
 	modChannel, ownerChannel, err := helper.GetModerator(modAuthorization.ModChannelID, modAuthorization.ModChannelName, modAuthorization.CreatorChannelID, modAuthorization.CreatorChannelName)
 	if err != nil {
@@ -54,6 +56,7 @@ func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorizat
 	return modChannel, ownerChannel, userInfo, nil
 }
 
+// Authenticate regular authentication
 func Authenticate(r *http.Request, authorization *commentapi.Authorization) (*model.Channel, *UserInfo, error) {
 	var userInfo *UserInfo
 	if channel, userInfo, err := oAuth(r, authorization); !errors.Is(err, ErrNotOAuth) {
