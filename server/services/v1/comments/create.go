@@ -102,7 +102,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	reply.CommentItem = &item
 	if !request.comment.IsFlagged {
-		go pushItem(item, args.ClaimID)
+		go pushItem(item, args.ClaimID, args.MentionedChannels)
 		amount, err := btcutil.NewAmount(item.SupportAmount)
 		if err != nil {
 			return errors.Err(err)
@@ -201,7 +201,7 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 	return nil
 }
 
-func pushItem(item commentapi.CommentItem, claimID string) {
+func pushItem(item commentapi.CommentItem, claimID string, mentionedChannels []commentapi.MentionedChannel) {
 	websocket.PushTo(&websocket.PushNotification{
 		Type: "delta",
 		Data: map[string]interface{}{"comment": item},
@@ -213,6 +213,15 @@ func pushItem(item commentapi.CommentItem, claimID string) {
 		IDs:     []string{claimID, "comments"},
 		Data:    map[string]interface{}{"comment": item},
 	})
+
+	for _, mc := range mentionedChannels {
+		go sockety.SendNotification(socketyapi.SendNotificationArgs{
+			Service: socketyapi.Commentron,
+			Type:    "mention",
+			IDs:     []string{mc.ChannelID, "mentions"},
+			Data:    map[string]interface{}{"comment": item, "channel": mc.ChannelName, "channel_id": mc.ChannelID},
+		})
+	}
 
 }
 
