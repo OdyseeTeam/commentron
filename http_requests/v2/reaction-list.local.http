@@ -12,7 +12,7 @@ Content-Type: application/json
   "id": 1,
   "method": "reaction.List",
   "params": {
-    "comment_ids": "16b55ecafb338dab63ef0819339d5070b06f227a18caedf843d0752003368ed4",
+    "comment_ids": "0fa2eacf0b91fa3187e87733f103418e51f0c40d0b06b67c5d6d3ff2c13b2925",
     "channel_name": "@dtrdtr",
     "channel_id": "d97913f183fa3f4c7133f6492963371b9021cf64"
   }

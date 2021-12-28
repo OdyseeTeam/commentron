@@ -10,17 +10,26 @@ import (
 	"github.com/spf13/cast"
 )
 
-func createCommentID(comment, channelID string) (string, int64, error) {
-	// We convert the timestamp from seconds into minutes
-	// to prevent spammers from commenting the same BS everywhere.
+type check int
+
+const (
+	checkFrequency check = iota
+	ignoreFrequency
+)
+
+func createCommentID(comment, channelID string, frequency check) (string, int64, error) {
 	timestamp := time.Now().Unix()
-	nearestMinute := math.Floor(float64(timestamp) / 60.0)
+	if frequency == checkFrequency {
+		// We convert the timestamp from seconds into minutes
+		// to prevent spammers from commenting the same BS everywhere.
+		timestamp = int64(math.Floor(float64(timestamp) / 60.0))
+	}
 
 	c := sha256.Sum256(helper.CreateDigest(
 		[]byte(":"),
 		[]byte(comment),
 		[]byte(channelID),
-		[]byte(cast.ToString(nearestMinute))))
+		[]byte(cast.ToString(timestamp))))
 	commentID := hex.EncodeToString(c[:])
 
 	err := checkForDuplicate(commentID)

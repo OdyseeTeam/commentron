@@ -58,12 +58,23 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return err
 	}
 
+	var frequencyCheck = checkFrequency
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		err := updateSupportInfo(request)
 		if err != nil {
 			return err
 		}
+		// ignore the frequency if its a tipped comment
+		frequencyCheck = ignoreFrequency
 	}
+
+	// This is strategically placed, nothing can be done before this using the comment id or timestamp
+	commentID, timestamp, err := createCommentID(request.args.CommentText, null.StringFrom(request.args.ChannelID).String, frequencyCheck)
+	if err != nil {
+		return errors.Err(err)
+	}
+	request.comment.CommentID = commentID
+	request.comment.Timestamp = int(timestamp)
 
 	err = blockedByCreator(request)
 	if err != nil {
@@ -113,20 +124,14 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 }
 
 func createComment(request *createRequest) error {
-	commentID, timestamp, err := createCommentID(request.args.CommentText, null.StringFrom(request.args.ChannelID).String)
-	if err != nil {
-		return errors.Err(err)
-	}
 
 	request.comment = &m.Comment{
-		CommentID:   commentID,
 		LbryClaimID: request.args.ClaimID,
 		ChannelID:   null.StringFrom(request.args.ChannelID),
 		Body:        request.args.CommentText,
 		ParentID:    null.StringFromPtr(request.args.ParentID),
 		Signature:   null.StringFrom(request.args.Signature),
 		Signingts:   null.StringFrom(request.args.SigningTS),
-		Timestamp:   int(timestamp),
 	}
 	return nil
 }
