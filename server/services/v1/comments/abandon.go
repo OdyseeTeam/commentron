@@ -3,6 +3,9 @@ package comments
 import (
 	"net/http"
 
+	"github.com/lbryio/commentron/sockety"
+	"github.com/lbryio/sockety/socketyapi"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
@@ -66,6 +69,14 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	if err != nil {
 		return nil, errors.Err(err)
 	}
+
+	go sockety.SendNotification(socketyapi.SendNotificationArgs{
+		Service: socketyapi.Commentron,
+		Type:    "removed",
+		IDs:     []string{item.ClaimID, "comments", "deleted"},
+		Data:    map[string]interface{}{"comment": item},
+	})
+
 	return &item, nil
 
 }
