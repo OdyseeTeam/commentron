@@ -19,17 +19,18 @@ const (
 
 func createCommentID(comment, channelID string, frequency check) (string, int64, error) {
 	timestamp := time.Now().Unix()
+	compositeTimestamp := timestamp
 	if frequency == checkFrequency {
 		// We convert the timestamp from seconds into minutes
 		// to prevent spammers from commenting the same BS everywhere.
-		timestamp = int64(math.Floor(float64(timestamp) / 60.0))
+		compositeTimestamp = int64(math.Floor(float64(timestamp) / 60.0))
 	}
 
 	c := sha256.Sum256(helper.CreateDigest(
 		[]byte(":"),
 		[]byte(comment),
 		[]byte(channelID),
-		[]byte(cast.ToString(timestamp))))
+		[]byte(cast.ToString(compositeTimestamp))))
 	commentID := hex.EncodeToString(c[:])
 
 	err := checkForDuplicate(commentID)
