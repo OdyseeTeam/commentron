@@ -76,7 +76,17 @@ func main() {
 }
 ```
 
+You can check out our own example above on the [Go playground](https://play.golang.com/p/o2gHKgvamu3)
 
+
+#### Contributor Examples
+
+Feel free to create examples like the above on the Go Playground and create a PR to add the link here below.
+
+Use the markdown formatting [title] (url) when contributing examples below and start them with a new bullet:
+
+-  . . .
+-  . . .
 
 
 
