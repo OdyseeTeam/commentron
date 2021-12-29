@@ -60,15 +60,20 @@ and additional documentation will be provided.
 The only integration we really support right now, is via the [Go Client API](commentapi). 
 
 ```golang
+package main
+
 import "github.com/lbryio/commentron/commentapi"
 
-resp, err := Commentron.CommentByID(commentapi.ByIDArgs{CommentID: "0fa2eacf0b91fa3187e87733f103418e51f0c40d0b06b67c5d6d3ff2c13b2925"})
-if err != nil {
-    panic(err)
+func main() {
+	commentID := "0fa2eacf0b91fa3187e87733f103418e51f0c40d0b06b67c5d6d3ff2c13b2925"
+	resp, err := commentapi.NewClient("https://comments.odysee.com/api").CommentByID(commentapi.ByIDArgs{CommentID: commentID})
+	if err != nil {
+		panic(err)
+	}
+	println(resp.Item.Comment)
+	println(resp.Item.ClaimID)
+	println(resp.Item.Timestamp)
 }
-println(resp.Item.Comment)
-println(resp.Item.ClaimID)
-println(resp.Item.Timestamp)
 ```
 
 

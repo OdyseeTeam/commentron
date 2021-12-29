@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	conf, err := env.NewWithEnvVars()
+	conf, err := env.NewWithEnvVars() //
 	if err != nil {
 		logrus.Panic(err)
 	}
