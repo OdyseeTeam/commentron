@@ -313,6 +313,8 @@ func blockedByCreator(request *createRequest) error {
 	return nil
 }
 
+const maxSimilaryScoreToBlockedWord = 0.6
+
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
 	if err != nil {
@@ -340,9 +342,13 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		}
 		if !settings.MutedWords.IsZero() {
 			blockedWords := strings.Split(settings.MutedWords.String, ",")
+			lowerComment := strings.ToLower(request.args.CommentText)
 			for _, blockedWord := range blockedWords {
-				if strings.Contains(strings.ToLower(request.args.CommentText), strings.ToLower(blockedWord)) {
+				lowerBlockedWord := strings.ToLower(blockedWord)
+				if strings.Contains(lowerComment, lowerBlockedWord) {
 					return api.StatusError{Err: errors.Err("the comment contents are blocked by %s", request.signingChannel.Name)}
+				} else if strsim.Compare(lowerComment, lowerBlockedWord) > maxSimilaryScoreToBlockedWord {
+					return api.StatusError{Err: errors.Err("the comment contents are blocked (by %s)", request.signingChannel.Name)}
 				}
 			}
 		}
