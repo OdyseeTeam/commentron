@@ -32,9 +32,44 @@ Then once mysql is running you can hit play.
 These are the key packages where most work is completed.
 
 `commentapi` -  This contains all the client API information 
+
 `server/service` - Contains all the API implementations
+
 `migration` - Contains the migrations to the database
+
 `http_requests` - This has http requests for testing different APIs. Best used as templates
+
+## Documentation, Integration & Examples
+
+### Documentation
+
+Please refer to the [client API](commentapi) for documentation. Things that are not clear from the name are documented there.
+We are still improving them, and what may seem obvious to me, might not be to others. Please feel free
+to create issues to elaborate on anything seen in there that is unclear. More comments will be added. 
+
+### Examples
+
+As part of testing locally we leverage completely independent [HTTP Tests](http_requests). You will see
+groups for both local testing and production. This contains all the information for you to create your 
+own curl requests against the server. Together with the client api documentation, it should be relatively
+easy to find your way around. Again if it is not, and something specific is not clear please create an issue
+and additional documentation will be provided. 
+
+### Integration 
+
+The only integration we really support right now, is via the [Go Client API](commentapi). 
+
+```golang
+import "github.com/lbryio/commentron/commentapi"
+
+resp, err := Commentron.CommentByID(commentapi.ByIDArgs{CommentID: "0fa2eacf0b91fa3187e87733f103418e51f0c40d0b06b67c5d6d3ff2c13b2925"})
+if err != nil {
+    panic(err)
+}
+println(resp.Item.Comment)
+println(resp.Item.ClaimID)
+println(resp.Item.Timestamp)
+```
 
 
 
