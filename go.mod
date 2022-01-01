@@ -11,6 +11,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-co-op/gocron v1.9.0
+	github.com/go-errors/errors v1.1.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/rpc v1.2.0
@@ -47,7 +48,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/go-errors/errors v1.1.1 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

@@ -33,6 +33,7 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/fatih/color"
+	goerrs "github.com/go-errors/errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
@@ -251,18 +252,22 @@ func v2RPCServer() http.Handler {
 	rpcServer.RegisterAfterFunc(func(info *rpc.RequestInfo) {
 		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			statusErr, ok := info.Error.(api.StatusError)
+			goErr, ok := info.Error.(*goerrs.Error)
+			statusErr, ok := goErr.Err.(api.StatusError)
 			if ok {
 				info.StatusCode = statusErr.Status
 			}
+			message := info.Error.Error()
+			consoleText = info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 			if info.StatusCode >= http.StatusInternalServerError {
-				message := err.Error()
 				if config.IsTestMode {
-					message = errors.FullTrace(err)
+					if statusErr.Err != nil {
+						message = errors.FullTrace(statusErr.Err)
+					}
 				}
 				logrus.Error(color.RedString(consoleText + ": " + message))
 			} else {
-				logrus.Debug(color.RedString(consoleText + ": " + info.Error.Error()))
+				logrus.Debug(color.RedString(consoleText + ": " + message))
 			}
 		} else if helper.Debugging {
 			logrus.Debug(color.GreenString(consoleText))

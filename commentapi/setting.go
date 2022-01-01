@@ -71,7 +71,7 @@ type UpdateSettingsArgs struct {
 
 // Validate validates the data in the args
 func (u UpdateSettingsArgs) Validate() api.StatusError {
-	err := v.ValidateStruct(u,
+	err := v.ValidateStruct(&u,
 		v.Field(&u.ChatOverlayPosition, v.In("Left", "Right")),
 		v.Field(&u.ViewercountOverlayPosition, v.In("Top Left", "Top Center", "Top Right", "Bottom Left", "Bottom Center", "Bottom Right")),
 		v.Field(&u.TipgoalOverlayPosition, v.In("Top", "Bottom")),
