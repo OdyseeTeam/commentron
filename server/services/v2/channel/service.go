@@ -70,6 +70,7 @@ func (t *Service) Status(r *http.Request, args *Args, reply *Response) error {
 					return errors.Err(err)
 				}
 			}
+			continue
 		}
 		reply.Confirmed = append(reply.Confirmed, c)
 	}
