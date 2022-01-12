@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/commentapi/lbry"
 
 	"github.com/fatih/structs"
 	"github.com/lbryio/lbry.go/v2/extras/errors"

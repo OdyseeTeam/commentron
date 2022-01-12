@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/lbryio/commentron/commentapi/helper"
 
 	"github.com/sirupsen/logrus"
 
@@ -93,7 +93,7 @@ func (l *Channel) Sign(data []byte) (string, string, error) {
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	hash := sha256.Sum256(helper.CreateDigest(
 		[]byte(timestamp),
-		unhelixifyAndReverse(l.ChannelID),
+		UnhelixifyAndReverse(l.ChannelID),
 		data))
 	hashBytes := make([]byte, len(hash))
 	for i, b := range hash {
