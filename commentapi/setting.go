@@ -3,9 +3,9 @@ package commentapi
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/commentapi/validator"
+	"github.com/lbryio/commentron/validator"
 
-	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
 )
