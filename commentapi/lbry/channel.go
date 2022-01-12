@@ -21,20 +21,6 @@ import (
 	"github.com/lbryio/lbry.go/v2/schema/keys"
 )
 
-var testChannel *Channel
-
-func setSerializedTestChannel(serializedChannel string) error {
-	channelBytes := base58.Decode(serializedChannel)
-	channel := &Channel{}
-	err := json.Unmarshal(channelBytes, channel)
-	if err != nil {
-		return errors.Err(err)
-	}
-	testChannel = channel
-	testChannel.Keys()
-	return nil
-}
-
 // Channel structure representing an exported LBRY channel
 type Channel struct {
 	Name              string `json:"name"`

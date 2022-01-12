@@ -15,6 +15,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/lbryio/commentron/commentapi/lbry"
+
 	"github.com/karlseguin/ccache"
 
 	"github.com/lbryio/commentron/config"
@@ -156,7 +158,7 @@ func validateSignature(channelClaimID, signature, signingTS, data string, pubkey
 	injest := sha256.Sum256(
 		helper.CreateDigest(
 			[]byte(signingTS),
-			unhelixifyAndReverse(channelClaimID),
+			lbry.UnhelixifyAndReverse(channelClaimID),
 			[]byte(data),
 		))
 	sig, err := hex.DecodeString(signature)
@@ -183,15 +185,6 @@ func isSignatureValid(signature [64]byte, publicKey *btcec.PublicKey, injest []b
 	return ecdsa.Verify(publicKey.ToECDSA(), injest, R, S)
 }
 
-// rev reverses a byte slice. useful for switching endian-ness
-func reverseBytes(b []byte) []byte {
-	r := make([]byte, len(b))
-	for left, right := 0, len(b)-1; left < right; left, right = left+1, right-1 {
-		r[left], r[right] = b[right], b[left]
-	}
-	return r
-}
-
 type publicKeyInfo struct {
 	Raw       asn1.RawContent
 	Algorithm pkix.AlgorithmIdentifier
@@ -206,12 +199,4 @@ func getPublicKeyFromBytes(pubKeyBytes []byte) (*btcec.PublicKey, error) {
 	}
 	pubkeyBytes1 := PKInfo.PublicKey.Bytes
 	return btcec.ParsePubKey(pubkeyBytes1, btcec.S256())
-}
-
-func unhelixifyAndReverse(claimID string) []byte {
-	b, err := hex.DecodeString(claimID)
-	if err != nil {
-		return nil
-	}
-	return reverseBytes(b)
 }

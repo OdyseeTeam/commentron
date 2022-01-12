@@ -1,7 +1,12 @@
 package lbry
 
 import (
+	"encoding/json"
+
+	"github.com/btcsuite/btcutil/base58"
+	"github.com/lbryio/commentron/commentapi/lbry"
 	"github.com/lbryio/commentron/env"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/sirupsen/logrus"
 )
@@ -57,6 +62,20 @@ func Init(conf *env.Config) {
 			logrus.Panic(err)
 		}
 	}
+}
+
+var testChannel *lbry.Channel
+
+func setSerializedTestChannel(serializedChannel string) error {
+	channelBytes := base58.Decode(serializedChannel)
+	channel := &lbry.Channel{}
+	err := json.Unmarshal(channelBytes, channel)
+	if err != nil {
+		return errors.Err(err)
+	}
+	testChannel = channel
+	testChannel.Keys()
+	return nil
 }
 
 type mockSDK struct{}
