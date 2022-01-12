@@ -15,4 +15,4 @@
 # vendor/
 /.env
 /bin/
-/migration/bindata.go
+# /migration/bindata.go #Removed otherwise can't use as package
