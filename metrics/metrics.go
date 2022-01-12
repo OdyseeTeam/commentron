@@ -55,10 +55,23 @@ var (
 		Name:      "sdk_claim",
 		Help:      "SDK claim cache miss/hit",
 	}, []string{"type"})
+	// JobsDuration The type of job and the duration it runs for
+	JobsDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "commentron",
+		Subsystem: "jobs",
+		Name:      "duration",
+		Help:      "Runs of each job measuring duration",
+	}, []string{"job"})
 )
 
 // SDKCall helper function for observing the duration
 func SDKCall(start time.Time, callType string) {
 	duration := time.Since(start).Seconds()
 	SDKDurations.WithLabelValues(callType).Observe(duration)
+}
+
+// Job helper function for observing the duration
+func Job(start time.Time, name string) {
+	duration := time.Since(start).Seconds()
+	JobsDuration.WithLabelValues(name).Observe(duration)
 }

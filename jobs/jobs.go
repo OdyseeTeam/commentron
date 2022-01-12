@@ -3,6 +3,8 @@ package jobs
 import (
 	"time"
 
+	"github.com/lbryio/commentron/metrics"
+
 	"github.com/go-co-op/gocron"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
@@ -13,16 +15,29 @@ import (
 func StartJobs() {
 	scheduler := gocron.NewScheduler(time.UTC)
 
-	_, err := scheduler.Every(1).Hours().Do(removeFlagged)
+	_, err := scheduler.Every(1).Hours().Do(removeFlaggedComments)
+	if err != nil {
+		logrus.Error(err)
+	}
+	_, err = scheduler.Every(1).Hours().Do(removeFlaggedReactions)
 	if err != nil {
 		logrus.Error(err)
 	}
 	scheduler.StartAsync()
 }
 
-func removeFlagged() {
+func removeFlaggedComments() {
+	defer metrics.Job(time.Now(), "remove_flagged_comments")
 	err := model.Comments(model.CommentWhere.IsFlagged.EQ(true)).DeleteAll(db.RW)
 	if err != nil {
 		logrus.Error("Error removing flagged comments: ", err)
+	}
+}
+
+func removeFlaggedReactions() {
+	defer metrics.Job(time.Now(), "remove_flagged_reactions")
+	err := model.Reactions(model.ReactionWhere.IsFlagged.EQ(true)).DeleteAll(db.RW)
+	if err != nil {
+		logrus.Error("Error removing flagged reactions: ", err)
 	}
 }
