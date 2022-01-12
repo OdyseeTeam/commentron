@@ -252,10 +252,13 @@ func v2RPCServer() http.Handler {
 	rpcServer.RegisterAfterFunc(func(info *rpc.RequestInfo) {
 		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			goErr, ok := info.Error.(*goerrs.Error)
-			statusErr, ok := goErr.Err.(api.StatusError)
-			if ok {
-				info.StatusCode = statusErr.Status
+			goErr := info.Error.(*goerrs.Error)
+			var statusErr api.StatusError
+			if goErr != nil && goErr.Err != nil {
+				statusErr, ok := goErr.Err.(api.StatusError)
+				if ok {
+					info.StatusCode = statusErr.Status
+				}
 			}
 			message := info.Error.Error()
 			consoleText = info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
