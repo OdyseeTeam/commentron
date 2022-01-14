@@ -4,24 +4,19 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-func amI(_ *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIResponse) error {
-	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-	err = lbry.ValidateSignature(channel.ClaimID, args.Signature, args.SigningTS, channel.Name)
+func amI(r *http.Request, args *commentapi.AmIArgs, reply *commentapi.AmIResponse) error {
+	channel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return errors.Err(err)
 	}

@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/model"
+
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
@@ -20,18 +20,12 @@ type delegatedModLevel int
 
 const defaultLevel = delegatedModLevel(0)
 
-func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
-	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.CreatorChannelName)
+func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
 	}
 
-	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	if modChannel != nil && creatorChannel != nil && modChannel.ClaimID == creatorChannel.ClaimID {
 		return api.StatusError{Err: errors.Err("you are the creator, one cannot simply delegate to themselves"), Status: http.StatusBadRequest}
 	}
@@ -66,20 +60,10 @@ func addDelegate(_ *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 	return nil
 }
 
-func removeDelegate(_ *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
-	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.CreatorChannelName)
+func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
+	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
-	}
-
-	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
-	if err != nil {
-		return errors.Err(err)
 	}
 
 	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).One(db.RO)
@@ -104,13 +88,8 @@ func removeDelegate(_ *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 	return nil
 }
 
-func listDelegates(_ *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
-	creatorChannel, err := helper.FindOrCreateChannel(args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.CreatorChannelName)
+func listDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
+	_, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
 	}

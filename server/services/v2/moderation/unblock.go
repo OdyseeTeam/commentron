@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/extras/util"
@@ -17,13 +18,8 @@ import (
 	"github.com/volatiletech/null"
 )
 
-func unBlock(_ *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
-
-	modChannel, creatorChannel, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return err
-	}
-	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
+func unBlock(r *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
+	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
 	}

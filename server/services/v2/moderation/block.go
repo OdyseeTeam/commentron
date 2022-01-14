@@ -5,37 +5,21 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-	"github.com/lbryio/commentron/validator"
-
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	v "github.com/lbryio/ozzo-validation"
-
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-func block(_ *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
-	err := v.ValidateStruct(args,
-		v.Field(&args.BlockedChannelID, validator.ClaimID, v.Required),
-		v.Field(&args.BlockedChannelName, v.Required),
-		v.Field(&args.ModChannelID, validator.ClaimID, v.Required),
-		v.Field(&args.ModChannelName, v.Required),
-	)
-	if err != nil {
-		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
-	}
-	modChannel, creatorChannel, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return err
-	}
-	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
+func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
+	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
 	}
@@ -154,12 +138,8 @@ func getStrikeDuration(strike int, list *model.BlockedList) time.Duration {
 	}
 }
 
-func blockedList(_ *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
-	modChannel, _, err := helper.GetModerator(args.ModChannelID, args.ModChannelName, args.CreatorChannelID, args.CreatorChannelName)
-	if err != nil {
-		return err
-	}
-	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.ModChannelName)
+func blockedList(r *http.Request, args *commentapi.BlockedListArgs, reply *commentapi.BlockedListResponse) error {
+	modChannel, _, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
 	if err != nil {
 		return err
 	}

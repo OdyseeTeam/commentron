@@ -1,18 +1,22 @@
 package commentapi
 
-import "time"
+import (
+	"net/http"
+	"time"
+
+	"github.com/lbryio/commentron/validator"
+	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
+	v "github.com/lbryio/ozzo-validation"
+)
 
 // BlockArgs Arguments to block identities from commenting for both publisher and moderators
 type BlockArgs struct {
-	//Publisher, Moderator, or Commentron Admin
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
+	ModAuthorization
+
 	//Offender being blocked
 	BlockedChannelID   string `json:"blocked_channel_id"`
 	BlockedChannelName string `json:"blocked_channel_name"`
-	//Creator that Moderator is delegated from. Used for delegated moderation
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
 	// ID of comment to remove as part of this block
 	OffendingCommentID string `json:"offending_comment_id"`
 	// Blocks identity from comment universally, requires Admin rights on commentron instance
@@ -23,6 +27,20 @@ type BlockArgs struct {
 	DeleteAll bool   `json:"delete_all"`
 	Signature string `json:"signature"`
 	SigningTS string `json:"signing_ts"`
+}
+
+// Validate validates the data in the list args
+func (b BlockArgs) Validate() api.StatusError {
+	err := v.ValidateStruct(&b,
+		v.Field(&b.BlockedChannelID, validator.ClaimID, v.Required),
+		v.Field(&b.BlockedChannelName, v.Required),
+		v.Field(&b.ModChannelID, validator.ClaimID, v.Required),
+		v.Field(&b.ModChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+	return api.StatusError{}
 }
 
 // BlockResponse for the moderation.Block rpc call
@@ -36,10 +54,7 @@ type BlockResponse struct {
 
 // AmIArgs Arguments to check whether a user is a moderator or not
 type AmIArgs struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
-	Signature   string `json:"signature"`
-	SigningTS   string `json:"signing_ts"`
+	Authorization
 }
 
 // AmIResponse for the moderation.AmI rpc call
@@ -52,15 +67,11 @@ type AmIResponse struct {
 
 // UnBlockArgs Arguments to un-block identities from commenting for both publisher and moderators
 type UnBlockArgs struct {
-	//Publisher, Moderator, or Commentron Admin
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
+	ModAuthorization
+
 	//Offender being unblocked
 	UnBlockedChannelID   string `json:"un_blocked_channel_id"`
 	UnBlockedChannelName string `json:"un_blocked_channel_name"`
-	//Creator that Moderator is delegated from. Used for delegated moderation
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
 	// Unblocks identity from commenting universally, requires Admin rights on commentron instance
 	GlobalUnBlock bool   `json:"global_un_block"`
 	Signature     string `json:"signature"`
@@ -77,14 +88,10 @@ type UnBlockResponse struct {
 
 // BlockedListArgs Arguments to block identities from commenting for both publisher and moderators
 type BlockedListArgs struct {
-	//Publisher, Moderator or Commentron Admin
-	ModChannelID   string `json:"mod_channel_id"`
-	ModChannelName string `json:"mod_channel_name"`
-	//Creator that Moderator is delegated from. Used for delegated moderation
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
-	Signature          string `json:"signature"`
-	SigningTS          string `json:"signing_ts"`
+	ModAuthorization
+
+	Signature string `json:"signature"`
+	SigningTS string `json:"signing_ts"`
 }
 
 // BlockedListResponse for the moderation.Block rpc call
@@ -108,30 +115,26 @@ type BlockedChannel struct {
 
 // AddDelegateArgs Arguments to delagate moderation to another channel for your channel.
 type AddDelegateArgs struct {
-	ModChannelID       string `json:"mod_channel_id"`
-	ModChannelName     string `json:"mod_channel_name"`
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
-	Signature          string `json:"signature"`
-	SigningTS          string `json:"signing_ts"`
+	ModAuthorization
+
+	Signature string `json:"signature"`
+	SigningTS string `json:"signing_ts"`
 }
 
 // RemoveDelegateArgs Arguments to remove a delegated moderator.
 type RemoveDelegateArgs struct {
-	ModChannelID       string `json:"mod_channel_id"`
-	ModChannelName     string `json:"mod_channel_name"`
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
-	Signature          string `json:"signature"`
-	SigningTS          string `json:"signing_ts"`
+	ModAuthorization
+
+	Signature string `json:"signature"`
+	SigningTS string `json:"signing_ts"`
 }
 
 // ListDelegatesArgs Arguments to list delegates
 type ListDelegatesArgs struct {
-	CreatorChannelID   string `json:"creator_channel_id"`
-	CreatorChannelName string `json:"creator_channel_name"`
-	Signature          string `json:"signature"`
-	SigningTS          string `json:"signing_ts"`
+	ModAuthorization
+
+	Signature string `json:"signature"`
+	SigningTS string `json:"signing_ts"`
 }
 
 // ListDelegateResponse response for modifying the delegates
