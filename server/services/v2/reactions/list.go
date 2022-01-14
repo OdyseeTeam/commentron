@@ -5,13 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/lbryio/commentron/server/auth"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-
 	"github.com/lbryio/errors.go"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 
@@ -19,7 +17,7 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {
+func list(r *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {
 	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).All(db.RO)
 	if err != nil {
 		return errors.Err(err)
@@ -55,13 +53,9 @@ func list(_ *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.
 	}
 
 	var userReactions commentapi.Reactions
-	if args.ChannelName != nil {
-		channel, err := helper.FindOrCreateChannel(util.StrFromPtr(args.ChannelID), util.StrFromPtr(args.ChannelName))
-		if err != nil {
-			return errors.Err(err)
-		}
-		chanErr := lbry.ValidateSignature(util.StrFromPtr(args.ChannelID), args.Signature, args.SigningTS, util.StrFromPtr(args.ChannelName))
-		if chanErr == nil {
+	if args.ChannelName != "" {
+		channel, _, err := auth.Authenticate(r, &args.Authorization)
+		if err == nil {
 			allfilters = append(allfilters, qm.Where(model.ReactionColumns.ChannelID+" != ?", channel.ClaimID))
 			reactionlist, err := channel.Reactions(myfilters...).All(db.RO)
 			if err != nil {

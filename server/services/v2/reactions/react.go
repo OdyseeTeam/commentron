@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/commentron/sockety"
 
 	"github.com/lbryio/errors.go"
@@ -28,6 +29,14 @@ import (
 
 // React creates/updates a reaction to a comment
 func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactResponse) error {
+	if len(util.StringSplitArg(args.CommentIDs, ",")) > 1 {
+		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
+	}
+
+	channel, _, err := auth.Authenticate(r, &args.Authorization)
+	if err != nil {
+		return errors.Prefix("could not authenticate channel signature:", err)
+	}
 
 	comments, err := model.Comments(qm.WhereIn(model.CommentColumns.CommentID+" IN ?", util.StringSplitArg(args.CommentIDs, ",")...)).All(db.RO)
 	if err != nil {
@@ -40,17 +49,7 @@ func react(r *http.Request, args *commentapi.ReactArgs, reply *commentapi.ReactR
 	for _, p := range comments {
 		commentIDs = append(commentIDs, p.CommentID)
 	}
-	if len(commentIDs) > 1 {
-		return api.StatusError{Err: errors.Err("only one comment id can be passed currently"), Status: http.StatusBadRequest}
-	}
-	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
-	if err != nil {
-		return errors.Prefix("could not authenticate channel signature:", err)
-	}
+
 	if len(comments) > 1 {
 		logrus.Warningf("%d comments reacted to in the same call from ip[%s] for channel %s[%s]", len(comments), helper.GetIPAddressForRequest(r), channel.Name, channel.ClaimID)
 	}
