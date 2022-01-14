@@ -128,7 +128,7 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 	if err != nil {
 		return err
 	}
-	item, err := commentListCache.Fetch(key, 1*time.Minute, func() (interface{}, error) {
+	item, err := commentListCache.Fetch(key, 30*time.Second, func() (interface{}, error) {
 		err := list(r, args, reply)
 		if err != nil {
 			return nil, err
