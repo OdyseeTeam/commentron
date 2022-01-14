@@ -4,8 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/server/auth"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
@@ -18,7 +17,7 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *commentapi.SharedBlockedListGetResponse) error {
+func get(r *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *commentapi.SharedBlockedListGetResponse) error {
 	var list *model.BlockedList
 	var err error
 	var ownerChannel *model.Channel
@@ -28,11 +27,7 @@ func get(_ *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 			return errors.Err(err)
 		}
 	} else {
-		ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-		if err != nil {
-			return errors.Err(err)
-		}
-		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+		ownerChannel, _, err = auth.Authenticate(r, &args.Authorization)
 		if err != nil {
 			return err
 		}

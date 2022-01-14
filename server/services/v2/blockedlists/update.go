@@ -4,24 +4,19 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
-func update(_ *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply *commentapi.SharedBlockedList) error {
-	ownerChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-	err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+func update(r *http.Request, args *commentapi.SharedBlockedListUpdateArgs, reply *commentapi.SharedBlockedList) error {
+	ownerChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}

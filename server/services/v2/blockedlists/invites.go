@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lbryio/commentron/server/auth"
+
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
-
 	"github.com/lbryio/lbry.go/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
@@ -20,12 +20,8 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
-func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
-	ownerChannel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
+func listInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
+	ownerChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
@@ -69,38 +65,24 @@ func listInvites(_ *http.Request, args *commentapi.SharedBlockedListListInvitesA
 	return nil
 }
 
-func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply *commentapi.SharedBlockedListInviteResponse) error {
-	err := lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
+func invite(r *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply *commentapi.SharedBlockedListInviteResponse) error {
+	inviter, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
 	var blockedList *model.BlockedList
-	var ownerChannel *model.Channel
 	if args.SharedBlockedListID != 0 {
 		blockedList, err = model.BlockedLists(model.BlockedListWhere.ID.EQ(args.SharedBlockedListID)).One(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
 	} else {
-		ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-		if err != nil {
-			return errors.Err(err)
-		}
-		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
-		if err != nil {
-			return err
-		}
-
-		blockedList, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
+		blockedList, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(args.ChannelID)).One(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return errors.Err(err)
 		}
 	}
 
-	inviter, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
 	if (blockedList.MemberInviteEnabled.Valid && !blockedList.MemberInviteEnabled.Bool) && inviter.ClaimID != blockedList.ChannelID {
 		return api.StatusError{Err: errors.Err("shared blocked list %s does not have member inviting enabled", blockedList.Name)}
 	}
@@ -145,13 +127,8 @@ func invite(_ *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply
 	return nil
 }
 
-func accept(_ *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs, _ *commentapi.SharedBlockedListInviteResponse) error {
-	err := lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.ChannelName)
-	if err != nil {
-		return err
-	}
-
-	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+func accept(r *http.Request, args *commentapi.SharedBlockedListInviteAcceptArgs, _ *commentapi.SharedBlockedListInviteResponse) error {
+	channel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
@@ -261,19 +238,13 @@ func acceptInvite(channel *model.Channel, blockedList *model.BlockedList, invite
 	return nil
 }
 
-func rescind(_ *http.Request, args *commentapi.SharedBlockedListRescindArgs, _ *commentapi.SharedBlockedListRescindResponse) error {
-	var list *model.BlockedList
-	var err error
-	var ownerChannel *model.Channel
-
-	ownerChannel, err = helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
-	if err != nil {
-		return errors.Err(err)
-	}
-	err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+func rescind(r *http.Request, args *commentapi.SharedBlockedListRescindArgs, _ *commentapi.SharedBlockedListRescindResponse) error {
+	ownerChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
+
+	var list *model.BlockedList
 
 	list, err = model.BlockedLists(model.BlockedListWhere.ChannelID.EQ(ownerChannel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
