@@ -42,7 +42,7 @@ func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorizat
 	}
 	var userInfo *UserInfo
 	authorization := &commentapi.Authorization{ChannelName: modChannel.Name, ChannelID: modChannel.ClaimID, Signature: modAuthorization.Signature, SigningTS: modAuthorization.SigningTS}
-	if modChannel, userInfo, err = oAuth(r, authorization); !errors.Is(err, ErrNotOAuth) {
+	if modChannel, userInfo, err := oAuth(r, authorization); !errors.Is(err, ErrNotOAuth) {
 		if err != nil {
 			return nil, nil, nil, err
 		}
