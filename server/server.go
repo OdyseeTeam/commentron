@@ -33,7 +33,6 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/fatih/color"
-	goerrs "github.com/go-errors/errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
@@ -252,10 +251,9 @@ func v2RPCServer() http.Handler {
 	rpcServer.RegisterAfterFunc(func(info *rpc.RequestInfo) {
 		consoleText := info.Request.RemoteAddr + " [" + strconv.Itoa(info.StatusCode) + "]: " + info.Method
 		if info.Error != nil {
-			goErr := info.Error.(*goerrs.Error)
 			var statusErr api.StatusError
-			if goErr != nil && goErr.Err != nil {
-				statusErr, ok := goErr.Err.(api.StatusError)
+			if info.Error != nil {
+				statusErr, ok := info.Error.(api.StatusError)
 				if ok {
 					info.StatusCode = statusErr.Status
 				}
