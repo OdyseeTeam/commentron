@@ -1,9 +1,9 @@
 os: linux
-dist: xenial
+dist: bionic
 language: go
 go_import_path: github.com/lbryio/commentron
 
-go: 1.17
+go: 1.17.x
 
 install: true
 
