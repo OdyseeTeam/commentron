@@ -89,9 +89,6 @@ type UnBlockResponse struct {
 // BlockedListArgs Arguments to block identities from commenting for both publisher and moderators
 type BlockedListArgs struct {
 	ModAuthorization
-
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
 }
 
 // BlockedListResponse for the moderation.Block rpc call
