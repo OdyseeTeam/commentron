@@ -24,9 +24,7 @@ type BlockArgs struct {
 	// Measured in seconds for the amount of time a channel is blocked for.
 	TimeOut uint64 `json:"time_out"`
 	// If true will delete all comments of the offender, requires Admin rights on commentron for universal delete
-	DeleteAll bool   `json:"delete_all"`
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
+	DeleteAll bool `json:"delete_all"`
 }
 
 // Validate validates the data in the list args
