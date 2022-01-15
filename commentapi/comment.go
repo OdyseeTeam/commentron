@@ -105,12 +105,10 @@ type ByIDResponse struct {
 
 // PinArgs arguments for the comment.Pin rpc call. The comment id must be signed with a timestamp for authentication.
 type PinArgs struct {
-	CommentID   string `json:"comment_id"`
-	ChannelID   string `json:"channel_id"`
-	ChannelName string `json:"channel_name"` //Technical debt? probably dont need this since we can get the channel from the comment claim
-	Remove      bool   `json:"remove"`
-	Signature   string `json:"signature"`
-	SigningTS   string `json:"signing_ts"`
+	Authorization
+
+	CommentID string `json:"comment_id"`
+	Remove    bool   `json:"remove"`
 }
 
 // PinResponse response for the comment.Pin rpc call
@@ -136,10 +134,10 @@ const (
 
 // ListArgs arguments for the comment.List rpc call
 type ListArgs struct {
+	Authorization
+
 	RequestorChannelName string  `json:"requestor_channel_name"` // Used for Author ID filter authorization Only your comments!
 	RequestorChannelID   string  `json:"requestor_channel_id"`   // Used for Author ID filter authorization
-	ChannelName          *string `json:"channel_name"`           // signing channel name of claim
-	ChannelID            *string `json:"channel_id"`             // signing channel claim id of claim
 	ClaimID              *string `json:"claim_id"`               // claim id of claim being commented on
 	AuthorClaimID        *string `json:"author_claim_id"`        // filters comments to just this author
 	ParentID             *string `json:"parent_id"`              // filters comments to those under this thread
@@ -148,8 +146,6 @@ type ListArgs struct {
 	TopLevel             bool    `json:"top_level"`              // filters to only top level comments
 	Hidden               bool    `json:"hidden"`                 // if true will show hidden comments as well
 	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
-	Signature            string  `json:"signature"`
-	SigningTS            string  `json:"signing_ts"`
 }
 
 //Key returns the hash of the list args struct for caching

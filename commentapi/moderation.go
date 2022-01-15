@@ -71,9 +71,7 @@ type UnBlockArgs struct {
 	UnBlockedChannelID   string `json:"un_blocked_channel_id"`
 	UnBlockedChannelName string `json:"un_blocked_channel_name"`
 	// Unblocks identity from commenting universally, requires Admin rights on commentron instance
-	GlobalUnBlock bool   `json:"global_un_block"`
-	Signature     string `json:"signature"`
-	SigningTS     string `json:"signing_ts"`
+	GlobalUnBlock bool `json:"global_un_block"`
 }
 
 // UnBlockResponse for the moderation.UnBlock rpc call
@@ -111,25 +109,16 @@ type BlockedChannel struct {
 // AddDelegateArgs Arguments to delagate moderation to another channel for your channel.
 type AddDelegateArgs struct {
 	ModAuthorization
-
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
 }
 
 // RemoveDelegateArgs Arguments to remove a delegated moderator.
 type RemoveDelegateArgs struct {
 	ModAuthorization
-
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
 }
 
 // ListDelegatesArgs Arguments to list delegates
 type ListDelegatesArgs struct {
 	ModAuthorization
-
-	Signature string `json:"signature"`
-	SigningTS string `json:"signing_ts"`
 }
 
 // ListDelegateResponse response for modifying the delegates

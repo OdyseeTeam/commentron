@@ -12,10 +12,7 @@ import (
 
 // ListSettingsArgs arguments passed to settings.List api
 type ListSettingsArgs struct {
-	ChannelName string `json:"channel_name"`
-	ChannelID   string `json:"channel_id"`
-	Signature   string `json:"signature"`
-	SigningTS   string `json:"signing_ts"`
+	Authorization
 }
 
 // ListSettingsResponse returns all the settings for creator/user
