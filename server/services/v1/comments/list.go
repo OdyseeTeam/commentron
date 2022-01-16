@@ -26,7 +26,7 @@ import (
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
-	creatorChannel, err := checkCommentsEnabled(null.StringFrom(args.ChannelName), null.StringFrom(args.ChannelID))
+	creatorChannel, err := checkCommentsEnabled(args.ChannelName, args.ChannelID)
 	if err != nil {
 		return err
 	}
@@ -170,9 +170,9 @@ func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 	return queryMods
 }
 
-func checkCommentsEnabled(channelName, ChannelID null.String) (*m.Channel, error) {
-	if channelName.Valid && ChannelID.Valid {
-		creatorChannel, err := helper.FindOrCreateChannel(ChannelID.String, channelName.String)
+func checkCommentsEnabled(channelName, ChannelID string) (*m.Channel, error) {
+	if channelName != "" && ChannelID != "" {
+		creatorChannel, err := helper.FindOrCreateChannel(ChannelID, channelName)
 		if err != nil {
 			return nil, err
 		}
