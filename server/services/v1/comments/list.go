@@ -26,7 +26,7 @@ import (
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
 	args.ApplyDefaults()
-	creatorChannel, err := checkCommentsEnabled(null.StringFromPtr(args.ChannelName), null.StringFromPtr(args.ChannelID))
+	creatorChannel, err := checkCommentsEnabled(null.StringFrom(args.ChannelName), null.StringFrom(args.ChannelID))
 	if err != nil {
 		return err
 	}
