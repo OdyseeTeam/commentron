@@ -119,6 +119,7 @@ type AddDelegateArgs struct {
 	ModChannelName string `json:"mod_channel_name"`
 }
 
+// Validate validates the data in the AddDelegate args
 func (ad *AddDelegateArgs) Validate() api.StatusError {
 	if ad.CreatorChannelID != "" {
 		ad.ChannelID = ad.CreatorChannelID
@@ -150,6 +151,7 @@ type RemoveDelegateArgs struct {
 	ModChannelName string `json:"mod_channel_name"`
 }
 
+// Validate validates the data in the RemoveDelegate args
 func (rd *RemoveDelegateArgs) Validate() api.StatusError {
 	if rd.CreatorChannelID != "" {
 		rd.ChannelID = rd.CreatorChannelID
@@ -176,6 +178,7 @@ type ListDelegatesArgs struct {
 	CreatorChannelName string `json:"creator_channel_name"`
 }
 
+// Validate validates the data in the ListDelegates args
 func (ld *ListDelegatesArgs) Validate() api.StatusError {
 	if ld.CreatorChannelID != "" {
 		ld.ChannelID = ld.CreatorChannelID
