@@ -108,17 +108,90 @@ type BlockedChannel struct {
 
 // AddDelegateArgs Arguments to delagate moderation to another channel for your channel.
 type AddDelegateArgs struct {
-	ModAuthorization
+	Authorization
+
+	//This is for backwards compatibility, Authorization parameters should be used, not these!
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+
+	//Who is being delegated authority?
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+}
+
+func (ad *AddDelegateArgs) Validate() api.StatusError {
+	if ad.CreatorChannelID != "" {
+		ad.ChannelID = ad.CreatorChannelID
+	}
+	if ad.CreatorChannelName != "" {
+		ad.ChannelName = ad.CreatorChannelName
+	}
+	err := v.ValidateStruct(ad,
+		v.Field(&ad.ChannelID, validator.ClaimID, v.Required),
+		v.Field(&ad.ChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+
+	return api.StatusError{}
 }
 
 // RemoveDelegateArgs Arguments to remove a delegated moderator.
 type RemoveDelegateArgs struct {
-	ModAuthorization
+	Authorization
+
+	//This is for backwards compatibility, Authorization parameters should be used, not these!
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+
+	//Who is being removed from delegated authority?
+	ModChannelID   string `json:"mod_channel_id"`
+	ModChannelName string `json:"mod_channel_name"`
+}
+
+func (rd *RemoveDelegateArgs) Validate() api.StatusError {
+	if rd.CreatorChannelID != "" {
+		rd.ChannelID = rd.CreatorChannelID
+	}
+	if rd.CreatorChannelName != "" {
+		rd.ChannelName = rd.CreatorChannelName
+	}
+	err := v.ValidateStruct(rd,
+		v.Field(&rd.ChannelID, validator.ClaimID, v.Required),
+		v.Field(&rd.ChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+
+	return api.StatusError{}
 }
 
 // ListDelegatesArgs Arguments to list delegates
 type ListDelegatesArgs struct {
-	ModAuthorization
+	Authorization
+
+	CreatorChannelID   string `json:"creator_channel_id"`
+	CreatorChannelName string `json:"creator_channel_name"`
+}
+
+func (ld *ListDelegatesArgs) Validate() api.StatusError {
+	if ld.CreatorChannelID != "" {
+		ld.ChannelID = ld.CreatorChannelID
+	}
+	if ld.CreatorChannelName != "" {
+		ld.ChannelName = ld.CreatorChannelName
+	}
+	err := v.ValidateStruct(ld,
+		v.Field(&ld.ChannelID, validator.ClaimID, v.Required),
+		v.Field(&ld.ChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+
+	return api.StatusError{}
 }
 
 // ListDelegateResponse response for modifying the delegates

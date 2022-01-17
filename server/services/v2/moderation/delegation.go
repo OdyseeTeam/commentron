@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lbryio/commentron/helper"
+
 	"github.com/lbryio/commentron/model"
 
 	"github.com/lbryio/commentron/server/auth"
@@ -21,11 +23,12 @@ type delegatedModLevel int
 const defaultLevel = delegatedModLevel(0)
 
 func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
-	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
+	creatorChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
 
+	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	if modChannel != nil && creatorChannel != nil && modChannel.ClaimID == creatorChannel.ClaimID {
 		return api.StatusError{Err: errors.Err("you are the creator, one cannot simply delegate to themselves"), Status: http.StatusBadRequest}
 	}
@@ -61,11 +64,12 @@ func addDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *comme
 }
 
 func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply *commentapi.ListDelegateResponse) error {
-	modChannel, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
+	creatorChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
 
+	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
 	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
@@ -89,7 +93,7 @@ func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 }
 
 func listDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
-	_, creatorChannel, _, err := auth.ModAuthenticate(r, &args.ModAuthorization)
+	creatorChannel, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err
 	}
