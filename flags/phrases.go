@@ -68,4 +68,6 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`(?s).*work(?s).*http:(?s).*`),
 	regexp.MustCompile(`(?s).*payout(?s).*http:(?s).*`),
 	regexp.MustCompile(`(?s).*paid(?s).*http:(?s).*`),
+	regexp.MustCompile(`.*I recommend him to anyone with; Herpes Virus.*`),
+	
 }
