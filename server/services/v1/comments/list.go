@@ -16,9 +16,9 @@ import (
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
-	"github.com/lbryio/lbry.go/extras/util"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/util"
 
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/queries/qm"
