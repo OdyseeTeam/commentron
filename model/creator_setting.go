@@ -48,6 +48,8 @@ type CreatorSetting struct {
 	TipgoalOverlayPosition     string      `boil:"tipgoal_overlay_position" json:"tipgoal_overlay_position" toml:"tipgoal_overlay_position" yaml:"tipgoal_overlay_position"`
 	TipgoalPreviousDonations   bool        `boil:"tipgoal_previous_donations" json:"tipgoal_previous_donations" toml:"tipgoal_previous_donations" yaml:"tipgoal_previous_donations"`
 	TipgoalCurrency            string      `boil:"tipgoal_currency" json:"tipgoal_currency" toml:"tipgoal_currency" yaml:"tipgoal_currency"`
+	TimeSinceFirstComment      null.Int64  `boil:"time_since_first_comment" json:"time_since_first_comment,omitempty" toml:"time_since_first_comment" yaml:"time_since_first_comment,omitempty"`
+	BlockedWordsFuzzinessMatch null.Int64  `boil:"blocked_words_fuzziness_match" json:"blocked_words_fuzziness_match,omitempty" toml:"blocked_words_fuzziness_match" yaml:"blocked_words_fuzziness_match,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -79,6 +81,8 @@ var CreatorSettingColumns = struct {
 	TipgoalOverlayPosition     string
 	TipgoalPreviousDonations   string
 	TipgoalCurrency            string
+	TimeSinceFirstComment      string
+	BlockedWordsFuzzinessMatch string
 }{
 	ID:                         "id",
 	CreatorChannelID:           "creator_channel_id",
@@ -105,6 +109,8 @@ var CreatorSettingColumns = struct {
 	TipgoalOverlayPosition:     "tipgoal_overlay_position",
 	TipgoalPreviousDonations:   "tipgoal_previous_donations",
 	TipgoalCurrency:            "tipgoal_currency",
+	TimeSinceFirstComment:      "time_since_first_comment",
+	BlockedWordsFuzzinessMatch: "blocked_words_fuzziness_match",
 }
 
 // Generated where
@@ -117,6 +123,29 @@ func (w whereHelperint64) LT(x int64) qm.QueryMod  { return qmhelper.Where(w.fie
 func (w whereHelperint64) LTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
 func (w whereHelperint64) GT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperint64) GTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
+type whereHelpernull_Int64 struct{ field string }
+
+func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
 
 var CreatorSettingWhere = struct {
 	ID                         whereHelperuint64
@@ -144,6 +173,8 @@ var CreatorSettingWhere = struct {
 	TipgoalOverlayPosition     whereHelperstring
 	TipgoalPreviousDonations   whereHelperbool
 	TipgoalCurrency            whereHelperstring
+	TimeSinceFirstComment      whereHelpernull_Int64
+	BlockedWordsFuzzinessMatch whereHelpernull_Int64
 }{
 	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -170,6 +201,8 @@ var CreatorSettingWhere = struct {
 	TipgoalOverlayPosition:     whereHelperstring{field: "`creator_setting`.`tipgoal_overlay_position`"},
 	TipgoalPreviousDonations:   whereHelperbool{field: "`creator_setting`.`tipgoal_previous_donations`"},
 	TipgoalCurrency:            whereHelperstring{field: "`creator_setting`.`tipgoal_currency`"},
+	TimeSinceFirstComment:      whereHelpernull_Int64{field: "`creator_setting`.`time_since_first_comment`"},
+	BlockedWordsFuzzinessMatch: whereHelpernull_Int64{field: "`creator_setting`.`blocked_words_fuzziness_match`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -193,8 +226,8 @@ func (*creatorSettingR) NewStruct() *creatorSettingR {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 )

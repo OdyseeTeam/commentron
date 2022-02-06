@@ -29,6 +29,8 @@ type Channel struct {
 	BlockedListInviteID null.Uint64 `boil:"blocked_list_invite_id" json:"blocked_list_invite_id,omitempty" toml:"blocked_list_invite_id" yaml:"blocked_list_invite_id,omitempty"`
 	BlockedListID       null.Uint64 `boil:"blocked_list_id" json:"blocked_list_id,omitempty" toml:"blocked_list_id" yaml:"blocked_list_id,omitempty"`
 	Sub                 null.String `boil:"sub" json:"sub,omitempty" toml:"sub" yaml:"sub,omitempty"`
+	CreatedAt           time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt           time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L channelL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,6 +43,8 @@ var ChannelColumns = struct {
 	BlockedListInviteID string
 	BlockedListID       string
 	Sub                 string
+	CreatedAt           string
+	UpdatedAt           string
 }{
 	ClaimID:             "claim_id",
 	Name:                "name",
@@ -48,6 +52,8 @@ var ChannelColumns = struct {
 	BlockedListInviteID: "blocked_list_invite_id",
 	BlockedListID:       "blocked_list_id",
 	Sub:                 "sub",
+	CreatedAt:           "created_at",
+	UpdatedAt:           "updated_at",
 }
 
 // Generated where
@@ -59,6 +65,8 @@ var ChannelWhere = struct {
 	BlockedListInviteID whereHelpernull_Uint64
 	BlockedListID       whereHelpernull_Uint64
 	Sub                 whereHelpernull_String
+	CreatedAt           whereHelpertime_Time
+	UpdatedAt           whereHelpertime_Time
 }{
 	ClaimID:             whereHelperstring{field: "`channel`.`claim_id`"},
 	Name:                whereHelperstring{field: "`channel`.`name`"},
@@ -66,6 +74,8 @@ var ChannelWhere = struct {
 	BlockedListInviteID: whereHelpernull_Uint64{field: "`channel`.`blocked_list_invite_id`"},
 	BlockedListID:       whereHelpernull_Uint64{field: "`channel`.`blocked_list_id`"},
 	Sub:                 whereHelpernull_String{field: "`channel`.`sub`"},
+	CreatedAt:           whereHelpertime_Time{field: "`channel`.`created_at`"},
+	UpdatedAt:           whereHelpertime_Time{field: "`channel`.`updated_at`"},
 }
 
 // ChannelRels is where relationship names are stored.
@@ -128,9 +138,9 @@ func (*channelR) NewStruct() *channelR {
 type channelL struct{}
 
 var (
-	channelAllColumns            = []string{"claim_id", "name", "is_spammer", "blocked_list_invite_id", "blocked_list_id", "sub"}
+	channelAllColumns            = []string{"claim_id", "name", "is_spammer", "blocked_list_invite_id", "blocked_list_id", "sub", "created_at", "updated_at"}
 	channelColumnsWithoutDefault = []string{"claim_id", "name", "blocked_list_invite_id", "blocked_list_id", "sub"}
-	channelColumnsWithDefault    = []string{"is_spammer"}
+	channelColumnsWithDefault    = []string{"is_spammer", "created_at", "updated_at"}
 	channelPrimaryKeyColumns     = []string{"claim_id"}
 )
 

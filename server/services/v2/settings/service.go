@@ -180,6 +180,14 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.TipgoalAmount = tipGoalAmt
 	}
 
+	if args.TimeSinceFirstComment != nil {
+		tipGoalAmt := int64(*args.TimeSinceFirstComment)
+		settings.TimeSinceFirstComment.SetValid(tipGoalAmt)
+		if *args.TimeSinceFirstComment == 0 {
+			settings.TimeSinceFirstComment.Valid = false
+		}
+	}
+
 	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
@@ -197,6 +205,10 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	}
 	if settings.IsFiltersEnabled.Valid && authorized {
 		reply.FiltersEnabled = &settings.IsFiltersEnabled.Bool
+	}
+	if settings.TimeSinceFirstComment.Valid && authorized {
+		tsfc := uint64(settings.TimeSinceFirstComment.Int64)
+		reply.TimeSinceFirstComment = &tsfc
 	}
 	if settings.CommentsEnabled.Valid {
 		reply.CommentsEnabled = &settings.CommentsEnabled.Bool
