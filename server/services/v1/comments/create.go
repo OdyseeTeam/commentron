@@ -240,12 +240,13 @@ func checkForDuplicate(commentID string) error {
 var slowModeCache = ccache.New(ccache.Configure().MaxSize(10000))
 
 type createRequest struct {
-	args           *commentapi.CreateArgs
-	comment        *m.Comment
-	creatorChannel *m.Channel
-	signingChannel *jsonrpc.Claim
-	currency       string
-	isFiat         bool
+	args             *commentapi.CreateArgs
+	comment          *m.Comment
+	creatorChannel   *m.Channel
+	commenterChannel *m.Channel
+	signingChannel   *jsonrpc.Claim
+	currency         string
+	isFiat           bool
 }
 
 const maxSimilaryScoreToCreatorName = 0.6
@@ -350,6 +351,13 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				} else if strsim.Compare(lowerComment, lowerBlockedWord) > maxSimilaryScoreToBlockedWord {
 					return api.StatusError{Err: errors.Err("the comment contents are blocked (by %s)", request.signingChannel.Name)}
 				}
+				if settings.BlockedWordsFuzzinessMatch.Valid {
+					for _, commentWord := range strings.Split(lowerComment, " ") {
+						if strsim.Compare(commentWord, lowerBlockedWord) > float64(settings.BlockedWordsFuzzinessMatch.Int)/100.0 {
+							return api.StatusError{Err: errors.Err("the comment contents are blocked [by %s]", request.signingChannel.Name)}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -366,6 +374,15 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	}
 	if !settings.CommentsEnabled.Bool {
 		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+	}
+	if settings.TimeSinceFirstComment.Valid {
+		request.commenterChannel, err = helper.FindOrCreateChannel(request.args.ClaimID, request.args.ChannelName)
+		if err != nil {
+			return errors.Err(err)
+		}
+		if !request.commenterChannel.CreatedAt.Add(time.Duration(settings.TimeSinceFirstComment.Int64) * time.Minute).Before(time.Now()) {
+			return api.StatusError{Err: errors.Err("your account is too newly"), Status: http.StatusBadRequest}
+		}
 	}
 	return nil
 }

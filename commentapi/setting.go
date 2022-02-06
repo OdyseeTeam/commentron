@@ -39,6 +39,7 @@ type ListSettingsResponse struct {
 	TipgoalOverlayPosition     *string  `json:"tipgoal_overlay_position"`
 	TipgoalPreviousDonations   *bool    `json:"tipgoal_previous_donations"`
 	TipgoalCurrency            *string  `json:"tipgoal_currency"`
+	TimeSinceFirstComment      *uint64  `json:"time_since_first_comment"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
@@ -64,6 +65,8 @@ type UpdateSettingsArgs struct {
 	TipgoalOverlayPosition     *string  `json:"tipgoal_overlay_position"`
 	TipgoalPreviousDonations   *bool    `json:"tipgoal_previous_donations"`
 	TipgoalCurrency            *string  `json:"tipgoal_currency"`
+	// Minutes since first comment when users are allowed to comment on your content/livestream
+	TimeSinceFirstComment *uint64 `json:"time_since_first_comment"`
 }
 
 // Validate validates the data in the args
