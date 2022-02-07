@@ -52,6 +52,9 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 			CreatorChannelID: null.StringFrom(creatorChannel.ClaimID),
 			BlockedListID:    blocklistID,
 		}
+		if args.OffendingCommentID != "" {
+			blockedEntry.OffendingCommentID.SetValid(args.OffendingCommentID)
+		}
 		insert = true
 	} else {
 		blockedEntry.Strikes.SetValid(blockedEntry.Strikes.Int + 1)
