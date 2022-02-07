@@ -353,7 +353,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				}
 				if settings.BlockedWordsFuzzinessMatch.Valid {
 					for _, commentWord := range strings.Split(lowerComment, " ") {
-						if strsim.Compare(commentWord, lowerBlockedWord) > float64(settings.BlockedWordsFuzzinessMatch.Int)/100.0 {
+						if strsim.Compare(commentWord, lowerBlockedWord) > float64(settings.BlockedWordsFuzzinessMatch.Int64)/100.0 {
 							return api.StatusError{Err: errors.Err("the comment contents are blocked [by %s]", request.signingChannel.Name)}
 						}
 					}
