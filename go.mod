@@ -23,7 +23,7 @@ require (
 	github.com/karlseguin/ccache v2.0.3+incompatible
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
-	github.com/lbryio/lbry.go/v2 v2.7.2-0.20210416195322-6516df1418e3
+	github.com/lbryio/lbry.go/v2 v2.7.2-0.20220208210038-a0391bec7915
 	github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec
 	github.com/lbryio/sockety v0.0.0-20210726164138-c31f4c02bdcf
 	github.com/mitchellh/mapstructure v1.4.0
