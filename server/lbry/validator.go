@@ -81,7 +81,7 @@ func retrievePKFromCQForChannel(channelClaimID string) ([]byte, error) {
 func getPublicKeyFromCQForChannel(channelClaimID string) ([]byte, error) {
 	c := http.Client{Timeout: 1 * time.Second}
 	sql := fmt.Sprintf(`SELECT certificate FROM claim WHERE claim_id = "%s"`, channelClaimID)
-	response, err := c.Get(fmt.Sprintf("https://chainquery.lbry.com/api/sql?query=%s", url.QueryEscape(sql)))
+	response, err := c.Get(fmt.Sprintf("https://chainquery.odysee.tv/api/sql?query=%s", url.QueryEscape(sql)))
 	if err != nil {
 		return nil, errors.Err(err)
 	}
