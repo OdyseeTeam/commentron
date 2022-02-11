@@ -380,7 +380,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		if err != nil {
 			return errors.Err(err)
 		}
-		if !request.commenterChannel.CreatedAt.Add(time.Duration(settings.TimeSinceFirstComment.Int64) * time.Minute).Before(time.Now()) {
+		if time.Since(request.commenterChannel.CreatedAt) < time.Duration(settings.TimeSinceFirstComment.Int64)*time.Minute {
 			return api.StatusError{Err: errors.Err("your account is too newly"), Status: http.StatusBadRequest}
 		}
 	}
