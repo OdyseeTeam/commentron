@@ -181,8 +181,8 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	}
 
 	if args.TimeSinceFirstComment != nil {
-		tipGoalAmt := int64(*args.TimeSinceFirstComment)
-		settings.TimeSinceFirstComment.SetValid(tipGoalAmt)
+		timeSinceFirstCmt := int64(*args.TimeSinceFirstComment)
+		settings.TimeSinceFirstComment.SetValid(timeSinceFirstCmt)
 		if *args.TimeSinceFirstComment == 0 {
 			settings.TimeSinceFirstComment.Valid = false
 		}
