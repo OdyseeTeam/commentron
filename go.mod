@@ -18,9 +18,9 @@ require (
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/johntdyer/slackrus v0.0.0-20180518184837-f7aae3243a07
-	github.com/jteeuwen/go-bindata v3.0.7+incompatible
 	github.com/justinas/alice v1.2.0
 	github.com/karlseguin/ccache v2.0.3+incompatible
+	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
 	github.com/lbryio/lbry.go v1.1.2
 	github.com/lbryio/lbry.go/v2 v2.7.2-0.20220208210038-a0391bec7915
