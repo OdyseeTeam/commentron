@@ -5,12 +5,10 @@ trap 'err=1' ERR
 # All the .go files, excluding vendor/ and model (auto generated)
 GO_FILES=$(find . -iname '*.go' -type f | grep -v /model/*  | grep -v /migration/*)
 (
-	GO111MODULE=off
-	go get -u golang.org/x/tools/cmd/goimports                     # Used in build script for generated files
-	go get -u golang.org/x/lint/golint                             # Linter
-	go get -u github.com/mdempsky/unconvert                        # Identifies unnecessary type conversions
-	go get -u github.com/kisielk/errcheck                          # Checks for unhandled errors
-
+	go install golang.org/x/tools/cmd/goimports@latest                   # Used in build script for generated files
+	go install golang.org/x/lint/golint@latest                           # Linter
+	go install github.com/mdempsky/unconvert@latest                      # Identifies unnecessary type conversions
+	go install github.com/kisielk/errcheck@latest                        # Checks for unhandled errors
 )
 # go vet is the official Go static analyzer
 echo "Running go vet..." && go vet $(go list ./... | grep -v /migration/* | grep -v /model/* | grep -v /server/services/v1/rpc/*  )

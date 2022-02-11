@@ -1,16 +1,16 @@
 #!/bin/bash
 
- set -euo pipefail
+set -euo pipefail
 
- DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
- cd "$DIR"
- cd ".."
- DIR="$PWD"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR"
+cd ".."
+DIR="$PWD"
 
 
 echo "== Installing dependencies =="
-GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-GO111MODULE=off go get -u github.com/jteeuwen/go-bindata/...
+go get golang.org/x/tools/cmd/goimports@latest
+go get github.com/jteeuwen/go-bindata/...@latest
 go mod download
 
 
