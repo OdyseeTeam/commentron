@@ -376,7 +376,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
 	}
 	if settings.TimeSinceFirstComment.Valid {
-		request.commenterChannel, err = helper.FindOrCreateChannel(request.args.ClaimID, request.args.ChannelName)
+		request.commenterChannel, err = helper.FindOrCreateChannel(request.args.ChannelID, request.args.ChannelName)
 		if err != nil {
 			return errors.Err(err)
 		}
