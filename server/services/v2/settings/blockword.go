@@ -25,7 +25,7 @@ func (s *Service) BlockWord(r *http.Request, args *commentapi.BlockWordArgs, rep
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	err = lbry.ValidateSignatureAndTS(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (s *Service) UnBlockWord(r *http.Request, args *commentapi.UnBlockWordArgs,
 	if creatorChannel == nil {
 		return api.StatusError{Err: errors.Err("could not find channel %s with channel id %s", args.ChannelName, args.ChannelID), Status: http.StatusBadRequest}
 	}
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	err = lbry.ValidateSignatureAndTS(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (s *Service) ListBlockedWords(r *http.Request, args *commentapi.ListBlocked
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	err = lbry.ValidateSignatureAndTS(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return err
 	}

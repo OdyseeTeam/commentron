@@ -36,7 +36,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		if err != nil {
 			return errors.Err(err)
 		}
-		err = lbry.ValidateSignature(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		err = lbry.ValidateSignatureAndTS(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
 		if err != nil {
 			return err
 		}

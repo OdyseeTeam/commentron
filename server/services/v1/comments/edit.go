@@ -30,7 +30,7 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	if channel == nil {
 		return nil, api.StatusError{Err: errors.Err("channel id %s could not be found"), Status: http.StatusBadRequest}
 	}
-	err = lbry.ValidateSignature(comment.ChannelID.String, args.Signature, args.SigningTS, args.Comment)
+	err = lbry.ValidateSignatureAndTS(comment.ChannelID.String, args.Signature, args.SigningTS, args.Comment)
 	if err != nil {
 		return nil, err
 	}

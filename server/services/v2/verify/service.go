@@ -19,7 +19,7 @@ func (s Service) Signature(r *http.Request, args *commentapi.SignatureArgs, repl
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, string(bytes))
+	err = lbry.ValidateSignatureAndTS(args.ChannelID, args.Signature, args.SigningTS, string(bytes))
 	if err != nil {
 		return err
 	}

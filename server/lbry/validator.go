@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/karlseguin/ccache"
@@ -108,10 +109,30 @@ func getPublicKeyFromCQForChannel(channelClaimID string) ([]byte, error) {
 	return nil, errors.Err("no certificate found from CQ")
 }
 
-// ValidateSignature validates the signature was signed by the channel reference.
-func ValidateSignature(channelClaimID, signature, signingTS, data string) error {
+// ValidateSignatureAndTS validates the signature was signed by the channel reference.
+func ValidateSignatureAndTS(channelClaimID, signature, signingTS, data string) error {
 	if config.IsTestMode {
 		return nil
+	}
+	pk, err := getPublicKeyForChannel(channelClaimID)
+	if err != nil {
+		return err
+	}
+	return validateSignature(channelClaimID, signature, signingTS, data, pk)
+}
+
+// ValidateSignatureNoTSLimit validates the signature was signed by the channel reference.
+func ValidateSignatureNoTSLimit(channelClaimID, signature, signingTS, data string) error {
+	if config.IsTestMode {
+		return nil
+	}
+	timestamp, err := strconv.ParseInt(signingTS, 10, 64)
+	if err != nil {
+		return errors.Err("timestamp '%s' is an invalid unix timestamp", signingTS)
+	}
+	timeSigned := time.Unix(timestamp, 0)
+	if time.Since(timeSigned) > 15*time.Minute {
+		return errors.Err("timestamp is no longer valid")
 	}
 	pk, err := getPublicKeyForChannel(channelClaimID)
 	if err != nil {

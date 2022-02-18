@@ -26,7 +26,7 @@ func (s *Service) List(r *http.Request, args *commentapi.ListSettingsArgs, reply
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	err = lbry.ValidateSignatureAndTS(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	if err != nil {
 		return errors.Err(err)
 	}
-	err = lbry.ValidateSignature(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
+	err = lbry.ValidateSignatureAndTS(creatorChannel.ClaimID, args.Signature, args.SigningTS, args.ChannelName)
 	if err != nil {
 		return err
 	}

@@ -153,7 +153,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		}
 	}
 
-	err = lbry.ValidateSignature(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
+	err = lbry.ValidateSignatureAndTS(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}

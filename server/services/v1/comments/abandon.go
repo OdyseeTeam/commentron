@@ -60,7 +60,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		modChannel = commenterChannel
 	}
 
-	err = lbry.ValidateSignature(modChannel.ClaimID, args.Signature, args.SigningTS, args.CommentID)
+	err = lbry.ValidateSignatureAndTS(modChannel.ClaimID, args.Signature, args.SigningTS, args.CommentID)
 	if err != nil {
 		return nil, err
 	}

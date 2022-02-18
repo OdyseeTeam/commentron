@@ -49,7 +49,7 @@ func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorizat
 		return modChannel, ownerChannel, userInfo, nil
 	}
 
-	err = lbry.ValidateSignature(modChannel.ClaimID, modAuthorization.Signature, modAuthorization.SigningTS, modChannel.Name)
+	err = lbry.ValidateSignatureAndTS(modChannel.ClaimID, modAuthorization.Signature, modAuthorization.SigningTS, modChannel.Name)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -69,7 +69,7 @@ func Authenticate(r *http.Request, authorization *commentapi.Authorization) (*mo
 	if authorization == nil {
 		return nil, nil, errors.Err("if not authorizing channel for call, must use OAuth")
 	}
-	err := lbry.ValidateSignature(authorization.ChannelID, authorization.Signature, authorization.SigningTS, authorization.ChannelName)
+	err := lbry.ValidateSignatureAndTS(authorization.ChannelID, authorization.Signature, authorization.SigningTS, authorization.ChannelName)
 	if err != nil {
 		return nil, nil, errors.Prefix("could not authenticate channel signature:", err)
 	}

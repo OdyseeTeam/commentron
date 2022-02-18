@@ -55,7 +55,7 @@ func (t *Service) Status(r *http.Request, args *Args, reply *Response) error {
 
 	for _, c := range args.MyChannels {
 		if !confirmedChannels[c.ChannelID] {
-			err := lbry.ValidateSignature(c.ChannelID, c.Signature, c.SigningTS, c.ChannelName)
+			err := lbry.ValidateSignatureAndTS(c.ChannelID, c.Signature, c.SigningTS, c.ChannelName)
 			if err != nil {
 				reply.UnConfirmed = append(reply.UnConfirmed, c)
 			}
