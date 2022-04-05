@@ -14,7 +14,7 @@ Make sure you setup the configuration to use env files.
 
 `MYSQL_DSN_RW="lbry-rw:lbry@tcp(localhost:3306)/commentron"`
 
-`SDK_URL="https://api.lbry.tv/api/v1/proxy"`
+`SDK_URL="https://api.na-backend.odysee.com/api/v1/proxy"`
 
 `SOCKETY_TOKEN="sockety_token" #If you want to integrate directly with sockety locally`
 

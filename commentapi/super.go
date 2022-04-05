@@ -39,15 +39,15 @@ func (c *SuperListArgs) ApplyDefaults() {
 	}
 
 	if c.PageSize == 0 {
-		c.PageSize = 500
+		c.PageSize = 100
 	}
 
 	if c.SuperChatsAmount == 0 {
 		c.SuperChatsAmount = 1
 	}
 
-	if c.PageSize > 500 {
-		c.PageSize = 500
+	if c.PageSize > 100 {
+		c.PageSize = 100
 	}
 }
 

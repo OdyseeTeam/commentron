@@ -1,4 +1,4 @@
-POST https://api.lbry.tv/api/v1/proxy
+POST https://api.na-backend.odysee.com/api/v1/proxy
 Content-Type: application/json
 
 {
