@@ -9,6 +9,7 @@ var allowedStickers = map[string]bool{
 	"SICK_SKULL":                            false,
 	"SICK_FLAME":                            false,
 	"SLIME":                                 false,
+	"FIRE":                                  false,
 	"WHUUT":                                 false,
 	"FAIL":                                  false,
 	"HYPE":                                  false,
