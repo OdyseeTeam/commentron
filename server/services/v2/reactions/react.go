@@ -163,17 +163,17 @@ func updateCommentScoring(reactionType *model.ReactionType, comment *model.Comme
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] likes:", comment.CommentID), err))
 		return
 	}
-	comment.PopularityScore.SetValid(int(likes))
-	err = comment.Update(db.RW, boil.Whitelist(model.CommentColumns.PopularityScore))
-	if err != nil {
-		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] popularity scoring:", comment.CommentID), err))
-	}
-	// Update Controversy Score
 	dislikes, err := comment.Reactions(model.ReactionWhere.ReactionTypeID.EQ(disLikeRT)).Count(db.RO)
 	if err != nil {
 		logrus.Error(errors.Prefix(fmt.Sprintf("Error getting comment[%s] dislikes:", comment.CommentID), err))
 		return
 	}
+	comment.PopularityScore.SetValid(int(likes - dislikes))
+	err = comment.Update(db.RW, boil.Whitelist(model.CommentColumns.PopularityScore))
+	if err != nil {
+		logrus.Error(errors.Prefix(fmt.Sprintf("Error updating comment[%s] popularity scoring:", comment.CommentID), err))
+	}
+	// Update Controversy Score
 	absValue := math.Abs(float64(likes - dislikes))
 	if absValue == 0 {
 		absValue = 1
