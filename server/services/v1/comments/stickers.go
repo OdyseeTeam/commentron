@@ -49,6 +49,7 @@ var allowedStickers = map[string]bool{
 	"MONEY_PRINTER":                         false,
 	"DAVE":                                  false,
 	"NICK":                                  false,
+	"DOGE":                                  false,
 	// PAID STICKERS
 	"TIP_HAND_FLIP":      true,
 	"TIP_HAND_FLIP_COIN": true,
