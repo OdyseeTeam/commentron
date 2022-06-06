@@ -47,5 +47,5 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`.*[Ww]orks[Ss]ilver.*`),
 	regexp.MustCompile(`.*[Ww]ork[Jj]oin.*`),
 	regexp.MustCompile(`.*[Jj]ob[Cc]ash.*`),
-	regexp.MustCompile(`.*g[eo]t paid.*online.*`),
+	regexp.MustCompile(`.*g[eo]t paid.*online.*\.(com|ly|net|xyz|org).*`),
 }
