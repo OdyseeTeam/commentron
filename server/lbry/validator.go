@@ -219,7 +219,11 @@ type publicKeyInfo struct {
 	PublicKey asn1.BitString
 }
 
+//why the hell are we reusing code from lbry.go instead of just using lbry.go??
 func getPublicKeyFromBytes(pubKeyBytes []byte) (*btcec.PublicKey, error) {
+	if len(pubKeyBytes) == 33 {
+		return btcec.ParsePubKey(pubKeyBytes, btcec.S256())
+	}
 	PKInfo := publicKeyInfo{}
 	_, err := asn1.Unmarshal(pubKeyBytes, &PKInfo)
 	if err != nil {
