@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lbryio/errors.go"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
 	"github.com/lbryio/ozzo-validation/is"
 

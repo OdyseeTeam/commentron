@@ -12,7 +12,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/go-co-op/gocron v1.9.0
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/rpc v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
@@ -21,25 +21,23 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/karlseguin/ccache v2.0.3+incompatible
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
-	github.com/lbryio/errors.go v0.0.0-20180223142025-ad03d3cc6a5c
-	github.com/lbryio/lbry.go v1.1.2
-	github.com/lbryio/lbry.go/v2 v2.7.2-0.20220208210038-a0391bec7915
+	github.com/lbryio/lbry.go/v2 v2.7.2-0.20220610161826-365d23f0e273
 	github.com/lbryio/ozzo-validation v0.0.0-20170512160344-202201e212ec
 	github.com/lbryio/sockety v0.0.0-20210726164138-c31f4c02bdcf
-	github.com/mitchellh/mapstructure v1.4.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/profile v1.5.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cast v1.3.1
+	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stripe/stripe-go v70.15.0+incompatible
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.4.0+incompatible
-	github.com/ybbus/jsonrpc v0.0.0-20180411222309-2a548b7d822d
+	github.com/ybbus/jsonrpc v2.1.2+incompatible
 )
 
 require (
@@ -59,14 +57,14 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/nlopes/slack v0.6.0 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.18.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/shopspring/decimal v0.0.0-20191009025716-f1972eb1d1f5 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/slack-go/slack v0.10.3 // indirect
 	github.com/spf13/afero v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

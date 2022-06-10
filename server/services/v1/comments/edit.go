@@ -9,7 +9,7 @@ import (
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
-	"github.com/lbryio/lbry.go/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	"github.com/volatiletech/sqlboiler/boil"
