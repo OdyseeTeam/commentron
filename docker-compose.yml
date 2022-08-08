@@ -3,32 +3,26 @@ version: "3.7"
 services:
   mysql:
     image: mysql/mysql-server:5.7.31
-    restart: "no"
-    expose:
-      - "3306"
+    ports:
+      - "3306:3306"
     environment:
       - MYSQL_DATABASE=commentron
       - MYSQL_USER=lbry
       - MYSQL_PASSWORD=lbry
       - MYSQL_LOG_CONSOLE=true
+      - MYSQL_ROOT_PASSWORD=lbry
     volumes:
-      - data:/var/lib/mysql"
+      - ./data:/var/lib/mysql
   commentron:
-    image: lbry/commentron:master
+    image: odyseeteam/commentron:master
     restart: "no"
     ports:
       - "5900:5900"
     environment:
       - MYSQL_DSN=lbry:lbry@tcp(mysql:3306)/commentron
-      - AUTH_TOKEN=<token>
+      - MYSQL_DSN_RO=lbry-ro:lbry@tcp(mysql:3306)/commentron
+      - MYSQL_DSN_RW=lbry-rw:lbry@tcp(mysql:3306)/commentron
+      - SDK_URL=https://api.na-backend.odysee.com/api/v1/proxy
     depends_on:
       - mysql
     entrypoint: wait-for-it -t 0 mysql:3306 -- ./commentron serve
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-
-volumes:
-  data:
