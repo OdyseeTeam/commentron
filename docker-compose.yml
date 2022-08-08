@@ -26,3 +26,8 @@ services:
     depends_on:
       - mysql
     entrypoint: wait-for-it -t 0 mysql:3306 -- ./commentron serve
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
