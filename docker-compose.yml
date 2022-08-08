@@ -3,8 +3,8 @@ version: "3.7"
 services:
   mysql:
     image: mysql/mysql-server:5.7.31
-    ports:
-      - "3306:3306"
+    expose:
+      - "3306"
     environment:
       - MYSQL_DATABASE=commentron
       - MYSQL_USER=lbry
@@ -12,7 +12,7 @@ services:
       - MYSQL_LOG_CONSOLE=true
       - MYSQL_ROOT_PASSWORD=lbry
     volumes:
-      - ./data:/var/lib/mysql
+      - data:/var/lib/mysql
   commentron:
     image: odyseeteam/commentron:master
     restart: "no"
@@ -31,3 +31,5 @@ services:
     restart: always
     ports:
       - 8080:8080
+volumes:
+  data:
