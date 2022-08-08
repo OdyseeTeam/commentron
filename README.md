@@ -27,6 +27,22 @@ in the `.env` file locally with the username and password.
 
 Then once mysql is running you can hit play. 
 
+## Run with docker
+Download latest docker-compose.yml file and run ```docker-compose up -d```
+Then ssh into container with ```docker exec –it MYSQL_CONTAINERNAME /bin/bash```
+After that login to mysql with root user ```mysql -u root -p```
+You will be asked for MYSQL_ROOT_PASSWORD you have set in docker-compose.
+Then execute following commands:
+```CREATE DATABASE IF NOT EXISTS commentron;
+   CREATE DATABASE IF NOT EXISTS social;
+   CREATE USER 'lbry-rw'@'%' IDENTIFIED BY 'lbry';
+   CREATE USER 'lbry-ro'@'%' IDENTIFIED BY 'lbry';
+   GRANT ALL ON commentron.* TO 'lbry-rw'@'%';
+   GRANT SELECT ON commentron.* TO 'lbry-ro'@'%';
+   GRANT ALL ON social.* TO 'lbry-rw'@'%';```
+After that restart commentron docker container.
+If you have done everything corectly you should see info page on HOSTIP:5900
+
 ## Key packages
 
 These are the key packages where most work is completed.
