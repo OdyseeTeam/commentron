@@ -39,9 +39,11 @@ Then execute following commands:
    CREATE USER 'lbry-ro'@'%' IDENTIFIED BY 'lbry';
    GRANT ALL ON commentron.* TO 'lbry-rw'@'%';
    GRANT SELECT ON commentron.* TO 'lbry-ro'@'%';
-   GRANT ALL ON social.* TO 'lbry-rw'@'%';```
+   GRANT ALL ON social.* TO 'lbry-rw'@'%';
+   ```
 After that restart commentron docker container.
 If you have done everything corectly you should see info page on HOSTIP:5900
+
 
 ## Key packages
 
