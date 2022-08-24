@@ -14,7 +14,7 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func listBlocks(r *http.Request, args *commentapi.AppealBlockListArgs, reply *commentapi.AppealBlockListResponse) error {

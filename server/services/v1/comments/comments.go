@@ -7,7 +7,7 @@ import (
 	m "github.com/lbryio/commentron/model"
 
 	"github.com/btcsuite/btcutil"
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 )
 
 var currencyMap = map[string]uint64{"USD": 100}

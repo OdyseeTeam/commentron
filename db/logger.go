@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"

@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/lbryio/commentron/server/auth"
 
 	"github.com/lbryio/commentron/db"
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 
 	"github.com/lbryio/commentron/model"
 

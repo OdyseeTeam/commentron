@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/karlseguin/ccache"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	m "github.com/lbryio/commentron/model"
@@ -16,8 +14,9 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/util"
 
 	"github.com/btcsuite/btcutil"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/karlseguin/ccache/v2"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {

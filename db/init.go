@@ -9,7 +9,7 @@ import (
 	_ "github.com/kevinburke/go-bindata" // so it's detected by `dep ensure`
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // RW this db is used for read-write calls, it can be used for RO calls too but to load balance use the RO please.

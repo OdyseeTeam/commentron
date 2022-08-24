@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 
 	"github.com/lbryio/commentron/validator"
 
