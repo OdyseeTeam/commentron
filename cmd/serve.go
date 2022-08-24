@@ -6,6 +6,7 @@ import (
 	"github.com/lbryio/commentron/jobs"
 	"github.com/lbryio/commentron/server"
 	"github.com/lbryio/commentron/server/lbry"
+
 	"github.com/pkg/profile"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

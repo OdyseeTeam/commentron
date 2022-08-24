@@ -9,9 +9,9 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/karlseguin/ccache"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/karlseguin/ccache/v2"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var channelCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))

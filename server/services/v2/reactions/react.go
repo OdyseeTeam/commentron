@@ -7,13 +7,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/commentron/server/auth"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
+	"github.com/lbryio/commentron/server/auth"
 	"github.com/lbryio/commentron/sockety"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
@@ -22,9 +21,9 @@ import (
 	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/sirupsen/logrus"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // React creates/updates a reaction to a comment

@@ -28,13 +28,13 @@ import (
 	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"
 	"github.com/hbakhtiyor/strsim"
-	"github.com/karlseguin/ccache"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/paymentintent"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
@@ -82,10 +82,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
-		err = flags.CheckComment(request.comment)
-		if err != nil {
-			return err
-		}
+		flags.CheckComment(request.comment)
 	}
 
 	err = request.comment.Insert(db.RW, boil.Infer())

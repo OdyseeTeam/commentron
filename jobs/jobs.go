@@ -3,11 +3,11 @@ package jobs
 import (
 	"time"
 
+	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/metrics"
+	"github.com/lbryio/commentron/model"
 
 	"github.com/go-co-op/gocron"
-	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/model"
 	"github.com/sirupsen/logrus"
 )
 

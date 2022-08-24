@@ -5,16 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lbryio/commentron/server/auth"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/model"
+	"github.com/lbryio/commentron/server/auth"
 	"github.com/lbryio/commentron/server/services/v2/blockedlists"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func listBlocks(r *http.Request, args *commentapi.AppealBlockListArgs, reply *commentapi.AppealBlockListResponse) error {

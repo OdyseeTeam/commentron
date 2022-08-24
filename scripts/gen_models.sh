@@ -6,7 +6,7 @@ cd ".."
 DIR="$PWD"
 (
   cd "$DIR"
-  go install github.com/volatiletech/sqlboiler@v3.4.0
-  go install github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql@v3.4.0
+  go install github.com/volatiletech/sqlboiler/v4@latest
+  go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
   sqlboiler --no-rows-affected --no-auto-timestamps --no-hooks --no-tests --no-context --wipe mysql
 )

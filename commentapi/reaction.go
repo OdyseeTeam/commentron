@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 )
 
 // ReactArgs are the arguments passed to comment.Abandon RPC call

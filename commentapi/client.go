@@ -11,8 +11,9 @@ import (
 
 	"github.com/lbryio/commentron/server/lbry"
 
-	"github.com/fatih/structs"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	
+	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"github.com/ybbus/jsonrpc"

@@ -6,13 +6,14 @@ import (
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/flags"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
@@ -23,6 +24,7 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	if comment == nil {
 		return nil, api.StatusError{Err: errors.Err("could not find comment with id %s", args.CommentID), Status: http.StatusBadRequest}
 	}
+
 	channel, err := model.Channels(model.ChannelWhere.ClaimID.EQ(comment.ChannelID.String)).One(db.RO)
 	if err != nil {
 		return nil, errors.Err(err)
@@ -40,6 +42,14 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	comment.Signature.SetValid(args.Signature)
 	comment.Signingts.SetValid(args.SigningTS)
 	comment.Timestamp = int(time.Now().Unix())
+
+	//todo: check the edited comment against the channel's rules (blockedByCreator currently only accepts CreateRequest objects and not EditRequest objects)
+	//err = blockedByCreator(&createRequest{args: args})
+	//if err != nil {
+	//	return err
+	//}
+
+	flags.CheckComment(comment)
 	err = comment.Update(db.RW, boil.Infer())
 	if err != nil {
 		return nil, errors.Err(err)

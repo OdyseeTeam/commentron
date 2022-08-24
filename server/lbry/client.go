@@ -2,7 +2,9 @@ package lbry
 
 import (
 	"github.com/lbryio/commentron/env"
+
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
+
 	"github.com/sirupsen/logrus"
 )
 

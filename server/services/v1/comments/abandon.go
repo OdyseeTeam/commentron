@@ -3,19 +3,18 @@ package comments
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/sockety"
-	"github.com/lbryio/sockety/socketyapi"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/commentron/sockety"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/sockety/socketyapi"
 
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {

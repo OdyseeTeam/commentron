@@ -3,10 +3,9 @@ package comments
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/helper"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/commentron/sockety"
@@ -14,7 +13,7 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/sockety/socketyapi"
 
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, error) {
