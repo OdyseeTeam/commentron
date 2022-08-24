@@ -5,7 +5,7 @@ import (
 )
 
 // CheckComment checks and flags comments for deletion due to spam or key phrases
-func CheckComment(proposedComment *model.Comment) error {
+func CheckComment(proposedComment *model.Comment) {
 	if _, found := commentSpammers[proposedComment.ChannelID.String]; found {
 		proposedComment.IsFlagged = true
 	}
@@ -13,9 +13,9 @@ func CheckComment(proposedComment *model.Comment) error {
 	for _, re := range flaggedPhrases {
 		if re.MatchString(proposedComment.Body) {
 			proposedComment.IsFlagged = true
+			break
 		}
 	}
-	return nil
 }
 
 // CheckReaction checks reactions for spammers and flags reaction for deletion.

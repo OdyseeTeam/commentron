@@ -82,10 +82,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
-		err = flags.CheckComment(request.comment)
-		if err != nil {
-			return err
-		}
+		flags.CheckComment(request.comment)
 	}
 
 	err = request.comment.Insert(db.RW, boil.Infer())
