@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/env"
+
 	"github.com/sirupsen/logrus"
 )
 

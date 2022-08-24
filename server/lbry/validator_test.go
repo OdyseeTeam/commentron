@@ -15,8 +15,9 @@ import (
 
 	"github.com/lbryio/commentron/helper"
 
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/lbryio/lbry.go/v2/schema/keys"
+
+	"github.com/btcsuite/btcd/btcec"
 )
 
 func TestValidateSignature1(t *testing.T) {

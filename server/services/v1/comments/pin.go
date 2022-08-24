@@ -3,10 +3,9 @@ package comments
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/helper"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
 	"github.com/lbryio/commentron/sockety"

@@ -12,13 +12,13 @@ import (
 
 	"github.com/lbryio/commentron/helper"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/schema/keys"
+
+	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcutil/base58"
+	"github.com/sirupsen/logrus"
 )
 
 var testChannel *Channel

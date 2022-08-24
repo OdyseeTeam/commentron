@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	"github.com/lbryio/commentron/server/lbry"
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/lbryio/commentron/commentapi"
+	"github.com/lbryio/commentron/server/lbry"
+
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 )
 
 // Service is the service struct defined for the comment package for rpc service "moderation.*"

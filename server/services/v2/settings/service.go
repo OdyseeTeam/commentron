@@ -3,8 +3,6 @@ package settings
 import (
 	"net/http"
 
-	"github.com/lbryio/lbry.go/v2/extras/util"
-
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
 	"github.com/lbryio/commentron/helper"
@@ -12,6 +10,7 @@ import (
 	"github.com/lbryio/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/util"
 
 	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
