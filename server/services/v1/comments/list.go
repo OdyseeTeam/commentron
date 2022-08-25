@@ -48,6 +48,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
 	filterParent := m.CommentWhere.ParentID.EQ(null.StringFrom(util.StrFromPtr(args.ParentID)))
+	filterFlaggedComments := m.CommentWhere.IsFlagged.EQ(false)
 
 	totalFilteredCommentsQuery := make([]qm.QueryMod, 0)
 	totalCommentsQuery := make([]qm.QueryMod, 0)
@@ -81,6 +82,8 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
 	}
+
+	getCommentsQuery = append(getCommentsQuery, filterFlaggedComments)
 
 	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).Count(db.RO)
 	if err != nil {
