@@ -9,6 +9,8 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`(?mis).*hour for doing online work from home(?s).*`),
 	regexp.MustCompile(`(?mis).*adshrink.it.*`),
 	regexp.MustCompile(`(?mis).*I get paid over \$.* per hour working from home(?s).*`),
+	regexp.MustCompile(`(?mis).*I get paid more than \$(?s).* per hour working from home(?s).*`),
+	regexp.MustCompile(`(?mis).*I get paid more than \$(?s).* per hour working online(?s).*`),
 	regexp.MustCompile(`(?mis).*Free Money - After(?s).*`),
 	regexp.MustCompile(`(?mis).*Real online home based job(?s).*`),
 	regexp.MustCompile(`(?mis).*I getting Paid upto \$.* this week(?s).*`),
@@ -58,5 +60,8 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`(?mis).*paid over(?s).*https://www.*`),
 	regexp.MustCompile(`(?mis).*working from(?s).*https://www.*`),
 	regexp.MustCompile(`(?mis).per-hr(?s).*earning $(?s).*https://*`),
+	regexp.MustCompile(`(?mis).per hour(?s).*earning $(?s).*https://*`),
+	regexp.MustCompile(`(?mis).paid more(?s).*https://tinyurl*`),
+	regexp.MustCompile(`(?mis).earn over(?s).*https://tinyurl*`),
 	regexp.MustCompile(`(?mis).*I recommend him to anyone with; Herpes Virus.*`),
 }
