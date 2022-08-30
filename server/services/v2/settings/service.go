@@ -248,10 +248,9 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.TipgoalOverlay = &settings.TipgoalOverlay
 	reply.TipgoalOverlayPosition = &settings.TipgoalOverlayPosition
 	reply.TipgoalPreviousDonations = &settings.TipgoalPreviousDonations
-	tipgoalAmount := uint64(settings.TipgoalAmount)
-	reply.TipgoalAmount = &tipgoalAmount
+	tipGoalAmount := uint64(settings.TipgoalAmount)
+	reply.TipgoalAmount = &tipGoalAmount
 	reply.TipgoalCurrency = &settings.TipgoalCurrency
-	reply.PublicShowProtecteds = &settings.PublicShowProtected
+	reply.PublicShowProtected = &settings.PublicShowProtected
 	reply.PrivateShowProtected = &settings.PrivateShowProtected
-
 }

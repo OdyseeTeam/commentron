@@ -16,6 +16,7 @@
 // migration/013_oauth.sql (236B)
 // migration/014_overlap_settings.sql (2.022kB)
 // migration/015_creationtime.sql (827B)
+// migration/016_protected_settings.sql (302B)
 // migration/migration.go (66B)
 
 package migration
@@ -405,6 +406,26 @@ func migration015_creationtimeSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration016_protected_settingsSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xac\xce\xb1\x0e\x82\x30\x14\x46\xe1\x9d\xa7\xf8\x77\xc3\x13\x38\x15\x29\xd3\x95\x26\xd2\xce\xa4\xc2\x4d\x6d\x22\x6d\x53\xae\xfa\xfa\xae\x0e\x8e\x8c\x67\x3a\x5f\xdb\xe2\xb4\xc5\x50\xbd\x30\x5c\x69\x9a\xdf\x9e\xc4\x0b\x6f\x9c\xa4\xe3\x10\x53\xa3\xc8\xea\x1b\xac\xea\x48\x63\xa9\xec\x25\xd7\x79\x67\x91\x98\x02\x54\xdf\xe3\x62\xc8\x5d\x47\x94\xd7\xfd\x19\x97\x79\x7f\xe4\xcf\x5c\x6a\x16\x5e\x84\x57\x74\xc6\x10\x46\x63\x31\x3a\x22\xf4\x7a\x50\x8e\x2c\x06\x45\x93\x3e\xff\x9f\xea\xb4\x1e\xc2\xa9\xf1\xed\x85\x8f\xf1\x7c\x03\x00\x00\xff\xff\x48\x9b\x4a\x7f\x2e\x01\x00\x00")
+
+func migration016_protected_settingsSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration016_protected_settingsSql,
+		"migration/016_protected_settings.sql",
+	)
+}
+
+func migration016_protected_settingsSql() (*asset, error) {
+	bytes, err := migration016_protected_settingsSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/016_protected_settings.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x13, 0x97, 0xa1, 0x86, 0x6a, 0x59, 0x5b, 0x65, 0x4a, 0x6c, 0xa8, 0x64, 0x72, 0xe7, 0xec, 0x21, 0xed, 0x6e, 0xa0, 0x88, 0xf9, 0x99, 0x50, 0x6a, 0xa2, 0x43, 0xce, 0x43, 0xd6, 0xf5, 0x6d, 0x7f}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -532,6 +553,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/013_oauth.sql":                   migration013_oauthSql,
 	"migration/014_overlap_settings.sql":        migration014_overlap_settingsSql,
 	"migration/015_creationtime.sql":            migration015_creationtimeSql,
+	"migration/016_protected_settings.sql":      migration016_protected_settingsSql,
 	"migration/migration.go":                    migrationMigrationGo,
 }
 
@@ -596,6 +618,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"013_oauth.sql":                   {migration013_oauthSql, map[string]*bintree{}},
 		"014_overlap_settings.sql":        {migration014_overlap_settingsSql, map[string]*bintree{}},
 		"015_creationtime.sql":            {migration015_creationtimeSql, map[string]*bintree{}},
+		"016_protected_settings.sql":      {migration016_protected_settingsSql, map[string]*bintree{}},
 		"migration.go":                    {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}
