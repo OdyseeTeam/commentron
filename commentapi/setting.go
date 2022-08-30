@@ -40,6 +40,8 @@ type ListSettingsResponse struct {
 	TipgoalPreviousDonations   *bool    `json:"tipgoal_previous_donations"`
 	TipgoalCurrency            *string  `json:"tipgoal_currency"`
 	TimeSinceFirstComment      *uint64  `json:"time_since_first_comment"`
+	PublicShowProtected        *bool    `json:"public_show_protected"`
+	PrivateShowProtected       *bool    `json:"private_show_protected"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
@@ -67,6 +69,8 @@ type UpdateSettingsArgs struct {
 	TipgoalCurrency            *string  `json:"tipgoal_currency"`
 	// Minutes since first comment when users are allowed to comment on your content/livestream
 	TimeSinceFirstComment *uint64 `json:"time_since_first_comment"`
+	PublicShowProtected   *bool   `json:"public_show_protected"`
+	PrivateShowProtected  *bool   `json:"private_show_protected"`
 }
 
 // Validate validates the data in the args
