@@ -187,6 +187,14 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		}
 	}
 
+	if args.PrivateShowProtected != nil {
+		settings.PrivateShowProtected = *args.PrivateShowProtected
+	}
+
+	if args.PublicShowProtected != nil {
+		settings.PublicShowProtected = *args.PublicShowProtected
+	}
+
 	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
@@ -240,7 +248,9 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.TipgoalOverlay = &settings.TipgoalOverlay
 	reply.TipgoalOverlayPosition = &settings.TipgoalOverlayPosition
 	reply.TipgoalPreviousDonations = &settings.TipgoalPreviousDonations
-	tipgoalAmount := uint64(settings.TipgoalAmount)
-	reply.TipgoalAmount = &tipgoalAmount
+	tipGoalAmount := uint64(settings.TipgoalAmount)
+	reply.TipgoalAmount = &tipGoalAmount
 	reply.TipgoalCurrency = &settings.TipgoalCurrency
+	reply.PublicShowProtected = &settings.PublicShowProtected
+	reply.PrivateShowProtected = &settings.PrivateShowProtected
 }
