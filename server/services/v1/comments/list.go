@@ -44,7 +44,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	}
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
-	filterIsProtected := m.CommentWhere.IsProtected.EQ(null.BoolFrom(true))
+	filterIsProtected := m.CommentWhere.IsProtected.EQ(true)
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
 	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
