@@ -11,7 +11,7 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	
+
 	v "github.com/lbryio/ozzo-validation"
 )
 
@@ -39,6 +39,7 @@ type CommentItem struct {
 	IsHidden      bool    `json:"is_hidden"`
 	IsPinned      bool    `json:"is_pinned"`
 	IsFiat        bool    `json:"is_fiat"`
+	IsProtected   bool    `json:"is_protected"`
 }
 
 // ChannelArgs arguments to the comment.GetChannelForCommentID call
@@ -86,6 +87,7 @@ type CreateArgs struct {
 	Signature         string             `json:"signature"`
 	SigningTS         string             `json:"signing_ts"`
 	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
+	IsProtected       bool               `json:"is_protected"`
 }
 
 // CreateResponse response for the comment.Create rpc call
@@ -148,9 +150,10 @@ type ListArgs struct {
 	TopLevel             bool    `json:"top_level"`              // filters to only top level comments
 	Hidden               bool    `json:"hidden"`                 // if true will show hidden comments as well
 	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
+	IsProtected          bool    `json:"is_protected"`           // if true, only return protected when authorized
 }
 
-//Key returns the hash of the list args struct for caching
+// Key returns the hash of the list args struct for caching
 func (c *ListArgs) Key() (string, error) {
 	a, err := json.Marshal(c)
 	if err != nil {
@@ -194,13 +197,14 @@ func (c *ListArgs) ApplyDefaults() {
 
 // ListResponse response for the comment.List rpc call
 type ListResponse struct {
-	Page               int           `json:"page"`
-	PageSize           int           `json:"page_size"`
-	TotalPages         int           `json:"total_pages"`
-	TotalItems         int64         `json:"total_items"`
-	TotalFilteredItems int64         `json:"total_filtered_items"`
-	Items              []CommentItem `json:"items,omitempty"`
-	HasHiddenComments  bool          `json:"has_hidden_comments"`
+	Page                 int           `json:"page"`
+	PageSize             int           `json:"page_size"`
+	TotalPages           int           `json:"total_pages"`
+	TotalItems           int64         `json:"total_items"`
+	TotalFilteredItems   int64         `json:"total_filtered_items"`
+	Items                []CommentItem `json:"items,omitempty"`
+	HasHiddenComments    bool          `json:"has_hidden_comments"`
+	HasProtectedComments bool          `json:"has_protected_comments"`
 }
 
 // Validate validates the data in the list args

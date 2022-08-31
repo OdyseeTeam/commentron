@@ -44,6 +44,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	}
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
+	filterIsProtected := m.CommentWhere.IsProtected.EQ(null.BoolFrom(true))
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
 	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
@@ -55,10 +56,12 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	offset := (args.Page - 1) * args.PageSize
 	getCommentsQuery := applySorting(args.SortBy, []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize)})
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
+	HasProtectedCommentsQuery := []qm.QueryMod{filterIsProtected, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterAuthorClaimID)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterAuthorClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
 	}
@@ -66,6 +69,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	if args.ClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterClaimID)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
 	}
@@ -73,12 +77,14 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	if args.TopLevel {
 		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterTopLevel)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterTopLevel)
 	}
 
 	if args.ParentID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterParent)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterParent)
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
 	}
@@ -96,6 +102,11 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	}
 
 	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).Exists(db.RO)
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	HasProtectedComments, err := m.Comments(HasProtectedCommentsQuery...).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -118,6 +129,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	reply.TotalItems = totalItems
 	reply.TotalPages = int(math.Ceil(float64(totalFilteredItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
+	reply.HasProtectedComments = HasProtectedComments
 
 	return nil
 }
@@ -148,6 +160,7 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 	reply.Items = cachedReply.Items
 	reply.TotalItems = cachedReply.TotalItems
 	reply.HasHiddenComments = cachedReply.HasHiddenComments
+	reply.HasProtectedComments = cachedReply.HasProtectedComments
 	reply.TotalFilteredItems = cachedReply.TotalFilteredItems
 	reply.TotalPages = cachedReply.TotalPages
 	return nil

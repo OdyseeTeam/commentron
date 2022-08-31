@@ -45,6 +45,7 @@ func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentap
 		SupportAmount: supportAmount,
 		IsFiat:        comment.IsFiat,
 		Currency:      comment.Currency.String,
+		IsProtected:   comment.IsProtected,
 	}
 
 	return item
