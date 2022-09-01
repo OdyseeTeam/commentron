@@ -76,6 +76,9 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	request.comment.CommentID = commentID
 	request.comment.Timestamp = int(timestamp)
 
+	//TODO: This will require validation when Beamer can work on it, both for insert + read
+	request.comment.IsProtected = args.IsProtected
+
 	err = blockedByCreator(request)
 	if err != nil {
 		return err

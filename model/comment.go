@@ -40,6 +40,7 @@ type Comment struct {
 	ControversyScore null.Int    `boil:"controversy_score" json:"controversy_score,omitempty" toml:"controversy_score" yaml:"controversy_score,omitempty"`
 	IsFiat           bool        `boil:"is_fiat" json:"is_fiat" toml:"is_fiat" yaml:"is_fiat"`
 	Currency         null.String `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
+	IsProtected      bool        `boil:"is_protected" json:"is_protected" toml:"is_protected" yaml:"is_protected"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,6 +64,7 @@ var CommentColumns = struct {
 	ControversyScore string
 	IsFiat           string
 	Currency         string
+	IsProtected      string
 }{
 	CommentID:        "comment_id",
 	LbryClaimID:      "lbry_claim_id",
@@ -81,6 +83,7 @@ var CommentColumns = struct {
 	ControversyScore: "controversy_score",
 	IsFiat:           "is_fiat",
 	Currency:         "currency",
+	IsProtected:      "is_protected",
 }
 
 var CommentTableColumns = struct {
@@ -101,6 +104,7 @@ var CommentTableColumns = struct {
 	ControversyScore string
 	IsFiat           string
 	Currency         string
+	IsProtected      string
 }{
 	CommentID:        "comment.comment_id",
 	LbryClaimID:      "comment.lbry_claim_id",
@@ -119,6 +123,7 @@ var CommentTableColumns = struct {
 	ControversyScore: "comment.controversy_score",
 	IsFiat:           "comment.is_fiat",
 	Currency:         "comment.currency",
+	IsProtected:      "comment.is_protected",
 }
 
 // Generated where
@@ -173,6 +178,7 @@ var CommentWhere = struct {
 	ControversyScore whereHelpernull_Int
 	IsFiat           whereHelperbool
 	Currency         whereHelpernull_String
+	IsProtected      whereHelperbool
 }{
 	CommentID:        whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID:      whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -191,6 +197,7 @@ var CommentWhere = struct {
 	ControversyScore: whereHelpernull_Int{field: "`comment`.`controversy_score`"},
 	IsFiat:           whereHelperbool{field: "`comment`.`is_fiat`"},
 	Currency:         whereHelpernull_String{field: "`comment`.`currency`"},
+	IsProtected:      whereHelperbool{field: "`comment`.`is_protected`"},
 }
 
 // CommentRels is where relationship names are stored.
@@ -261,9 +268,9 @@ func (r *commentR) GetReactions() ReactionSlice {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score", "is_fiat", "currency"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score", "is_fiat", "currency", "is_protected"}
 	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score", "currency"}
-	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged", "is_fiat"}
+	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged", "is_fiat", "is_protected"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 	commentGeneratedColumns      = []string{}
 )

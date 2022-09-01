@@ -23,13 +23,14 @@ type SuperListArgs struct {
 
 // SuperListResponse response for the comment.List rpc call
 type SuperListResponse struct {
-	Page              int           `json:"page"`
-	PageSize          int           `json:"page_size"`
-	TotalPages        int           `json:"total_pages"`
-	TotalItems        int64         `json:"total_items"`
-	TotalAmount       float64       `json:"total_amount"`
-	Items             []CommentItem `json:"items,omitempty"`
-	HasHiddenComments bool          `json:"has_hidden_comments"`
+	Page                 int           `json:"page"`
+	PageSize             int           `json:"page_size"`
+	TotalPages           int           `json:"total_pages"`
+	TotalItems           int64         `json:"total_items"`
+	TotalAmount          float64       `json:"total_amount"`
+	Items                []CommentItem `json:"items,omitempty"`
+	HasHiddenComments    bool          `json:"has_hidden_comments"`
+	HasProtectedComments bool          `json:"has_protected_comments"`
 }
 
 // ApplyDefaults applies the default values for arguments passed that are different from normal defaults.

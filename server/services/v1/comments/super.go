@@ -23,6 +23,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	args.ApplyDefaults()
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
+	filterIsProtected := m.CommentWhere.IsProtected.EQ(true)
 	filterClaimID := m.CommentWhere.LbryClaimID.EQ(util.StrFromPtr(args.ClaimID))
 	filterAuthorClaimID := m.CommentWhere.ChannelID.EQ(null.StringFromPtr(args.AuthorClaimID))
 	filterTopLevel := m.CommentWhere.ParentID.IsNull()
@@ -34,10 +35,12 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	offset := (args.Page - 1) * args.PageSize
 	getCommentsQuery := []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize), qm.OrderBy(m.CommentColumns.IsFiat + " DESC, " + m.CommentColumns.Amount + " DESC, " + m.CommentColumns.Timestamp + " DESC")}
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
+	HasProtectedCommentsQuery := []qm.QueryMod{filterIsProtected, qm.Limit(1)}
 
 	if args.AuthorClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterAuthorClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterAuthorClaimID)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterAuthorClaimID)
 	}
@@ -45,6 +48,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	if args.ClaimID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterClaimID)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterClaimID)
 		totalCommentsQuery = append(totalCommentsQuery, filterClaimID)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterClaimID)
 	}
@@ -52,6 +56,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	if args.TopLevel {
 		getCommentsQuery = append(getCommentsQuery, filterTopLevel)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterTopLevel)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterTopLevel)
 		totalCommentsQuery = append(totalCommentsQuery, filterTopLevel)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterTopLevel)
 	}
@@ -59,6 +64,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	if args.ParentID != nil {
 		getCommentsQuery = append(getCommentsQuery, filterParent)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterParent)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterParent)
 	}
@@ -66,6 +72,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	if args.SuperChatsAmount > 0 {
 		getCommentsQuery = append(getCommentsQuery, filterSuperChats)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterSuperChats)
+		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterSuperChats)
 		totalCommentsQuery = append(totalCommentsQuery, filterSuperChats)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterSuperChats)
 	}
@@ -82,6 +89,11 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	}
 
 	hasHiddenComments, err := m.Comments(hasHiddenCommentsQuery...).Exists(db.RO)
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	HasProtectedComments, err := m.Comments(HasProtectedCommentsQuery...).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -112,6 +124,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	reply.TotalItems = totalItems
 	reply.TotalPages = int(math.Ceil(float64(totalItems) / float64(args.PageSize)))
 	reply.HasHiddenComments = hasHiddenComments
+	reply.HasProtectedComments = HasProtectedComments
 	reply.TotalAmount = btcutil.Amount(superChatAmount.Uint64).ToBTC()
 
 	return nil
@@ -143,6 +156,7 @@ func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, rep
 	reply.Items = cachedReply.Items
 	reply.TotalItems = cachedReply.TotalItems
 	reply.HasHiddenComments = cachedReply.HasHiddenComments
+	reply.HasProtectedComments = cachedReply.HasProtectedComments
 	reply.TotalPages = cachedReply.TotalPages
 	reply.TotalAmount = cachedReply.TotalAmount
 	return nil
