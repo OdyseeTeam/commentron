@@ -18,6 +18,7 @@
 // migration/015_creationtime.sql (827B)
 // migration/016_protected_settings.sql (302B)
 // migration/017_comments_protected_flag.sql (141B)
+// migration/018_comments_timestamp_idx.sql (133B)
 // migration/migration.go (66B)
 
 package migration
@@ -28,7 +29,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -447,6 +447,26 @@ func migration017_comments_protected_flagSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration018_comments_timestamp_idxSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xd2\xd5\x55\xd0\xce\xcd\x4c\x2f\x4a\x2c\x49\x55\x08\x2d\xe0\xe2\x42\xe6\x07\x97\x24\x96\xa4\xe6\xa6\xe6\x95\x38\xa5\xa6\x67\xe6\x71\x39\x07\xb9\x3a\x86\xb8\x2a\x78\xfa\xb9\xb8\x46\x28\x64\xa6\x54\xc4\x27\xe7\xe7\x82\x64\xe3\x4b\x32\x73\x53\x8b\x4b\x12\x73\x0b\xe2\x13\x73\xf2\xf3\x52\x15\xf2\xf3\x14\xa0\x52\x0a\x1a\x70\x39\x4d\x6b\xec\x66\xbb\xe6\xa5\x70\x01\x02\x00\x00\xff\xff\x21\x43\x19\xd2\x85\x00\x00\x00")
+
+func migration018_comments_timestamp_idxSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration018_comments_timestamp_idxSql,
+		"migration/018_comments_timestamp_idx.sql",
+	)
+}
+
+func migration018_comments_timestamp_idxSql() (*asset, error) {
+	bytes, err := migration018_comments_timestamp_idxSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/018_comments_timestamp_idx.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xcc, 0x16, 0xb6, 0xd7, 0x93, 0xda, 0xaf, 0x41, 0x93, 0x2e, 0xcf, 0x84, 0xbf, 0xbf, 0x11, 0xb9, 0x91, 0x9b, 0xb0, 0x5c, 0xd3, 0xd2, 0xc5, 0x6d, 0xc3, 0xe7, 0x8d, 0x78, 0xed, 0xda, 0x7, 0x13}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -576,6 +596,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/015_creationtime.sql":            migration015_creationtimeSql,
 	"migration/016_protected_settings.sql":      migration016_protected_settingsSql,
 	"migration/017_comments_protected_flag.sql": migration017_comments_protected_flagSql,
+	"migration/018_comments_timestamp_idx.sql":  migration018_comments_timestamp_idxSql,
 	"migration/migration.go":                    migrationMigrationGo,
 }
 
@@ -586,11 +607,13 @@ const AssetDebug = false
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
 // following hierarchy:
-//     data/
-//       foo.txt
-//       img/
-//         a.png
-//         b.png
+//
+//	data/
+//	  foo.txt
+//	  img/
+//	    a.png
+//	    b.png
+//
 // then AssetDir("data") would return []string{"foo.txt", "img"},
 // AssetDir("data/img") would return []string{"a.png", "b.png"},
 // AssetDir("foo.txt") and AssetDir("notexist") would return an error, and
@@ -642,6 +665,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"015_creationtime.sql":            {migration015_creationtimeSql, map[string]*bintree{}},
 		"016_protected_settings.sql":      {migration016_protected_settingsSql, map[string]*bintree{}},
 		"017_comments_protected_flag.sql": {migration017_comments_protected_flagSql, map[string]*bintree{}},
+		"018_comments_timestamp_idx.sql":  {migration018_comments_timestamp_idxSql, map[string]*bintree{}},
 		"migration.go":                    {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}
@@ -660,7 +684,7 @@ func RestoreAsset(dir, name string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(_filePath(dir, name), data, info.Mode())
+	err = os.WriteFile(_filePath(dir, name), data, info.Mode())
 	if err != nil {
 		return err
 	}
