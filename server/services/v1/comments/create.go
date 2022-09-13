@@ -85,10 +85,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return err
 	}
-
-	err = blockedByCreator(request, &item)
-	if err != nil {
-		return err
+	if !item.IsModerator {
+		err = blockedByCreator(request)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
@@ -251,7 +252,7 @@ type createRequest struct {
 
 const maxSimilaryScoreToCreatorName = 0.6
 
-func blockedByCreator(request *createRequest, item *commentapi.CommentItem) error {
+func blockedByCreator(request *createRequest) error {
 	var err error
 	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
 	if err != nil {
@@ -266,7 +267,7 @@ func blockedByCreator(request *createRequest, item *commentapi.CommentItem) erro
 	}
 	//Make sure commenter is not commenting from a channel that is "like" the creator.
 	similarity := strsim.Compare(request.creatorChannel.Name, request.args.ChannelName)
-	if request.args.ChannelID != request.signingChannel.ClaimID && !item.IsModerator && similarity > maxSimilaryScoreToCreatorName {
+	if request.args.ChannelID != request.signingChannel.ClaimID && similarity > maxSimilaryScoreToCreatorName {
 		return errors.Err("your user name %s is too close to the creator's user name %s and may cause confusion. Please use another identity.", request.args.ChannelName, request.creatorChannel.Name)
 	}
 
