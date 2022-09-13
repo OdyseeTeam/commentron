@@ -79,7 +79,14 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	//TODO: This will require validation when Beamer can work on it, both for insert + read
 	request.comment.IsProtected = args.IsProtected
 
-	err = blockedByCreator(request)
+	item := populateItem(request.comment, channel, 0)
+
+	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
+	if err != nil {
+		return err
+	}
+
+	err = blockedByCreator(request, &item)
 	if err != nil {
 		return err
 	}
@@ -89,13 +96,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	err = request.comment.Insert(db.RW, boil.Infer())
-	if err != nil {
-		return err
-	}
-
-	item := populateItem(request.comment, channel, 0)
-
-	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
 	if err != nil {
 		return err
 	}
@@ -251,7 +251,7 @@ type createRequest struct {
 
 const maxSimilaryScoreToCreatorName = 0.6
 
-func blockedByCreator(request *createRequest) error {
+func blockedByCreator(request *createRequest, item *commentapi.CommentItem) error {
 	var err error
 	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
 	if err != nil {
@@ -266,7 +266,7 @@ func blockedByCreator(request *createRequest) error {
 	}
 	//Make sure commenter is not commenting from a channel that is "like" the creator.
 	similarity := strsim.Compare(request.creatorChannel.Name, request.args.ChannelName)
-	if request.args.ChannelID != request.signingChannel.ClaimID && similarity > maxSimilaryScoreToCreatorName {
+	if request.args.ChannelID != request.signingChannel.ClaimID && !item.IsModerator && similarity > maxSimilaryScoreToCreatorName {
 		return errors.Err("your user name %s is too close to the creator's user name %s and may cause confusion. Please use another identity.", request.args.ChannelName, request.creatorChannel.Name)
 	}
 
