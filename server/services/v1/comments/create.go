@@ -79,9 +79,17 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	//TODO: This will require validation when Beamer can work on it, both for insert + read
 	request.comment.IsProtected = args.IsProtected
 
-	err = blockedByCreator(request)
+	item := populateItem(request.comment, channel, 0)
+
+	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
 	if err != nil {
 		return err
+	}
+	if !item.IsModerator {
+		err = blockedByCreator(request)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
@@ -89,13 +97,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	err = request.comment.Insert(db.RW, boil.Infer())
-	if err != nil {
-		return err
-	}
-
-	item := populateItem(request.comment, channel, 0)
-
-	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
 	if err != nil {
 		return err
 	}

@@ -115,8 +115,10 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	if err != nil {
 		return errors.Err(err)
 	}
+	// if listing own comments, show all including blocked ones
+	skipBlocked := args.AuthorClaimID != nil
 
-	items, blockedCommentCnt, err := getItems(comments, creatorChannel)
+	items, blockedCommentCnt, err := getItems(comments, creatorChannel, skipBlocked)
 	if err != nil {
 		logrus.Error(errors.FullTrace(err))
 	}
@@ -204,7 +206,7 @@ func checkCommentsEnabled(channelName, ChannelID string) (*m.Channel, error) {
 	return nil, nil
 }
 
-func getItems(comments m.CommentSlice, creatorChannel *m.Channel) ([]commentapi.CommentItem, int64, error) {
+func getItems(comments m.CommentSlice, creatorChannel *m.Channel, skipBlocked bool) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
 	var alreadyInSet = map[string]bool{}
@@ -212,7 +214,7 @@ Comments:
 	for _, comment := range comments {
 		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
 			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
-			if len(blockedFrom) > 0 {
+			if len(blockedFrom) > 0 && !skipBlocked {
 				channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
 				if err != nil {
 					//cannot find claim commented on in SDK, ignore, nil channel by default

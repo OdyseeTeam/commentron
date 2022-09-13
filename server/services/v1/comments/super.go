@@ -115,7 +115,10 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		}
 	}
 
-	items, blockedCommentCnt, err := getItems(comments, creatorChannel)
+	// if listing own comments, show all including blocked ones
+	skipBlocked := args.AuthorClaimID != nil
+
+	items, blockedCommentCnt, err := getItems(comments, creatorChannel, skipBlocked)
 
 	totalItems = totalItems - blockedCommentCnt
 	reply.Items = items
