@@ -174,6 +174,28 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
+	claim, err := lbry.SDK.GetClaim(args.ClaimID)
+	if err != nil {
+		return err
+	}
+
+	args.IsProtected = false
+	for _, t := range claim.Value.GetTags() {
+		if t == "c:members-only" {
+			hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
+				ChannelClaimID: args.ChannelID,
+				ClaimID:        args.ClaimID,
+			})
+			if err != nil {
+				return errors.Err(err)
+			}
+			if !hasAccess {
+				return errors.Err("channel does not have permissions to comment on this claim")
+			}
+			args.IsProtected = true
+			break
+		}
+	}
 
 	return nil
 }
