@@ -315,7 +315,11 @@ func pushItem(item commentapi.CommentItem, claimID string, mentionedChannels []c
 }
 
 func checkForDuplicate(commentID string) error {
-	comment, err := m.Comments(m.CommentWhere.CommentID.EQ(commentID)).One(db.RO)
+	// ignore checking for soft delete in this context
+	comment, err := m.Comments(
+		m.CommentWhere.CommentID.EQ(commentID),
+		qm.WithDeleted(),
+	).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}

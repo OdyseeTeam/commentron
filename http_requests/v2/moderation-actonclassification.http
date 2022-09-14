@@ -1,0 +1,14 @@
+POST http://localhost:5900/api/v2
+Content-Type: application/json
+Authorization: Basic api-user api-pass
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "moderation.ActOnClassification",
+  "params": {
+    "comment_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "confirm": true,
+    "do_delete": true
+  }
+}

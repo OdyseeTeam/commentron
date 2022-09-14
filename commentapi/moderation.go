@@ -208,3 +208,31 @@ type Delegate struct {
 	ChannelID   string `json:"channel_id"`
 	ChannelName string `json:"channel_name"`
 }
+
+// ActOnClassificationArgs Arguments to confirm or ignore a comment's classifications
+type ActOnClassificationArgs struct {
+	// CommentID is the ID of the comment to act on
+	CommentID string `json:"comment_id"`
+
+	// Confirm is true if the classification should be confirmed, false if it should be ignored (default)
+	Confirm bool `json:"confirm"`
+
+	// DoDelete is true if the comment should be deleted, false if it should be left alone (default)
+	DoDelete bool `json:"do_delete"`
+}
+
+// Validate validates the data in the ActOnClassificationArgs
+func (a ActOnClassificationArgs) Validate() api.StatusError {
+	err := v.ValidateStruct(&a,
+		v.Field(&a.CommentID, validator.ClaimID, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+	return api.StatusError{}
+}
+
+// ActOnClassificationResponse response for moderation.ActOnClassification
+type ActOnClassificationResponse struct {
+	Status string `json:"status"`
+}

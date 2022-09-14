@@ -41,6 +41,7 @@ type Comment struct {
 	IsFiat           bool        `boil:"is_fiat" json:"is_fiat" toml:"is_fiat" yaml:"is_fiat"`
 	Currency         null.String `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
 	IsProtected      bool        `boil:"is_protected" json:"is_protected" toml:"is_protected" yaml:"is_protected"`
+	DeletedAt        null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *commentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L commentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -65,6 +66,7 @@ var CommentColumns = struct {
 	IsFiat           string
 	Currency         string
 	IsProtected      string
+	DeletedAt        string
 }{
 	CommentID:        "comment_id",
 	LbryClaimID:      "lbry_claim_id",
@@ -84,6 +86,7 @@ var CommentColumns = struct {
 	IsFiat:           "is_fiat",
 	Currency:         "currency",
 	IsProtected:      "is_protected",
+	DeletedAt:        "deleted_at",
 }
 
 var CommentTableColumns = struct {
@@ -105,6 +108,7 @@ var CommentTableColumns = struct {
 	IsFiat           string
 	Currency         string
 	IsProtected      string
+	DeletedAt        string
 }{
 	CommentID:        "comment.comment_id",
 	LbryClaimID:      "comment.lbry_claim_id",
@@ -124,6 +128,7 @@ var CommentTableColumns = struct {
 	IsFiat:           "comment.is_fiat",
 	Currency:         "comment.currency",
 	IsProtected:      "comment.is_protected",
+	DeletedAt:        "comment.deleted_at",
 }
 
 // Generated where
@@ -179,6 +184,7 @@ var CommentWhere = struct {
 	IsFiat           whereHelperbool
 	Currency         whereHelpernull_String
 	IsProtected      whereHelperbool
+	DeletedAt        whereHelpernull_Time
 }{
 	CommentID:        whereHelperstring{field: "`comment`.`comment_id`"},
 	LbryClaimID:      whereHelperstring{field: "`comment`.`lbry_claim_id`"},
@@ -198,18 +204,21 @@ var CommentWhere = struct {
 	IsFiat:           whereHelperbool{field: "`comment`.`is_fiat`"},
 	Currency:         whereHelpernull_String{field: "`comment`.`currency`"},
 	IsProtected:      whereHelperbool{field: "`comment`.`is_protected`"},
+	DeletedAt:        whereHelpernull_Time{field: "`comment`.`deleted_at`"},
 }
 
 // CommentRels is where relationship names are stored.
 var CommentRels = struct {
 	Channel                        string
 	Parent                         string
+	CommentClassification          string
 	OffendingCommentBlockedEntries string
 	ParentComments                 string
 	Reactions                      string
 }{
 	Channel:                        "Channel",
 	Parent:                         "Parent",
+	CommentClassification:          "CommentClassification",
 	OffendingCommentBlockedEntries: "OffendingCommentBlockedEntries",
 	ParentComments:                 "ParentComments",
 	Reactions:                      "Reactions",
@@ -217,11 +226,12 @@ var CommentRels = struct {
 
 // commentR is where relationships are stored.
 type commentR struct {
-	Channel                        *Channel          `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
-	Parent                         *Comment          `boil:"Parent" json:"Parent" toml:"Parent" yaml:"Parent"`
-	OffendingCommentBlockedEntries BlockedEntrySlice `boil:"OffendingCommentBlockedEntries" json:"OffendingCommentBlockedEntries" toml:"OffendingCommentBlockedEntries" yaml:"OffendingCommentBlockedEntries"`
-	ParentComments                 CommentSlice      `boil:"ParentComments" json:"ParentComments" toml:"ParentComments" yaml:"ParentComments"`
-	Reactions                      ReactionSlice     `boil:"Reactions" json:"Reactions" toml:"Reactions" yaml:"Reactions"`
+	Channel                        *Channel               `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Parent                         *Comment               `boil:"Parent" json:"Parent" toml:"Parent" yaml:"Parent"`
+	CommentClassification          *CommentClassification `boil:"CommentClassification" json:"CommentClassification" toml:"CommentClassification" yaml:"CommentClassification"`
+	OffendingCommentBlockedEntries BlockedEntrySlice      `boil:"OffendingCommentBlockedEntries" json:"OffendingCommentBlockedEntries" toml:"OffendingCommentBlockedEntries" yaml:"OffendingCommentBlockedEntries"`
+	ParentComments                 CommentSlice           `boil:"ParentComments" json:"ParentComments" toml:"ParentComments" yaml:"ParentComments"`
+	Reactions                      ReactionSlice          `boil:"Reactions" json:"Reactions" toml:"Reactions" yaml:"Reactions"`
 }
 
 // NewStruct creates a new relationship struct
@@ -241,6 +251,13 @@ func (r *commentR) GetParent() *Comment {
 		return nil
 	}
 	return r.Parent
+}
+
+func (r *commentR) GetCommentClassification() *CommentClassification {
+	if r == nil {
+		return nil
+	}
+	return r.CommentClassification
 }
 
 func (r *commentR) GetOffendingCommentBlockedEntries() BlockedEntrySlice {
@@ -268,8 +285,8 @@ func (r *commentR) GetReactions() ReactionSlice {
 type commentL struct{}
 
 var (
-	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score", "is_fiat", "currency", "is_protected"}
-	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score", "currency"}
+	commentAllColumns            = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "is_hidden", "is_pinned", "is_flagged", "amount", "tx_id", "popularity_score", "controversy_score", "is_fiat", "currency", "is_protected", "deleted_at"}
+	commentColumnsWithoutDefault = []string{"comment_id", "lbry_claim_id", "channel_id", "body", "parent_id", "signature", "signingts", "timestamp", "amount", "tx_id", "popularity_score", "controversy_score", "currency", "deleted_at"}
 	commentColumnsWithDefault    = []string{"is_hidden", "is_pinned", "is_flagged", "is_fiat", "is_protected"}
 	commentPrimaryKeyColumns     = []string{"comment_id"}
 	commentGeneratedColumns      = []string{}
@@ -386,6 +403,17 @@ func (o *Comment) Parent(mods ...qm.QueryMod) commentQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Comments(queryMods...)
+}
+
+// CommentClassification pointed to by the foreign key.
+func (o *Comment) CommentClassification(mods ...qm.QueryMod) commentClassificationQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`comment_id` = ?", o.CommentID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return CommentClassifications(queryMods...)
 }
 
 // OffendingCommentBlockedEntries retrieves all the blocked_entry's BlockedEntries with an executor via offending_comment_id column.
@@ -610,6 +638,7 @@ func (commentL) LoadParent(e boil.Executor, singular bool, maybeComment interfac
 	query := NewQuery(
 		qm.From(`comment`),
 		qm.WhereIn(`comment.comment_id in ?`, args...),
+		qmhelper.WhereIsNull(`comment.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -654,6 +683,115 @@ func (commentL) LoadParent(e boil.Executor, singular bool, maybeComment interfac
 					foreign.R = &commentR{}
 				}
 				foreign.R.ParentComments = append(foreign.R.ParentComments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCommentClassification allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (commentL) LoadCommentClassification(e boil.Executor, singular bool, maybeComment interface{}, mods queries.Applicator) error {
+	var slice []*Comment
+	var object *Comment
+
+	if singular {
+		var ok bool
+		object, ok = maybeComment.(*Comment)
+		if !ok {
+			object = new(Comment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeComment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeComment))
+			}
+		}
+	} else {
+		s, ok := maybeComment.(*[]*Comment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeComment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeComment))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &commentR{}
+		}
+		args = append(args, object.CommentID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &commentR{}
+			}
+
+			for _, a := range args {
+				if a == obj.CommentID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.CommentID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`comment_classification`),
+		qm.WhereIn(`comment_classification.comment_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load CommentClassification")
+	}
+
+	var resultSlice []*CommentClassification
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice CommentClassification")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for comment_classification")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for comment_classification")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.CommentClassification = foreign
+		if foreign.R == nil {
+			foreign.R = &commentClassificationR{}
+		}
+		foreign.R.Comment = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CommentID == foreign.CommentID {
+				local.R.CommentClassification = foreign
+				if foreign.R == nil {
+					foreign.R = &commentClassificationR{}
+				}
+				foreign.R.Comment = local
 				break
 			}
 		}
@@ -827,6 +965,7 @@ func (commentL) LoadParentComments(e boil.Executor, singular bool, maybeComment 
 	query := NewQuery(
 		qm.From(`comment`),
 		qm.WhereIn(`comment.parent_id in ?`, args...),
+		qmhelper.WhereIsNull(`comment.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1141,6 +1280,55 @@ func (o *Comment) RemoveParent(exec boil.Executor, related *Comment) error {
 	return nil
 }
 
+// SetCommentClassification of the comment to the related item.
+// Sets o.R.CommentClassification to related.
+// Adds o to related.R.Comment.
+func (o *Comment) SetCommentClassification(exec boil.Executor, insert bool, related *CommentClassification) error {
+	var err error
+
+	if insert {
+		related.CommentID = o.CommentID
+
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `comment_classification` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"comment_id"}),
+			strmangle.WhereClause("`", "`", 0, commentClassificationPrimaryKeyColumns),
+		)
+		values := []interface{}{o.CommentID, related.CommentID}
+
+		if boil.DebugMode {
+			fmt.Fprintln(boil.DebugWriter, updateQuery)
+			fmt.Fprintln(boil.DebugWriter, values)
+		}
+		if _, err = exec.Exec(updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.CommentID = o.CommentID
+	}
+
+	if o.R == nil {
+		o.R = &commentR{
+			CommentClassification: related,
+		}
+	} else {
+		o.R.CommentClassification = related
+	}
+
+	if related.R == nil {
+		related.R = &commentClassificationR{
+			Comment: o,
+		}
+	} else {
+		related.R.Comment = o
+	}
+	return nil
+}
+
 // AddOffendingCommentBlockedEntries adds the given related objects to the existing relationships
 // of the comment, optionally inserting them as new records.
 // Appends related to o.R.OffendingCommentBlockedEntries.
@@ -1445,7 +1633,7 @@ func (o *Comment) AddReactions(exec boil.Executor, insert bool, related ...*Reac
 
 // Comments retrieves all the records using an executor.
 func Comments(mods ...qm.QueryMod) commentQuery {
-	mods = append(mods, qm.From("`comment`"))
+	mods = append(mods, qm.From("`comment`"), qmhelper.WhereIsNull("`comment`.`deleted_at`"))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
 		queries.SetSelect(q, []string{"`comment`.*"})
@@ -1464,7 +1652,7 @@ func FindComment(exec boil.Executor, commentID string, selectCols ...string) (*C
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `comment` where `comment_id`=?", sel,
+		"select %s from `comment` where `comment_id`=? and `deleted_at` is null", sel,
 	)
 
 	q := queries.Raw(query, commentID)
@@ -1807,13 +1995,31 @@ CacheNoHooks:
 
 // Delete deletes a single Comment record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Comment) Delete(exec boil.Executor) error {
+func (o *Comment) Delete(exec boil.Executor, hardDelete bool) error {
 	if o == nil {
 		return errors.New("model: no Comment provided for delete")
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), commentPrimaryKeyMapping)
-	sql := "DELETE FROM `comment` WHERE `comment_id`=?"
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), commentPrimaryKeyMapping)
+		sql = "DELETE FROM `comment` WHERE `comment_id`=?"
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		o.DeletedAt = null.TimeFrom(currTime)
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE `comment` SET %s WHERE `comment_id`=?",
+			strmangle.SetParamNames("`", "`", 0, wl),
+		)
+		valueMapping, err := queries.BindMapping(commentType, commentMapping, append(wl, commentPrimaryKeyColumns...))
+		if err != nil {
+			return err
+		}
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), valueMapping)
+	}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1828,12 +2034,17 @@ func (o *Comment) Delete(exec boil.Executor) error {
 }
 
 // DeleteAll deletes all matching rows.
-func (q commentQuery) DeleteAll(exec boil.Executor) error {
+func (q commentQuery) DeleteAll(exec boil.Executor, hardDelete bool) error {
 	if q.Query == nil {
 		return errors.New("model: no commentQuery provided for delete all")
 	}
 
-	queries.SetDelete(q.Query)
+	if hardDelete {
+		queries.SetDelete(q.Query)
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		queries.SetUpdate(q.Query, M{"deleted_at": currTime})
+	}
 
 	_, err := q.Query.Exec(exec)
 	if err != nil {
@@ -1844,19 +2055,36 @@ func (q commentQuery) DeleteAll(exec boil.Executor) error {
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o CommentSlice) DeleteAll(exec boil.Executor) error {
+func (o CommentSlice) DeleteAll(exec boil.Executor, hardDelete bool) error {
 	if len(o) == 0 {
 		return nil
 	}
 
-	var args []interface{}
-	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), commentPrimaryKeyMapping)
-		args = append(args, pkeyArgs...)
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), commentPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+		}
+		sql = "DELETE FROM `comment` WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, commentPrimaryKeyColumns, len(o))
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), commentPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+			obj.DeletedAt = null.TimeFrom(currTime)
+		}
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE `comment` SET %s WHERE "+
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, commentPrimaryKeyColumns, len(o)),
+			strmangle.SetParamNames("`", "`", 0, wl),
+		)
+		args = append([]interface{}{currTime}, args...)
 	}
-
-	sql := "DELETE FROM `comment` WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, commentPrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1897,7 +2125,8 @@ func (o *CommentSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	sql := "SELECT `comment`.* FROM `comment` WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, commentPrimaryKeyColumns, len(*o))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, commentPrimaryKeyColumns, len(*o)) +
+		"and `deleted_at` is null"
 
 	q := queries.Raw(sql, args...)
 
@@ -1914,7 +2143,7 @@ func (o *CommentSlice) ReloadAll(exec boil.Executor) error {
 // CommentExists checks if the Comment row exists.
 func CommentExists(exec boil.Executor, commentID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `comment` where `comment_id`=? limit 1)"
+	sql := "select exists(select 1 from `comment` where `comment_id`=? and `deleted_at` is null limit 1)"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)

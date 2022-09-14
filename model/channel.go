@@ -1476,6 +1476,7 @@ func (channelL) LoadComments(e boil.Executor, singular bool, maybeChannel interf
 	query := NewQuery(
 		qm.From(`comment`),
 		qm.WhereIn(`comment.channel_id in ?`, args...),
+		qmhelper.WhereIsNull(`comment.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)

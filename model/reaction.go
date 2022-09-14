@@ -453,6 +453,7 @@ func (reactionL) LoadComment(e boil.Executor, singular bool, maybeReaction inter
 	query := NewQuery(
 		qm.From(`comment`),
 		qm.WhereIn(`comment.comment_id in ?`, args...),
+		qmhelper.WhereIsNull(`comment.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)

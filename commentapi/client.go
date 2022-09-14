@@ -52,7 +52,7 @@ func (d *Client) Sign(args interface{}) interface{} {
 	return sign(d, args)
 }
 
-// WithSigning allows for a client to be used with identity priviledges handling the signing of APIs requiring
+// WithSigning allows for a client to be used with identity privileges handling the signing of APIs requiring
 // user authorization. It requires the channel export string `./lbrynet channel export <channel_id>` as well as
 // an authorized apiKey from the comment server owner.
 func (d *Client) WithSigning(export string) *Client {

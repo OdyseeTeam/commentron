@@ -27,6 +27,9 @@ in the `.env` file locally with the username and password.
 
 Then once mysql is running you can hit play. 
 
+If you are lazy and have docker installed, you can use the `./scripts/test_db_via_docker.sh` script
+to start a mysql 5.7 container with appropriate default users, tables, and privilages for testing.
+
 ## Key packages
 
 These are the key packages where most work is completed.

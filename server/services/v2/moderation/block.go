@@ -113,7 +113,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		if err != nil {
 			return errors.Err(err)
 		}
-		err = comments.DeleteAll(db.RW)
+		err = comments.DeleteAll(db.RW, false)
 		if err != nil {
 			return errors.Err(err)
 		}

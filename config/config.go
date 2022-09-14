@@ -4,7 +4,7 @@ import (
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/env"
 	"github.com/OdyseeTeam/commentron/helper"
-
+	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -33,6 +33,7 @@ func InitializeConfiguration(conf *env.Config) {
 	if err != nil {
 		logrus.Panic(err)
 	}
+	commentclassification.Init(conf)
 	initSlack(conf)
 	initStripe(conf)
 	SocketyToken = conf.SocketyToken
