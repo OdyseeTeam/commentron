@@ -141,7 +141,7 @@ type ListArgs struct {
 	Authorization
 
 	RequestorChannelName string  `json:"requestor_channel_name"` // Used for Author ID filter authorization Only your comments!
-	RequestorChannelID   string  `json:"requestor_channel_id"`   // Used for Author ID filter authorization
+	RequestorChannelID   *string `json:"requestor_channel_id"`   // Used for Author ID filter authorization
 	ClaimID              *string `json:"claim_id"`               // claim id of claim being commented on
 	AuthorClaimID        *string `json:"author_claim_id"`        // filters comments to just this author
 	ParentID             *string `json:"parent_id"`              // filters comments to those under this thread
@@ -154,7 +154,15 @@ type ListArgs struct {
 }
 
 // Key returns the hash of the list args struct for caching
-func (c *ListArgs) Key() (string, error) {
+func (c ListArgs) Key() (string, error) {
+	//this is a value receiver, so we can delete a bunch of fields without impacting the original struct
+	c.ChannelName = ""
+	c.ChannelID = ""
+	c.Signature = ""
+	c.SigningTS = ""
+	c.RequestorChannelName = ""
+	c.RequestorChannelID = nil
+
 	a, err := json.Marshal(c)
 	if err != nil {
 		return "", errors.Prefix("could not marshall args: ", err)

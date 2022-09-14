@@ -38,6 +38,7 @@ type NotifyOptions struct {
 type CheckPerkOptions struct {
 	ChannelClaimID string
 	ClaimID        string
+	Type           string
 	Environment    *string
 }
 
