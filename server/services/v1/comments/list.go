@@ -29,16 +29,17 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return err
 	}
 
-	actualIsProtected, err := IsProtectedContent(*args.ClaimID)
-	if err != nil {
-		return err
-	}
-	if actualIsProtected != args.IsProtected {
-		return errors.Err("mismatch in is_protected")
-	}
-
 	isListingOwnComments := args.AuthorClaimID != nil && args.ClaimID == nil
-	if isListingOwnComments {
+	actualIsProtected := args.IsProtected
+	if !isListingOwnComments {
+		actualIsProtected, err := IsProtectedContent(*args.ClaimID)
+		if err != nil {
+			return err
+		}
+		if actualIsProtected != args.IsProtected {
+			return errors.Err("mismatch in is_protected")
+		}
+	} else {
 		if args.RequestorChannelID == nil {
 			return errors.Err("requestor channel id is required to list own comments")
 		}
