@@ -23,8 +23,7 @@ import (
 
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
 	args.ApplyDefaults()
-
-	isListingOwnSuperChats := args.AuthorClaimID != nil && args.ClaimID == nil
+	isListingOwnSuperChats := args.AuthorClaimID != nil
 	actualIsProtected := args.IsProtected
 	if !isListingOwnSuperChats {
 		actualIsProtected, err := IsProtectedContent(*args.ClaimID)
@@ -170,6 +169,10 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 var superChatListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
 
 func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
+	listingOwnSuperChats := args.AuthorClaimID != nil
+	if args.IsProtected && args.RequestorChannelID == nil {
+		return errors.Err("requestor channel id is required to list protected superchats")
+	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
 		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
 		if err != nil {
@@ -179,23 +182,34 @@ func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, rep
 			return errors.Err("channel does not have permissions to comment on this claim")
 		}
 	}
-	key, err := args.Key()
-	if err != nil {
-		return err
-	}
-	item, err := superChatListCache.Fetch(key, 1*time.Minute, func() (interface{}, error) {
+
+	var cachedReply *commentapi.SuperListResponse
+	if listingOwnSuperChats {
 		err := superChatList(r, args, reply)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		return reply, nil
-	})
-	if err != nil {
-		return err
-	}
-	cachedReply, ok := item.Value().(*commentapi.SuperListResponse)
-	if !ok {
-		return errors.Prefix("could not convert item to ListResponse: ", err)
+		cachedReply = reply
+	} else {
+		key, err := args.Key()
+		if err != nil {
+			return err
+		}
+		item, err := superChatListCache.Fetch(key, 1*time.Minute, func() (interface{}, error) {
+			err := superChatList(r, args, reply)
+			if err != nil {
+				return nil, err
+			}
+			return reply, nil
+		})
+		if err != nil {
+			return err
+		}
+		var ok bool
+		cachedReply, ok = item.Value().(*commentapi.SuperListResponse)
+		if !ok {
+			return errors.Prefix("could not convert item to ListResponse: ", err)
+		}
 	}
 	reply.PageSize = cachedReply.PageSize
 	reply.Page = cachedReply.Page

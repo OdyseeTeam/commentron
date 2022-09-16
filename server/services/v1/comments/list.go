@@ -29,7 +29,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return err
 	}
 
-	isListingOwnComments := args.AuthorClaimID != nil && args.ClaimID == nil
+	isListingOwnComments := args.AuthorClaimID != nil
 	actualIsProtected := args.IsProtected
 	if !isListingOwnComments {
 		actualIsProtected, err := IsProtectedContent(*args.ClaimID)
@@ -154,6 +154,11 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 var commentListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
 
 func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
+	listingOwnComments := args.AuthorClaimID != nil
+
+	if args.IsProtected && args.RequestorChannelID == nil {
+		return errors.Err("requestor channel id is required to list protected comments")
+	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
 		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
 		if err != nil {
@@ -164,24 +169,35 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 		}
 	}
 
-	key, err := args.Key()
-	if err != nil {
-		return err
-	}
-	item, err := commentListCache.Fetch(key, 15*time.Second, func() (interface{}, error) {
+	var cachedReply *commentapi.ListResponse
+	if listingOwnComments {
 		err := list(r, args, reply)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		return reply, nil
-	})
-	if err != nil {
-		return err
+		cachedReply = reply
+	} else {
+		key, err := args.Key()
+		if err != nil {
+			return err
+		}
+		item, err := commentListCache.Fetch(key, 15*time.Second, func() (interface{}, error) {
+			err := list(r, args, reply)
+			if err != nil {
+				return nil, err
+			}
+			return reply, nil
+		})
+		if err != nil {
+			return err
+		}
+		var ok bool
+		cachedReply, ok = item.Value().(*commentapi.ListResponse)
+		if !ok {
+			return errors.Prefix("could not convert item to ListResponse: ", err)
+		}
 	}
-	cachedReply, ok := item.Value().(*commentapi.ListResponse)
-	if !ok {
-		return errors.Prefix("could not convert item to ListResponse: ", err)
-	}
+
 	reply.PageSize = cachedReply.PageSize
 	reply.Page = cachedReply.Page
 	reply.Items = cachedReply.Items
