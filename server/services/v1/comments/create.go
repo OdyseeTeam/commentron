@@ -210,7 +210,7 @@ func IsProtectedContent(claimID string) (bool, error) {
 }
 
 //HasAccessToProtectedContent checks if a channel has access to a protected claim
-func HasAccessToProtectedContent(channelID, claimID string) (bool, error) {
+func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,

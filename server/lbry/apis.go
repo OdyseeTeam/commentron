@@ -61,6 +61,7 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 	form.Set("auth_token", apiToken)
 	form.Set("claim_id", options.ClaimID)
 	form.Set("channel_claim_id", options.ChannelClaimID)
+	form.Set("type", options.Type)
 	if options.Environment != nil {
 		form.Set("environment", *options.Environment)
 	}
