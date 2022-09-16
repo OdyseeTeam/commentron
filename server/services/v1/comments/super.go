@@ -7,8 +7,10 @@ import (
 
 	"github.com/lbryio/commentron/commentapi"
 	"github.com/lbryio/commentron/db"
+	"github.com/lbryio/commentron/helper"
 	m "github.com/lbryio/commentron/model"
 	"github.com/lbryio/commentron/server/lbry"
+	"github.com/lbryio/lbry.go/v2/extras/api"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
@@ -21,6 +23,33 @@ import (
 
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
 	args.ApplyDefaults()
+
+	actualIsProtected, err := IsProtectedContent(*args.ClaimID)
+	if err != nil {
+		return err
+	}
+	if actualIsProtected != args.IsProtected {
+		return errors.Err("mismatch in is_protected")
+	}
+
+	isListingOwnSuperChats := args.AuthorClaimID != nil && args.ClaimID == nil
+	if isListingOwnSuperChats {
+		if args.RequestorChannelID == nil {
+			return errors.Err("requestor channel id is required to list own superchats")
+		}
+		ownerChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = lbry.ValidateSignatureAndTS(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+		if ownerChannel.ClaimID != *args.AuthorClaimID {
+			return api.StatusError{Err: errors.Err("you can only view your superchats, not others"), Status: http.StatusBadRequest}
+		}
+	}
+
 	loadChannels := qm.Load("Channel.BlockedChannelBlockedEntries")
 	filterIsHidden := m.CommentWhere.IsHidden.EQ(null.BoolFrom(true))
 	filterIsProtected := m.CommentWhere.IsProtected.EQ(true)
@@ -37,7 +66,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 	HasProtectedCommentsQuery := []qm.QueryMod{filterIsProtected, qm.Limit(1)}
 
-	if args.AuthorClaimID != nil {
+	if isListingOwnSuperChats {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
 		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterAuthorClaimID)
@@ -76,9 +105,13 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		totalCommentsQuery = append(totalCommentsQuery, filterSuperChats)
 		totalSuperChatAmountQuery = append(totalSuperChatAmountQuery, filterSuperChats)
 	}
+	if !isListingOwnSuperChats {
+		totalCommentsQuery = append(totalCommentsQuery, m.CommentWhere.IsProtected.EQ(actualIsProtected))
+	}
+
 	var superChatAmount null.Uint64
 	result := m.Comments(totalSuperChatAmountQuery...).QueryRow(db.RO)
-	err := result.Scan(&superChatAmount)
+	err = result.Scan(&superChatAmount)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -116,7 +149,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	}
 
 	// if listing own comments, show all including blocked ones
-	skipBlocked := args.AuthorClaimID != nil
+	skipBlocked := isListingOwnSuperChats
 
 	items, blockedCommentCnt, err := getItems(comments, creatorChannel, skipBlocked)
 
@@ -136,6 +169,15 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 var superChatListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
 
 func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
+	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
+		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
+		if err != nil {
+			return err
+		}
+		if !hasAccess {
+			return errors.Err("channel does not have permissions to comment on this claim")
+		}
+	}
 	key, err := args.Key()
 	if err != nil {
 		return err

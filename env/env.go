@@ -14,7 +14,7 @@ type Config struct {
 	SDKUrl                  string `env:"SDK_URL"`
 	SlackHookURL            string `env:"SLACKHOOKURL"`
 	SlackChannel            string `env:"SLACKCHANNEL"`
-	APIURL                  string `env:"APIURL" envDefault:"https://api.lbry.com/event/comment"`
+	APIURL                  string `env:"APIURL" envDefault:"https://api.odysee.com"`
 	APIToken                string `env:"APITOKEN"`
 	SocketyToken            string `env:"SOCKETY_TOKEN"`
 	TestChannel             string `env:"TEST_CHANNEL"`

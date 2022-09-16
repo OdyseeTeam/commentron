@@ -10,15 +10,20 @@ import (
 
 // SuperListArgs arguments for the comment.List rpc call
 type SuperListArgs struct {
-	ClaimID       *string `json:"claim_id"`
-	AuthorClaimID *string `json:"author_claim_id"`
-	ParentID      *string `json:"parent_id"`
-	Page          int     `json:"page"`
-	PageSize      int     `json:"page_size"`
-	TopLevel      bool    `json:"top_level"`
-	Hidden        bool    `json:"hidden"`
+	Authorization
+
+	RequestorChannelName string  `json:"requestor_channel_name"` // Used for Author ID filter authorization Only your comments!
+	RequestorChannelID   *string `json:"requestor_channel_id"`   // Used for Author ID filter authorization
+	ClaimID              *string `json:"claim_id"`
+	AuthorClaimID        *string `json:"author_claim_id"`
+	ParentID             *string `json:"parent_id"`
+	Page                 int     `json:"page"`
+	PageSize             int     `json:"page_size"`
+	TopLevel             bool    `json:"top_level"`
+	Hidden               bool    `json:"hidden"`
 	// Satoshi amount to filter below >= x
-	SuperChatsAmount int `json:"super_chat"`
+	SuperChatsAmount int  `json:"super_chat"`
+	IsProtected      bool `json:"is_protected"`
 }
 
 // SuperListResponse response for the comment.List rpc call
@@ -53,7 +58,15 @@ func (c *SuperListArgs) ApplyDefaults() {
 }
 
 //Key returns the hash of the list args struct for caching
-func (c *SuperListArgs) Key() (string, error) {
+func (c SuperListArgs) Key() (string, error) {
+	//this is a value receiver, so we can delete a bunch of fields without impacting the original struct
+	c.ChannelName = ""
+	c.ChannelID = ""
+	c.Signature = ""
+	c.SigningTS = ""
+	c.RequestorChannelName = ""
+	c.RequestorChannelID = nil
+
 	a, err := json.Marshal(c)
 	if err != nil {
 		return "", errors.Prefix("could not marshall args: ", err)

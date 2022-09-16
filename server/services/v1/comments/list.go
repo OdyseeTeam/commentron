@@ -29,8 +29,20 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		return err
 	}
 
-	if args.AuthorClaimID != nil {
-		ownerChannel, err := helper.FindOrCreateChannel(args.RequestorChannelID, args.RequestorChannelName)
+	actualIsProtected, err := IsProtectedContent(*args.ClaimID)
+	if err != nil {
+		return err
+	}
+	if actualIsProtected != args.IsProtected {
+		return errors.Err("mismatch in is_protected")
+	}
+
+	isListingOwnComments := args.AuthorClaimID != nil && args.ClaimID == nil
+	if isListingOwnComments {
+		if args.RequestorChannelID == nil {
+			return errors.Err("requestor channel id is required to list own comments")
+		}
+		ownerChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -58,7 +70,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
 	HasProtectedCommentsQuery := []qm.QueryMod{filterIsProtected, qm.Limit(1)}
 
-	if args.AuthorClaimID != nil {
+	if isListingOwnComments {
 		getCommentsQuery = append(getCommentsQuery, filterAuthorClaimID)
 		hasHiddenCommentsQuery = append(hasHiddenCommentsQuery, filterAuthorClaimID)
 		HasProtectedCommentsQuery = append(HasProtectedCommentsQuery, filterAuthorClaimID)
@@ -88,7 +100,9 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		totalFilteredCommentsQuery = append(totalFilteredCommentsQuery, filterParent)
 		totalCommentsQuery = append(totalCommentsQuery, filterParent)
 	}
-
+	if !isListingOwnComments {
+		totalCommentsQuery = append(totalCommentsQuery, m.CommentWhere.IsProtected.EQ(actualIsProtected))
+	}
 	getCommentsQuery = append(getCommentsQuery, filterFlaggedComments)
 
 	totalFilteredItems, err := m.Comments(totalFilteredCommentsQuery...).Count(db.RO)
@@ -115,9 +129,9 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	if err != nil {
 		return errors.Err(err)
 	}
-	// if listing own comments, show all including blocked ones
-	skipBlocked := args.AuthorClaimID != nil
 
+	// if listing own comments, show all including blocked ones
+	skipBlocked := isListingOwnComments
 	items, blockedCommentCnt, err := getItems(comments, creatorChannel, skipBlocked)
 	if err != nil {
 		logrus.Error(errors.FullTrace(err))
@@ -139,6 +153,16 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 var commentListCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
 
 func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
+	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
+		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
+		if err != nil {
+			return err
+		}
+		if !hasAccess {
+			return errors.Err("channel does not have permissions to comment on this claim")
+		}
+	}
+
 	key, err := args.Key()
 	if err != nil {
 		return err

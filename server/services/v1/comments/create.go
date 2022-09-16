@@ -175,7 +175,51 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		}
 	}
 
+	isProtected, err := IsProtectedContent(args.ClaimID)
+	if err != nil {
+		return err
+	}
+	args.IsProtected = isProtected
+
+	if isProtected {
+		hasAccess, err := HasAccessToProtectedContent(args.ClaimID, args.ChannelID)
+		if err != nil {
+			return err
+		}
+		if !hasAccess {
+			return errors.Err("channel does not have permissions to comment on this claim")
+		}
+	}
+
 	return nil
+}
+
+//IsProtectedContent resolves a claim and checks if it's a protected claim which would require authentication
+func IsProtectedContent(claimID string) (bool, error) {
+	claim, err := lbry.SDK.GetClaim(claimID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, t := range claim.Value.GetTags() {
+		if t == "c:members-only" {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+//HasAccessToProtectedContent checks if a channel has access to a protected claim
+func HasAccessToProtectedContent(channelID, claimID string) (bool, error) {
+	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
+		ChannelClaimID: channelID,
+		ClaimID:        claimID,
+		Type:           "Members-only chat",
+	})
+	if err != nil {
+		return false, errors.Err(err)
+	}
+	return hasAccess, nil
 }
 
 func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {

@@ -16,9 +16,9 @@ var API APIClient
 
 // SDKClient is the interface type for SDK call
 type SDKClient interface {
-	GetTx(string) (*jsonrpc.TransactionSummary, error)
-	GetClaim(string) (*jsonrpc.Claim, error)
-	GetSigningChannelForClaim(string) (*jsonrpc.Claim, error)
+	GetTx(txid string) (*jsonrpc.TransactionSummary, error)
+	GetClaim(claimID string) (*jsonrpc.Claim, error)
+	GetSigningChannelForClaim(claimID string) (*jsonrpc.Claim, error)
 }
 
 // NotifyOptions Are the options used to construct the comment event api signature.
@@ -34,9 +34,18 @@ type NotifyOptions struct {
 	Currency   *string
 }
 
+// CheckPerkOptions Are the options used to construct the permission lookup request.
+type CheckPerkOptions struct {
+	ChannelClaimID string
+	ClaimID        string
+	Type           string
+	Environment    *string
+}
+
 // APIClient is the interface type for internal-api calls
 type APIClient interface {
 	Notify(NotifyOptions)
+	CheckPerk(CheckPerkOptions) (bool, error)
 }
 
 // Init initializes the configuration of the LBRY clients and allows for mock clients for testing
@@ -79,4 +88,8 @@ type mockAPI struct{}
 
 func (m *mockAPI) Notify(options NotifyOptions) {
 
+}
+
+func (m *mockAPI) CheckPerk(options CheckPerkOptions) (bool, error) {
+	return false, nil
 }
