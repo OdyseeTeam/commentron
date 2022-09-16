@@ -24,16 +24,17 @@ import (
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
 	args.ApplyDefaults()
 
-	actualIsProtected, err := IsProtectedContent(*args.ClaimID)
-	if err != nil {
-		return err
-	}
-	if actualIsProtected != args.IsProtected {
-		return errors.Err("mismatch in is_protected")
-	}
-
 	isListingOwnSuperChats := args.AuthorClaimID != nil && args.ClaimID == nil
-	if isListingOwnSuperChats {
+	actualIsProtected := args.IsProtected
+	if !isListingOwnSuperChats {
+		actualIsProtected, err := IsProtectedContent(*args.ClaimID)
+		if err != nil {
+			return err
+		}
+		if actualIsProtected != args.IsProtected {
+			return errors.Err("mismatch in is_protected")
+		}
+	} else {
 		if args.RequestorChannelID == nil {
 			return errors.Err("requestor channel id is required to list own superchats")
 		}
@@ -111,7 +112,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 
 	var superChatAmount null.Uint64
 	result := m.Comments(totalSuperChatAmountQuery...).QueryRow(db.RO)
-	err = result.Scan(&superChatAmount)
+	err := result.Scan(&superChatAmount)
 	if err != nil {
 		return errors.Err(err)
 	}
