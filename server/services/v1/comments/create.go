@@ -187,7 +187,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 			return err
 		}
 		if !hasAccess {
-			return errors.Err("channel does not have permissions to comment on this claim")
+			return api.StatusError{Err: errors.Err("channel does not have permissions to comment on this claim"), Status: http.StatusForbidden}
 		}
 	}
 
