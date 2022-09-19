@@ -44,6 +44,9 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 				return errors.Err("requestor channel id is required to list protected comments")
 			}
 			commenterChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
+			if err != nil {
+				return errors.Err(err)
+			}
 
 			err = lbry.ValidateSignatureAndTS(commenterChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
 			if err != nil {
