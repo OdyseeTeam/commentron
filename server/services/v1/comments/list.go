@@ -37,33 +37,15 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 			return err
 		}
 		if actualIsProtected != args.IsProtected {
-			return errors.Err("mismatch in is_protected")
+			return api.StatusError{Err: errors.Err("mismatch in is_protected"), Status: http.StatusBadRequest}
 		}
-		if actualIsProtected {
-			if args.RequestorChannelID == nil {
-				return errors.Err("requestor channel id is required to list protected comments")
-			}
-			commenterChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
-			if err != nil {
-				return errors.Err(err)
-			}
-
-			err = lbry.ValidateSignatureAndTS(commenterChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
-			if err != nil {
-				return err
-			}
-			if commenterChannel.ClaimID != *args.RequestorChannelID {
-				return api.StatusError{Err: errors.Err("channel mismatch, someone trying to spoof"), Status: http.StatusBadRequest}
-			}
-		}
-
 	} else {
 		if args.RequestorChannelID == nil {
-			return errors.Err("requestor channel id is required to list own comments")
+			return api.StatusError{Err: errors.Err("requestor channel id is required to list own comments"), Status: http.StatusBadRequest}
 		}
 		ownerChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
 		if err != nil {
-			return errors.Err(err)
+			return err
 		}
 		err = lbry.ValidateSignatureAndTS(ownerChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
 		if err != nil {
@@ -175,7 +157,7 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 	listingOwnComments := args.AuthorClaimID != nil
 
 	if args.IsProtected && args.RequestorChannelID == nil {
-		return errors.Err("requestor channel id is required to list protected comments")
+		return api.StatusError{Err: errors.Err("requestor channel id is required to list protected comments"), Status: http.StatusBadRequest}
 	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
 		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
@@ -183,7 +165,19 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 			return err
 		}
 		if !hasAccess {
-			return errors.Err("channel does not have permissions to comment on this claim")
+			return api.StatusError{Err: errors.Err("channel does not have permissions to comment on this claim"), Status: http.StatusForbidden}
+		}
+		commenterChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+
+		err = lbry.ValidateSignatureAndTS(commenterChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+		if commenterChannel.ClaimID != *args.RequestorChannelID {
+			return api.StatusError{Err: errors.Err("channel mismatch, someone trying to spoof"), Status: http.StatusForbidden}
 		}
 	}
 
