@@ -39,6 +39,19 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 		if actualIsProtected != args.IsProtected {
 			return errors.Err("mismatch in is_protected")
 		}
+		if args.RequestorChannelID == nil {
+			return errors.Err("requestor channel id is required to list protected comments")
+		}
+		commenterChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
+
+		err = lbry.ValidateSignatureAndTS(commenterChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+		if commenterChannel.ClaimID != *args.RequestorChannelID {
+			return api.StatusError{Err: errors.Err("channel mismatch, someone trying to spoof"), Status: http.StatusBadRequest}
+		}
+
 	} else {
 		if args.RequestorChannelID == nil {
 			return errors.Err("requestor channel id is required to list own comments")
