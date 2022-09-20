@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/model"
-	m "github.com/lbryio/commentron/model"
+	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/model"
+	m "github.com/OdyseeTeam/commentron/model"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"

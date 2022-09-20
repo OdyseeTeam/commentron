@@ -62,7 +62,7 @@ The only integration we really support right now, is via the [Go Client API](com
 ```golang
 package main
 
-import "github.com/lbryio/commentron/commentapi"
+import "github.com/lbryio/OdyseeTeam/commentapi"
 
 func main() {
 	commentID := "0fa2eacf0b91fa3187e87733f103418e51f0c40d0b06b67c5d6d3ff2c13b2925"

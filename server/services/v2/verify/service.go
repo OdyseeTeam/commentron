@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	"github.com/lbryio/commentron/commentapi"
-	"github.com/lbryio/commentron/server/lbry"
+	"github.com/OdyseeTeam/commentron/commentapi"
+	"github.com/OdyseeTeam/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 )

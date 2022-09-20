@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/commentron/commentapi"
-	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/lbry"
+	"github.com/OdyseeTeam/commentron/commentapi"
+	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/helper"
+	"github.com/OdyseeTeam/commentron/model"
+	"github.com/OdyseeTeam/commentron/server/lbry"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 

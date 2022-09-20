@@ -1,9 +1,9 @@
 os: linux
-dist: bionic
+dist: focal
 language: go
-go_import_path: github.com/lbryio/commentron
+go_import_path: github.com/OdyseeTeam/commentron
 
-go: 1.17.x
+go: 1.18.x
 
 install: true
 

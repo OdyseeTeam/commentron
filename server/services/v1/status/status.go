@@ -3,7 +3,7 @@ package status
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/meta"
+	"github.com/OdyseeTeam/commentron/meta"
 )
 
 // Service is the service for the server package "server.*"

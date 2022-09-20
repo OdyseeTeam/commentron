@@ -1,7 +1,7 @@
 package flags
 
 import (
-	"github.com/lbryio/commentron/model"
+	"github.com/OdyseeTeam/commentron/model"
 )
 
 // CheckComment checks and flags comments for deletion due to spam or key phrases

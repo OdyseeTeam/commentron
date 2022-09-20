@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/env"
-	"github.com/lbryio/commentron/helper"
+	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/env"
+	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"

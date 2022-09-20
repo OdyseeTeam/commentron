@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"

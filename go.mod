@@ -1,6 +1,6 @@
-module github.com/lbryio/commentron
+module github.com/OdyseeTeam/commentron
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Avalanche-io/counter v0.0.0-20180124180526-1336089e985a

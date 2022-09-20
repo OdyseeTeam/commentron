@@ -3,8 +3,8 @@ package comments
 import (
 	"fmt"
 
-	"github.com/lbryio/commentron/commentapi"
-	m "github.com/lbryio/commentron/model"
+	"github.com/OdyseeTeam/commentron/commentapi"
+	m "github.com/OdyseeTeam/commentron/model"
 
 	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/null/v8"

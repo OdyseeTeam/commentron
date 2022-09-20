@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lbryio/commentron/commentapi"
-	"github.com/lbryio/commentron/db"
-	"github.com/lbryio/commentron/model"
-	"github.com/lbryio/commentron/server/auth"
+	"github.com/OdyseeTeam/commentron/commentapi"
+	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/model"
+	"github.com/OdyseeTeam/commentron/server/auth"
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"

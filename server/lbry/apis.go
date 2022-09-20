@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
