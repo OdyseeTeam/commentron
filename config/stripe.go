@@ -1,6 +1,6 @@
 package config
 
-import "github.com/lbryio/commentron/env"
+import "github.com/OdyseeTeam/commentron/env"
 
 var connectAPIKey string
 var connectAPIKeyTest string

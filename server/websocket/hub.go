@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/lbryio/commentron/metrics"
+	"github.com/OdyseeTeam/commentron/metrics"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 

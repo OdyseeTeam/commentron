@@ -19,6 +19,7 @@
 // migration/016_protected_settings.sql (302B)
 // migration/017_comments_protected_flag.sql (141B)
 // migration/018_comments_timestamp_idx.sql (133B)
+// migration/019_comments_protected_idx.sql (161B)
 // migration/migration.go (66B)
 
 package migration
@@ -467,6 +468,26 @@ func migration018_comments_timestamp_idxSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration019_comments_protected_idxSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xd2\xd5\x55\xd0\xce\xcd\x4c\x2f\x4a\x2c\x49\x55\x08\x2d\xe0\xe2\x42\xe6\x07\x97\x24\x96\xa4\xe6\xa6\xe6\x95\x38\xa5\xa6\x67\xe6\x71\x39\xfa\x84\xb8\x06\x29\x84\x38\x3a\xf9\xb8\x2a\x24\xe7\xe7\x82\x24\x14\x1c\x5d\x5c\x14\x3c\xfd\x5c\x5c\x23\x14\x32\x53\x2a\xe2\x33\x8b\xe3\x0b\x8a\xf2\x4b\x52\x93\x4b\x52\x53\x14\x34\x90\x79\x9a\x3a\x0a\x8e\x3e\xee\xfe\x41\x9e\x21\x1e\xbe\xb6\x9e\x7e\x01\x3e\x8e\xce\xae\x3a\x0a\x3e\xfe\xce\xde\xb6\x7e\xfe\x7e\xae\xd6\xd8\xed\x75\xcd\x4b\xe1\x02\x04\x00\x00\xff\xff\xf1\x86\x94\x0d\xa1\x00\x00\x00")
+
+func migration019_comments_protected_idxSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration019_comments_protected_idxSql,
+		"migration/019_comments_protected_idx.sql",
+	)
+}
+
+func migration019_comments_protected_idxSql() (*asset, error) {
+	bytes, err := migration019_comments_protected_idxSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/019_comments_protected_idx.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe7, 0xc8, 0x4f, 0x34, 0x4a, 0x43, 0xbd, 0x66, 0x18, 0x83, 0x7c, 0xe6, 0xef, 0x37, 0x4d, 0x3f, 0x5, 0x90, 0xa2, 0x12, 0x96, 0xac, 0x91, 0x2c, 0x4b, 0x3a, 0xcd, 0x44, 0xff, 0xe0, 0x34, 0x4d}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -597,6 +618,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/016_protected_settings.sql":      migration016_protected_settingsSql,
 	"migration/017_comments_protected_flag.sql": migration017_comments_protected_flagSql,
 	"migration/018_comments_timestamp_idx.sql":  migration018_comments_timestamp_idxSql,
+	"migration/019_comments_protected_idx.sql":  migration019_comments_protected_idxSql,
 	"migration/migration.go":                    migrationMigrationGo,
 }
 
@@ -666,6 +688,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"016_protected_settings.sql":      {migration016_protected_settingsSql, map[string]*bintree{}},
 		"017_comments_protected_flag.sql": {migration017_comments_protected_flagSql, map[string]*bintree{}},
 		"018_comments_timestamp_idx.sql":  {migration018_comments_timestamp_idxSql, map[string]*bintree{}},
+		"019_comments_protected_idx.sql":  {migration019_comments_protected_idxSql, map[string]*bintree{}},
 		"migration.go":                    {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}

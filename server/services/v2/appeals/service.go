@@ -3,7 +3,7 @@ package appeals
 import (
 	"net/http"
 
-	"github.com/lbryio/commentron/commentapi"
+	"github.com/OdyseeTeam/commentron/commentapi"
 )
 
 // Service is the service struct defined for the comment package for rpc service "appeal.*"

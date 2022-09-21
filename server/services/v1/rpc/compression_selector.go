@@ -13,7 +13,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/OdyseeTeam/commentron/helper"
 )
 
 // gzipWriter writes and closes the gzip writer.

@@ -20,7 +20,7 @@ set -e
 
 
 echo "== Compiling =="
-export IMPORTPATH="github.com/lbryio/commentron"
+export IMPORTPATH="github.com/OdyseeTeam/commentron"
 mkdir -p "$DIR/bin"
 go generate -v
 export VERSIONSHORT="${TRAVIS_COMMIT:-"$(git describe --tags --always --dirty)"}"

@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lbryio/commentron/helper"
-	"github.com/lbryio/commentron/server/services/v1/rpc"
+	"github.com/OdyseeTeam/commentron/helper"
+	"github.com/OdyseeTeam/commentron/server/services/v1/rpc"
 )
 
 var Version = "2.0"

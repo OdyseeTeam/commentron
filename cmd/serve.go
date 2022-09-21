@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/lbryio/commentron/config"
-	"github.com/lbryio/commentron/env"
-	"github.com/lbryio/commentron/jobs"
-	"github.com/lbryio/commentron/server"
-	"github.com/lbryio/commentron/server/lbry"
+	"github.com/OdyseeTeam/commentron/config"
+	"github.com/OdyseeTeam/commentron/env"
+	"github.com/OdyseeTeam/commentron/jobs"
+	"github.com/OdyseeTeam/commentron/server"
+	"github.com/OdyseeTeam/commentron/server/lbry"
 
 	"github.com/pkg/profile"
 	"github.com/sirupsen/logrus"

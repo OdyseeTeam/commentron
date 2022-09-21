@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lbryio/commentron/helper"
+	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/lbryio/lbry.go/v2/schema/keys"
 

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/lbryio/commentron/meta"
+	"github.com/OdyseeTeam/commentron/meta"
 
 	"github.com/spf13/cobra"
 )
