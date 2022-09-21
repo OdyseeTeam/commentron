@@ -76,7 +76,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	request.comment.CommentID = commentID
 	request.comment.Timestamp = int(timestamp)
 
-	//TODO: This will require validation when Beamer can work on it, both for insert + read
+	//TODO: right now this is forced to the status of the claim, eventually need to support regular content + protected chat
 	request.comment.IsProtected = args.IsProtected
 
 	item := populateItem(request.comment, channel, 0)
@@ -103,21 +103,26 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	reply.CommentItem = &item
 	if !request.comment.IsFlagged {
-		go pushItem(item, args.ClaimID, args.MentionedChannels)
+		pushClaimID := args.ClaimID
+		if item.IsProtected {
+			pushClaimID = helper.ReverseString(args.ClaimID)
+		}
+		go pushItem(item, pushClaimID, args.MentionedChannels)
 		amount, err := btcutil.NewAmount(item.SupportAmount)
 		if err != nil {
 			return errors.Err(err)
 		}
 		go lbry.API.Notify(lbry.NotifyOptions{
-			ActionType: "C",
-			CommentID:  item.CommentID,
-			ChannelID:  &item.ChannelID,
-			ParentID:   &item.ParentID,
-			Comment:    &item.Comment,
-			ClaimID:    item.ClaimID,
-			Amount:     uint64(amount),
-			IsFiat:     item.IsFiat,
-			Currency:   util.PtrToString(item.Currency),
+			ActionType:  "C",
+			CommentID:   item.CommentID,
+			ChannelID:   &item.ChannelID,
+			ParentID:    &item.ParentID,
+			Comment:     &item.Comment,
+			ClaimID:     item.ClaimID,
+			Amount:      uint64(amount),
+			IsFiat:      item.IsFiat,
+			Currency:    util.PtrToString(item.Currency),
+			IsProtected: item.IsProtected,
 		})
 	}
 

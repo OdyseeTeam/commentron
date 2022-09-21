@@ -69,10 +69,15 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		return nil, errors.Err(err)
 	}
 
+	pushClaimID := item.ClaimID
+	if item.IsProtected {
+		pushClaimID = helper.ReverseString(item.ClaimID)
+	}
+
 	go sockety.SendNotification(socketyapi.SendNotificationArgs{
 		Service: socketyapi.Commentron,
 		Type:    "removed",
-		IDs:     []string{item.ClaimID, "comments", "deleted"},
+		IDs:     []string{pushClaimID, "comments", "deleted"},
 		Data:    map[string]interface{}{"comment": item},
 	})
 

@@ -52,10 +52,15 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	}
 
 	item = populateItem(comment, channel, 0)
+
+	pushClaimID := item.ClaimID
+	if item.IsProtected {
+		pushClaimID = helper.ReverseString(item.ClaimID)
+	}
 	go sockety.SendNotification(socketyapi.SendNotificationArgs{
 		Service: socketyapi.Commentron,
 		Type:    "pinned",
-		IDs:     []string{comment.LbryClaimID, "pins"},
+		IDs:     []string{pushClaimID, "pins"},
 		Data:    map[string]interface{}{"comment": item},
 	})
 	return item, nil
