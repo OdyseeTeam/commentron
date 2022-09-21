@@ -100,6 +100,7 @@ func notify(options NotifyOptions) error {
 	form.Set("claim_id", options.ClaimID)
 	form.Set("amount", fmt.Sprintf("%d", options.Amount))
 	form.Set("is_fiat", strconv.FormatBool(options.IsFiat))
+	form.Set("is_protected", strconv.FormatBool(options.IsProtected))
 
 	if options.Comment != nil {
 		form.Set("comment", *options.Comment)

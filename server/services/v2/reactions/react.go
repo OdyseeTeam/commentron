@@ -130,10 +130,16 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			}
 			go updateCommentScoring(reactionType, p)
 			addTo(modifiedReactions[p.CommentID], reactionType.Name)
+
+			pushClaimID := p.LbryClaimID
+			if p.IsProtected {
+				pushClaimID = helper.ReverseString(p.LbryClaimID)
+			}
+
 			go sockety.SendNotification(socketyapi.SendNotificationArgs{
 				Service: socketyapi.Commentron,
 				Type:    "reaction",
-				IDs:     []string{p.CommentID, p.LbryClaimID, "reactions"},
+				IDs:     []string{p.CommentID, pushClaimID, "reactions"},
 				Data: map[string]interface{}{
 					"commenter_channel_id": p.ChannelID.String,
 					"claim_id":             p.LbryClaimID,

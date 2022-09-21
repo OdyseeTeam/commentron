@@ -23,15 +23,16 @@ type SDKClient interface {
 
 // NotifyOptions Are the options used to construct the comment event api signature.
 type NotifyOptions struct {
-	ActionType string
-	CommentID  string
-	ChannelID  *string
-	ParentID   *string
-	Comment    *string
-	ClaimID    string
-	Amount     uint64
-	IsFiat     bool
-	Currency   *string
+	ActionType  string
+	CommentID   string
+	ChannelID   *string
+	ParentID    *string
+	Comment     *string
+	ClaimID     string
+	Amount      uint64
+	IsFiat      bool
+	Currency    *string
+	IsProtected bool
 }
 
 // CheckPerkOptions Are the options used to construct the permission lookup request.
