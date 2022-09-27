@@ -52,6 +52,8 @@ type CreatorSetting struct {
 	BlockedWordsFuzzinessMatch null.Int64  `boil:"blocked_words_fuzziness_match" json:"blocked_words_fuzziness_match,omitempty" toml:"blocked_words_fuzziness_match" yaml:"blocked_words_fuzziness_match,omitempty"`
 	PublicShowProtected        bool        `boil:"public_show_protected" json:"public_show_protected" toml:"public_show_protected" yaml:"public_show_protected"`
 	PrivateShowProtected       bool        `boil:"private_show_protected" json:"private_show_protected" toml:"private_show_protected" yaml:"private_show_protected"`
+	LivestreamChatMembersOnly  bool        `boil:"livestream_chat_members_only" json:"livestream_chat_members_only" toml:"livestream_chat_members_only" yaml:"livestream_chat_members_only"`
+	CommentsMembersOnly        bool        `boil:"comments_members_only" json:"comments_members_only" toml:"comments_members_only" yaml:"comments_members_only"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -87,6 +89,8 @@ var CreatorSettingColumns = struct {
 	BlockedWordsFuzzinessMatch string
 	PublicShowProtected        string
 	PrivateShowProtected       string
+	LivestreamChatMembersOnly  string
+	CommentsMembersOnly        string
 }{
 	ID:                         "id",
 	CreatorChannelID:           "creator_channel_id",
@@ -117,6 +121,8 @@ var CreatorSettingColumns = struct {
 	BlockedWordsFuzzinessMatch: "blocked_words_fuzziness_match",
 	PublicShowProtected:        "public_show_protected",
 	PrivateShowProtected:       "private_show_protected",
+	LivestreamChatMembersOnly:  "livestream_chat_members_only",
+	CommentsMembersOnly:        "comments_members_only",
 }
 
 var CreatorSettingTableColumns = struct {
@@ -149,6 +155,8 @@ var CreatorSettingTableColumns = struct {
 	BlockedWordsFuzzinessMatch string
 	PublicShowProtected        string
 	PrivateShowProtected       string
+	LivestreamChatMembersOnly  string
+	CommentsMembersOnly        string
 }{
 	ID:                         "creator_setting.id",
 	CreatorChannelID:           "creator_setting.creator_channel_id",
@@ -179,6 +187,8 @@ var CreatorSettingTableColumns = struct {
 	BlockedWordsFuzzinessMatch: "creator_setting.blocked_words_fuzziness_match",
 	PublicShowProtected:        "creator_setting.public_show_protected",
 	PrivateShowProtected:       "creator_setting.private_show_protected",
+	LivestreamChatMembersOnly:  "creator_setting.livestream_chat_members_only",
+	CommentsMembersOnly:        "creator_setting.comments_members_only",
 }
 
 // Generated where
@@ -274,6 +284,8 @@ var CreatorSettingWhere = struct {
 	BlockedWordsFuzzinessMatch whereHelpernull_Int64
 	PublicShowProtected        whereHelperbool
 	PrivateShowProtected       whereHelperbool
+	LivestreamChatMembersOnly  whereHelperbool
+	CommentsMembersOnly        whereHelperbool
 }{
 	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -304,6 +316,8 @@ var CreatorSettingWhere = struct {
 	BlockedWordsFuzzinessMatch: whereHelpernull_Int64{field: "`creator_setting`.`blocked_words_fuzziness_match`"},
 	PublicShowProtected:        whereHelperbool{field: "`creator_setting`.`public_show_protected`"},
 	PrivateShowProtected:       whereHelperbool{field: "`creator_setting`.`private_show_protected`"},
+	LivestreamChatMembersOnly:  whereHelperbool{field: "`creator_setting`.`livestream_chat_members_only`"},
+	CommentsMembersOnly:        whereHelperbool{field: "`creator_setting`.`comments_members_only`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -334,9 +348,9 @@ func (r *creatorSettingR) GetCreatorChannel() *Channel {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
 	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match"}
-	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "public_show_protected", "private_show_protected"}
+	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 	creatorSettingGeneratedColumns      = []string{}
 )

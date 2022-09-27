@@ -48,7 +48,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return errors.Err(err)
 	}
 	request := &createRequest{args: args}
-	err = checkAllowedAndValidate(args)
+	err = checkAllowedAndValidate(request)
 	if err != nil {
 		return err
 	}
@@ -75,8 +75,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 	request.comment.CommentID = commentID
 	request.comment.Timestamp = int(timestamp)
-
-	//TODO: right now this is forced to the status of the claim, eventually need to support regular content + protected chat
 	request.comment.IsProtected = args.IsProtected
 
 	item := populateItem(request.comment, channel, 0)
@@ -142,8 +140,8 @@ func createComment(request *createRequest) error {
 	return nil
 }
 
-func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
-	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(args.ChannelID))).One(db.RO)
+func checkAllowedAndValidate(request *createRequest) error {
+	blockedEntry, err := m.BlockedEntries(m.BlockedEntryWhere.UniversallyBlocked.EQ(null.BoolFrom(true)), m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(request.args.ChannelID))).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -152,22 +150,22 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		return api.StatusError{Err: errors.Err("channel is not allowed to post comments"), Status: http.StatusBadRequest}
 	}
 
-	if args.ParentID != nil {
-		err = helper.AllowedToRespond(util.StrFromPtr(args.ParentID), args.ChannelID)
+	if request.args.ParentID != nil {
+		err = helper.AllowedToRespond(util.StrFromPtr(request.args.ParentID), request.args.ChannelID)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = lbry.ValidateSignatureAndTS(args.ChannelID, args.Signature, args.SigningTS, args.CommentText)
+	err = lbry.ValidateSignatureAndTS(request.args.ChannelID, request.args.Signature, request.args.SigningTS, request.args.CommentText)
 	if err != nil {
 		return errors.Prefix("could not authenticate channel signature:", err)
 	}
-	matches := commentapi.StickerRE.FindStringSubmatch(args.CommentText)
-	if len(matches) > 0 && !args.Sticker {
+	matches := commentapi.StickerRE.FindStringSubmatch(request.args.CommentText)
+	if len(matches) > 0 && !request.args.Sticker {
 		return errors.Err("a sticker cannot be passed with the sticker flag true")
 	}
-	if args.Sticker {
+	if request.args.Sticker {
 		if len(matches) != 2 {
 			return errors.Err("invalid sticker code")
 		}
@@ -175,19 +173,21 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 		if !ok {
 			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
 		}
-		if paid && args.PaymentIntentID == nil && args.SupportTxID == nil {
+		if paid && request.args.PaymentIntentID == nil && request.args.SupportTxID == nil {
 			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
 
-	isProtected, err := IsProtectedContent(args.ClaimID)
+	isProtected, err := IsProtectedContent(request.args.ClaimID)
+	isLivestream, err := IsLivestreamClaim(request.args.ClaimID)
 	if err != nil {
 		return err
 	}
-	args.IsProtected = isProtected
+	request.args.IsProtected = isProtected
+	request.isLivestream = isLivestream
 
 	if isProtected {
-		hasAccess, err := HasAccessToProtectedContent(args.ClaimID, args.ChannelID)
+		hasAccess, err := HasAccessToProtectedContent(request.args.ClaimID, request.args.ChannelID)
 		if err != nil {
 			return err
 		}
@@ -199,7 +199,7 @@ func checkAllowedAndValidate(args *commentapi.CreateArgs) error {
 	return nil
 }
 
-//IsProtectedContent resolves a claim and checks if it's a protected claim which would require authentication
+// IsProtectedContent resolves a claim and checks if it's a protected claim which would require authentication
 func IsProtectedContent(claimID string) (bool, error) {
 	claim, err := lbry.SDK.GetClaim(claimID)
 	if err != nil {
@@ -214,8 +214,41 @@ func IsProtectedContent(claimID string) (bool, error) {
 	return false, nil
 }
 
-//HasAccessToProtectedContent checks if a channel has access to a protected claim
+// IsLivestreamClaim resolves a claim and checks if it has a source
+func IsLivestreamClaim(claimID string) (bool, error) {
+	claim, err := lbry.SDK.GetClaim(claimID)
+	if err != nil {
+		return true, err
+	}
+
+	if claim.Value.GetStream() != nil && claim.Value.GetStream().GetSource() == nil {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// HasAccessToProtectedContent checks if a channel has access to a protected claim
 func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
+	contentType := "Exclusive content"
+	isLivestream, err := IsLivestreamClaim(claimID)
+	if isLivestream {
+		contentType = "Exclusive livestreams"
+	}
+
+	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
+		ChannelClaimID: channelID,
+		ClaimID:        claimID,
+		Type:           contentType,
+	})
+	if err != nil {
+		return false, errors.Err(err)
+	}
+	return hasAccess, nil
+}
+
+// HasAccessToProtectedChat checks if a channel has access to chat perk (members only mode)
+func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
 	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
@@ -297,6 +330,7 @@ type createRequest struct {
 	signingChannel   *jsonrpc.Claim
 	currency         string
 	isFiat           bool
+	isLivestream     bool
 }
 
 const maxSimilaryScoreToCreatorName = 0.6
@@ -410,21 +444,33 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				}
 			}
 		}
-	}
-	if !settings.CommentsEnabled.Valid {
-		for _, tag := range request.signingChannel.Value.Tags {
-			if tag == "comments-disabled" {
-				settings.CommentsEnabled.SetValid(false)
-				err := settings.Update(db.RW, boil.Whitelist(m.CreatorSettingColumns.CommentsEnabled))
+		if request.isLivestream {
+			if settings.LivestreamChatMembersOnly {
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID)
 				if err != nil {
-					return errors.Err(err)
+					return err
+				}
+				if !hasAccess {
+					return api.StatusError{Err: errors.Err("livestream chats are set to members only by the creator"), Status: http.StatusBadRequest}
+				}
+			}
+		} else {
+			if settings.CommentsMembersOnly {
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID)
+				if err != nil {
+					return err
+				}
+				if !hasAccess {
+					return api.StatusError{Err: errors.Err("comments are set to members only by the creator"), Status: http.StatusBadRequest}
 				}
 			}
 		}
 	}
+
 	if !settings.CommentsEnabled.Bool {
 		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
 	}
+
 	if settings.TimeSinceFirstComment.Valid {
 		request.commenterChannel, err = helper.FindOrCreateChannel(request.args.ChannelID, request.args.ChannelName)
 		if err != nil {

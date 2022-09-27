@@ -9,8 +9,10 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/OdyseeTeam/commentron/sockety"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
+	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/btcsuite/btcutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -195,9 +197,32 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.PublicShowProtected = *args.PublicShowProtected
 	}
 
+	if args.LivestreamChatMembersOnly != nil {
+		settings.LivestreamChatMembersOnly = *args.LivestreamChatMembersOnly
+	}
+	if args.CommentsMembersOnly != nil {
+		settings.CommentsMembersOnly = *args.CommentsMembersOnly
+	}
+
 	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
+	}
+
+	if args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil) {
+		var data map[string]interface{}
+		if *args.LivestreamChatMembersOnly {
+			data = map[string]interface{}{"LivestreamChatMembersOnly": *args.LivestreamChatMembersOnly}
+		} else {
+			data = map[string]interface{}{"CommentsMembersOnly": *args.CommentsMembersOnly}
+		}
+
+		go sockety.SendNotification(socketyapi.SendNotificationArgs{
+			Service: socketyapi.Commentron,
+			Type:    "setting",
+			IDs:     []string{*args.ActiveClaimID, "settings"},
+			Data:    data,
+		})
 	}
 
 	applySettingsToReply(settings, reply, authorized)
@@ -251,6 +276,16 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	tipGoalAmount := uint64(settings.TipgoalAmount)
 	reply.TipgoalAmount = &tipGoalAmount
 	reply.TipgoalCurrency = &settings.TipgoalCurrency
-	reply.PublicShowProtected = &settings.PublicShowProtected
-	reply.PrivateShowProtected = &settings.PrivateShowProtected
+	if settings.PublicShowProtected {
+		reply.PublicShowProtected = &settings.PublicShowProtected
+	}
+	if settings.PrivateShowProtected {
+		reply.PrivateShowProtected = &settings.PrivateShowProtected
+	}
+	if settings.LivestreamChatMembersOnly {
+		reply.LivestreamChatMembersOnly = &settings.LivestreamChatMembersOnly
+	}
+	if settings.PublicShowProtected {
+		reply.CommentsMembersOnly = &settings.CommentsMembersOnly
+	}
 }

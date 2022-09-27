@@ -42,6 +42,8 @@ type ListSettingsResponse struct {
 	TimeSinceFirstComment      *uint64  `json:"time_since_first_comment"`
 	PublicShowProtected        *bool    `json:"public_show_protected"`
 	PrivateShowProtected       *bool    `json:"private_show_protected"`
+	LivestreamChatMembersOnly  *bool    `json:"livestream_chat_members_only"`
+	CommentsMembersOnly        *bool    `json:"comments_members_only"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
@@ -68,9 +70,12 @@ type UpdateSettingsArgs struct {
 	TipgoalPreviousDonations   *bool    `json:"tipgoal_previous_donations"`
 	TipgoalCurrency            *string  `json:"tipgoal_currency"`
 	// Minutes since first comment when users are allowed to comment on your content/livestream
-	TimeSinceFirstComment *uint64 `json:"time_since_first_comment"`
-	PublicShowProtected   *bool   `json:"public_show_protected"`
-	PrivateShowProtected  *bool   `json:"private_show_protected"`
+	TimeSinceFirstComment     *uint64 `json:"time_since_first_comment"`
+	PrivateShowProtected      *bool   `json:"private_show_protected"`
+	PublicShowProtected       *bool   `json:"public_show_protected"`
+	LivestreamChatMembersOnly *bool   `json:"livestream_chat_members_only"`
+	CommentsMembersOnly       *bool   `json:"comments_members_only"`
+	ActiveClaimID             *string `json:"active_claim_id"`
 }
 
 // Validate validates the data in the args
@@ -80,6 +85,7 @@ func (u UpdateSettingsArgs) Validate() api.StatusError {
 		v.Field(&u.ViewercountOverlayPosition, v.In("Top Left", "Top Center", "Top Right", "Bottom Left", "Bottom Center", "Bottom Right")),
 		v.Field(&u.TipgoalOverlayPosition, v.In("Top", "Bottom")),
 		v.Field(&u.TipgoalCurrency, v.In("LBC", "FIAT")),
+		v.Field(&u.ActiveClaimID, validator.ClaimID),
 	)
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
