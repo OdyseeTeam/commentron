@@ -179,6 +179,9 @@ func checkAllowedAndValidate(request *createRequest) error {
 	}
 
 	isProtected, err := IsProtectedContent(request.args.ClaimID)
+	if err != nil {
+		return err
+	}
 	isLivestream, err := IsLivestreamClaim(request.args.ClaimID)
 	if err != nil {
 		return err
@@ -232,6 +235,9 @@ func IsLivestreamClaim(claimID string) (bool, error) {
 func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 	contentType := "Exclusive content"
 	isLivestream, err := IsLivestreamClaim(claimID)
+	if err != nil {
+		return true, err
+	}
 	if isLivestream {
 		contentType = "Exclusive livestreams"
 	}
@@ -242,7 +248,7 @@ func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 		Type:           contentType,
 	})
 	if err != nil {
-		return false, errors.Err(err)
+		return false, err
 	}
 	return hasAccess, nil
 }
@@ -255,7 +261,7 @@ func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
 		Type:           "Members-only chat",
 	})
 	if err != nil {
-		return false, errors.Err(err)
+		return false, err
 	}
 	return hasAccess, nil
 }
@@ -451,7 +457,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 					return err
 				}
 				if !hasAccess {
-					return api.StatusError{Err: errors.Err("livestream chats are set to members only by the creator"), Status: http.StatusBadRequest}
+					return api.StatusError{Err: errors.Err("livestream chats are set to members only by the creator"), Status: http.StatusForbidden}
 				}
 			}
 		} else {
@@ -461,14 +467,14 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 					return err
 				}
 				if !hasAccess {
-					return api.StatusError{Err: errors.Err("comments are set to members only by the creator"), Status: http.StatusBadRequest}
+					return api.StatusError{Err: errors.Err("comments are set to members only by the creator"), Status: http.StatusForbidden}
 				}
 			}
 		}
 	}
 
 	if !settings.CommentsEnabled.Bool {
-		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusBadRequest}
+		return api.StatusError{Err: errors.Err("comments are disabled by the creator"), Status: http.StatusForbidden}
 	}
 
 	if settings.TimeSinceFirstComment.Valid {

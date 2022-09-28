@@ -209,9 +209,11 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		return errors.Err(err)
 	}
 
-	if args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil) {
+	membersOnlyChatToggled := args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil)
+
+	if membersOnlyChatToggled {
 		var data map[string]interface{}
-		if *args.LivestreamChatMembersOnly {
+		if args.LivestreamChatMembersOnly != nil {
 			data = map[string]interface{}{"LivestreamChatMembersOnly": *args.LivestreamChatMembersOnly}
 		} else {
 			data = map[string]interface{}{"CommentsMembersOnly": *args.CommentsMembersOnly}
@@ -276,16 +278,8 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	tipGoalAmount := uint64(settings.TipgoalAmount)
 	reply.TipgoalAmount = &tipGoalAmount
 	reply.TipgoalCurrency = &settings.TipgoalCurrency
-	if settings.PublicShowProtected {
-		reply.PublicShowProtected = &settings.PublicShowProtected
-	}
-	if settings.PrivateShowProtected {
-		reply.PrivateShowProtected = &settings.PrivateShowProtected
-	}
-	if settings.LivestreamChatMembersOnly {
-		reply.LivestreamChatMembersOnly = &settings.LivestreamChatMembersOnly
-	}
-	if settings.PublicShowProtected {
-		reply.CommentsMembersOnly = &settings.CommentsMembersOnly
-	}
+	reply.PublicShowProtected = &settings.PublicShowProtected
+	reply.PrivateShowProtected = &settings.PrivateShowProtected
+	reply.LivestreamChatMembersOnly = &settings.LivestreamChatMembersOnly
+	reply.CommentsMembersOnly = &settings.CommentsMembersOnly
 }
