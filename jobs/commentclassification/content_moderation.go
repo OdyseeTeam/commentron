@@ -119,7 +119,7 @@ func inferCommentClassifications(comments model.CommentSlice) (model.CommentClas
 
 	modelIdent := null.StringFrom(classificationResp.ModelIdent)
 
-	lookupTable := map[string]*classification{}
+	lookupTable := make(map[string]*classification,len(classificationResp.Classifications))
 	for _, classification := range classificationResp.Classifications {
 		lookupTable[classification.ID] = classification
 	}
@@ -175,6 +175,11 @@ type classification struct {
 // in that a user can post a clean comment; wait the 5 minutes; then edit
 // it to be toxic and it will not be updated.
 func queryCommentBatch(lastKnownClassificationTimestamp, batchSize int) (model.CommentSlice, error) {
+	commentTbl := model.TableNames.Comment
+	commentTimestampCol := commentTbl + "." + model.CommentColumns.Timestamp
+	commentIdCol := commentTbl + "." + model.CommentColumns.CommentID
+	classificationTbl := model.TableNames.CommentClassification
+	classificationCommentIdCol := classificationTbl + "." + model.CommentClassificationColumns.CommentID
 	comments, err := model.Comments(
 		// To ensure none are missed, use = instead of > but with
 		// an outer join and nullity check to skip duplicates.
