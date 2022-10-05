@@ -17,7 +17,7 @@ docker run --rm -it -p 3306:3306 \
   --name tmp-commentron-mysql \
   -e MYSQL_ROOT_PASSWORD=lbry \
   -v /tmp/commentron/init.d:/docker-entrypoint-initdb.d \
-  mysql/mysql-server:5.7.31
+  mysql/mysql-server:8.0
 
 
 # Verify with:

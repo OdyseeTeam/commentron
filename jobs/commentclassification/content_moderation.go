@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/metrics"
 	"github.com/OdyseeTeam/commentron/model"
@@ -12,8 +16,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"net/http"
-	"time"
 )
 
 // PollAndClassifyNewComments looks for new comments and updates them by calling classification api
@@ -85,12 +87,12 @@ func inferCommentClassifications(comments model.CommentSlice) (model.CommentClas
 	var classifications model.CommentClassificationSlice
 
 	// Package up the request as a json list of dicts
-	var reqItems = []map[string]string{}
-	for _, comment := range comments {
-		reqItems = append(reqItems, map[string]string{
+	reqItems := make([]map[string]string, len(comments))
+	for i, comment := range comments {
+		reqItems[i] = map[string]string{
 			"id":      comment.CommentID,
 			"comment": comment.Body,
-		})
+		}
 	}
 	reqBytes, err := json.Marshal(reqItems)
 	if err != nil {
@@ -104,6 +106,12 @@ func inferCommentClassifications(comments model.CommentSlice) (model.CommentClas
 	resp, err := client.Post(inferenceServiceURI, "application/json", bytes.NewReader(reqBytes))
 	if err != nil {
 		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	// Check for 200 status
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("inference service returned status %d", resp.StatusCode)
 	}
 
 	// Parse it
@@ -119,7 +127,7 @@ func inferCommentClassifications(comments model.CommentSlice) (model.CommentClas
 
 	modelIdent := null.StringFrom(classificationResp.ModelIdent)
 
-	lookupTable := make(map[string]*classification,len(classificationResp.Classifications))
+	lookupTable := make(map[string]*classification, len(classificationResp.Classifications))
 	for _, classification := range classificationResp.Classifications {
 		lookupTable[classification.ID] = classification
 	}
@@ -177,19 +185,21 @@ type classification struct {
 func queryCommentBatch(lastKnownClassificationTimestamp, batchSize int) (model.CommentSlice, error) {
 	commentTbl := model.TableNames.Comment
 	commentTimestampCol := commentTbl + "." + model.CommentColumns.Timestamp
-	commentIdCol := commentTbl + "." + model.CommentColumns.CommentID
+	commentIDCol := commentTbl + "." + model.CommentColumns.CommentID
 	classificationTbl := model.TableNames.CommentClassification
-	classificationCommentIdCol := classificationTbl + "." + model.CommentClassificationColumns.CommentID
+	classificationCommentIDCol := classificationTbl + "." + model.CommentClassificationColumns.CommentID
+
 	comments, err := model.Comments(
 		// To ensure none are missed, use = instead of > but with
 		// an outer join and nullity check to skip duplicates.
-		qm.Where("`comment`.timestamp >= ?", lastKnownClassificationTimestamp),
-		qm.Where("`comment`.timestamp < ?", time.Now().Unix()),
-		qm.LeftOuterJoin(`comment_classification cc ON comment.comment_id = cc.comment_id`),
-		qm.Where("cc.comment_id IS NULL"),
+		model.CommentWhere.Timestamp.GTE(lastKnownClassificationTimestamp),
+		model.CommentWhere.Timestamp.LT(int(time.Now().Unix())),
+
+		qm.LeftOuterJoin(fmt.Sprintf("%s ON %s = %s", classificationTbl, commentIDCol, classificationCommentIDCol)),
+		qm.Where(classificationCommentIDCol+" IS NULL"),
 
 		// Poll in chronological order.
-		qm.OrderBy("`comment`.timestamp ASC"),
+		qm.OrderBy(commentTimestampCol+" ASC"),
 
 		// But don't overwhelm the remote inference server.
 		qm.Limit(batchSize),
@@ -210,7 +220,7 @@ func queryCommentBatch(lastKnownClassificationTimestamp, batchSize int) (model.C
 // WARNING: this assumes the `created_at` column replicates the `timestamp`.
 // WARNING: depending on timestamp granularity, this can miss some comments?
 func getLastKnownClassificationTimestamp() (int, error) {
-	cc, err := model.CommentClassifications(qm.OrderBy("timestamp DESC")).One(db.RO)
+	cc, err := model.CommentClassifications(qm.OrderBy(model.CommentClassificationColumns.Timestamp + " DESC")).One(db.RO)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// If no Classifications exist, start from five minutes ago.
