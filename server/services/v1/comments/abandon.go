@@ -64,7 +64,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		return nil, err
 	}
 	item := populateItem(comment, commenterChannel, 0)
-	err = comment.Delete(db.RW)
+	err = comment.Delete(db.RW, false)
 	if err != nil {
 		return nil, errors.Err(err)
 	}

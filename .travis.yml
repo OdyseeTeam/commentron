@@ -28,15 +28,16 @@ cache:
 
 script:
   - ./scripts/build.sh
-  - go test ./...
   - ./scripts/lint.sh
   - source ./scripts/setup.sh
   - ./bin/commentron serve &
   - sleep 5s
   - "curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' http://localhost:5900"
+  - go test ./...
   - go mod tidy
   - git diff --exit-code
   - ./scripts/gen_models.sh
+  - sqlboiler --version  # useful for diagnosing diffs below
   - git diff --exit-code
   - ./bin/commentron test
 

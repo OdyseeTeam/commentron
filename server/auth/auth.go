@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/OdyseeTeam/commentron/commentapi"
@@ -24,11 +25,15 @@ const oauthProviderURL = "https://sso.odysee.com/auth/realms/Users"
 var verifier *oidc.IDTokenVerifier
 
 func init() {
-	provider, err := oidc.NewProvider(context.Background(), oauthProviderURL)
-	if err != nil {
-		panic(err)
+	// This executes a remote call to the OICD provider.
+	// Setting the `SKIP_OICD` variable won't kill development without wifi.
+	if os.Getenv("SKIP_OICD") == "" {
+		provider, err := oidc.NewProvider(context.Background(), oauthProviderURL)
+		if err != nil {
+			panic(err)
+		}
+		verifier = provider.Verifier(&oidc.Config{ClientID: oauthClientID})
 	}
-	verifier = provider.Verifier(&oidc.Config{ClientID: oauthClientID})
 }
 
 // ErrNotOAuth missing oauth header

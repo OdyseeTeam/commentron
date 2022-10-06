@@ -20,12 +20,15 @@ Make sure you setup the configuration to use env files.
 
 I put the `IS_TEST=true` in the configuration but it could be in the `.env` file. 
 
-### MySQL 5.7
+### MySQL 8.0
 
-Install MySQL 5.7 and create a database named `commentron` then adjust the DSN
+Install MySQL 8.0 and create a database named `commentron` then adjust the DSN
 in the `.env` file locally with the username and password. 
 
 Then once mysql is running you can hit play. 
+
+If you are lazy and have docker installed, you can use the `./scripts/test_db_via_docker.sh` script
+to start a mysql 8.0 container with appropriate default users, tables, and privileges for testing.
 
 ## Key packages
 

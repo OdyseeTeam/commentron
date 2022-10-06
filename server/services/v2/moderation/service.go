@@ -43,3 +43,8 @@ func (s Service) RemoveDelegate(r *http.Request, args *commentapi.RemoveDelegate
 func (s Service) ListDelegates(r *http.Request, args *commentapi.ListDelegatesArgs, reply *commentapi.ListDelegateResponse) error {
 	return listDelegates(r, args, reply)
 }
+
+// ActOnClassification confirms or rejects a comment classification
+func (s Service) ActOnClassification(r *http.Request, args *commentapi.ActOnClassificationArgs, reply *commentapi.ActOnClassificationResponse) error {
+	return actOnClassification(r, args, reply)
+}

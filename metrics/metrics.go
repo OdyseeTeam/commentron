@@ -62,6 +62,13 @@ var (
 		Name:      "duration",
 		Help:      "Runs of each job measuring duration",
 	}, []string{"job"})
+	// CommentsClassified reports the number of successful comment classifications
+	CommentsClassified = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: "commentron",
+		Subsystem: "moderation",
+		Name:      "comments_classified",
+		Help:      "Number of successful comments classified",
+	})
 )
 
 // SDKCall helper function for observing the duration

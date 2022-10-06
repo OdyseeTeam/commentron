@@ -3,6 +3,8 @@ package jobs
 import (
 	"time"
 
+	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
+
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/metrics"
 	"github.com/OdyseeTeam/commentron/model"
@@ -23,12 +25,19 @@ func StartJobs() {
 	if err != nil {
 		logrus.Error(err)
 	}
+
+	// Use gocron for the frequently polling comment classification job
+	// because you would expect to find it in periodic jobs.
+	_, err = scheduler.Every(1).Minute().Do(commentclassification.PollAndClassifyNewComments)
+	if err != nil {
+		logrus.Error(err)
+	}
 	scheduler.StartAsync()
 }
 
 func removeFlaggedComments() {
 	defer metrics.Job(time.Now(), "remove_flagged_comments")
-	err := model.Comments(model.CommentWhere.IsFlagged.EQ(true)).DeleteAll(db.RW)
+	err := model.Comments(model.CommentWhere.IsFlagged.EQ(true)).DeleteAll(db.RW, false)
 	if err != nil {
 		logrus.Error("Error removing flagged comments: ", err)
 	}
