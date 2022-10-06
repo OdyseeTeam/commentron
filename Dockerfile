@@ -1,5 +1,5 @@
-## Mooney API's for LBRY Inc.
-FROM ubuntu:18.04
+## Comments server for Odysee.com
+FROM ubuntu:20.04
 LABEL MAINTAINER="beamer"
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
