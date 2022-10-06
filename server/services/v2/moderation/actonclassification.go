@@ -1,6 +1,8 @@
 package moderation
 
 import (
+	"net/http"
+
 	"github.com/OdyseeTeam/commentron/commentapi"
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
@@ -9,7 +11,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"net/http"
 )
 
 func actOnClassification(r *http.Request, args *commentapi.ActOnClassificationArgs, reply *commentapi.ActOnClassificationResponse) error {

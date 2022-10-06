@@ -1,6 +1,8 @@
 package db
 
 import (
+	"testing"
+
 	"github.com/OdyseeTeam/commentron/env"
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/sirupsen/logrus"
@@ -8,7 +10,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"testing"
 )
 
 // Note from Johnny

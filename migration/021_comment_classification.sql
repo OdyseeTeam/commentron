@@ -41,7 +41,7 @@ CREATE TABLE comment_classification (
     CONSTRAINT comment_classification_comment_fk
        FOREIGN KEY (comment_id) REFERENCES comment (comment_id)
           ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
 -- +migrate StatementEnd
