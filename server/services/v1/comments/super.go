@@ -179,7 +179,19 @@ func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, rep
 			return err
 		}
 		if !hasAccess {
-			return errors.Err("channel does not have permissions to comment on this claim")
+			return api.StatusError{Err: errors.Err("channel does not have permissions to comment on this claim"), Status: http.StatusForbidden}
+		}
+		commenterChannel, err := helper.FindOrCreateChannel(*args.RequestorChannelID, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+
+		err = lbry.ValidateSignatureAndTS(commenterChannel.ClaimID, args.Signature, args.SigningTS, args.RequestorChannelName)
+		if err != nil {
+			return err
+		}
+		if commenterChannel.ClaimID != *args.RequestorChannelID {
+			return api.StatusError{Err: errors.Err("channel mismatch, someone trying to spoof"), Status: http.StatusForbidden}
 		}
 	}
 
