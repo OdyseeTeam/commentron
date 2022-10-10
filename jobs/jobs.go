@@ -3,8 +3,6 @@ package jobs
 import (
 	"time"
 
-	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
-
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/metrics"
 	"github.com/OdyseeTeam/commentron/model"
@@ -28,10 +26,10 @@ func StartJobs() {
 
 	// Use gocron for the frequently polling comment classification job
 	// because you would expect to find it in periodic jobs.
-	_, err = scheduler.Every(1).Minute().Do(commentclassification.PollAndClassifyNewComments)
-	if err != nil {
-		logrus.Error(err)
-	}
+	//_, err = scheduler.Every(1).Minute().Do(commentclassification.PollAndClassifyNewComments)
+	//if err != nil {
+	//	logrus.Error(err)
+	//}
 	scheduler.StartAsync()
 }
 
