@@ -69,6 +69,13 @@ var (
 		Name:      "comments_classified",
 		Help:      "Number of successful comments classified",
 	})
+	// PollingCallsForClassifierJob is a metric to show the number of calls to the classifier job
+	PollingCallsForClassifierJob = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: "commentron",
+		Subsystem: "moderation",
+		Name:      "polling_calls_for_classifier_job",
+		Help:      "Number of calls to the classifier job",
+	})
 )
 
 // SDKCall helper function for observing the duration
