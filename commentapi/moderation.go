@@ -224,7 +224,7 @@ type ActOnClassificationArgs struct {
 // Validate validates the data in the ActOnClassificationArgs
 func (a ActOnClassificationArgs) Validate() api.StatusError {
 	err := v.ValidateStruct(&a,
-		v.Field(&a.CommentID, validator.ClaimID, v.Required),
+		v.Field(&a.CommentID, v.Required),
 	)
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
