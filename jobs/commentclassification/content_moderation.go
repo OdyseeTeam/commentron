@@ -45,6 +45,8 @@ func PollAndClassifyNewComments() {
 	}
 
 	for {
+		metrics.PollingCallsForClassifierJob.Inc()
+
 		toClassify, err := queryCommentBatch(lastKnownClassificationTimestamp, batchSize)
 		if err != nil {
 			logrus.Error("Error getting last known classified comment: ", err)
