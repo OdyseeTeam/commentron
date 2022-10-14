@@ -32,7 +32,7 @@ func actOnClassification(r *http.Request, args *commentapi.ActOnClassificationAr
 	err = db.WithTx(db.RW, nil, func(tx boil.Transactor) error {
 		// Delete the comment.
 		if args.DoDelete {
-			err = commentClassification.R.Comment.Delete(db.RW, false)
+			err = commentClassification.R.Comment.Delete(tx, false)
 			if err != nil {
 				return err
 			}
@@ -42,7 +42,7 @@ func actOnClassification(r *http.Request, args *commentapi.ActOnClassificationAr
 		commentClassification.IsReviewed = null.BoolFrom(true)
 		commentClassification.ReviewerApproved = null.BoolFrom(args.Confirm)
 
-		return commentClassification.Update(db.RW, boil.Infer())
+		return commentClassification.Update(tx, boil.Infer())
 	})
 
 	if err != nil {
