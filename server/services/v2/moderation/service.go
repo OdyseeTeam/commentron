@@ -48,3 +48,8 @@ func (s Service) ListDelegates(r *http.Request, args *commentapi.ListDelegatesAr
 func (s Service) ActOnClassification(r *http.Request, args *commentapi.ActOnClassificationArgs, reply *commentapi.ActOnClassificationResponse) error {
 	return actOnClassification(r, args, reply)
 }
+
+// AdminAlgoCallbacks adds or deletes a ChannelAlgoCallback
+func (s Service) AdminAlgoCallbacks(r *http.Request, args *commentapi.AdminAlgoCallbacksArgs, reply *commentapi.AdminAlgoCallbacksResponse) error {
+	return adminAlgoCallbacks(r, args, reply)
+}

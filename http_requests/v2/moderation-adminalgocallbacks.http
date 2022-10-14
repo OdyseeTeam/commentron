@@ -1,0 +1,32 @@
+### Add
+POST http://localhost:5900/api/v2
+Content-Type: application/json
+Authorization: Basic api-user api-pass
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "moderation.AdminAlgoCallbacks",
+  "params": {
+    "channel_id": "c9da929d12afe6066acc89eb044b552f0d63782a",
+    "watcher_id": 0,
+    "add": true
+  }
+}
+
+
+### Delete
+POST http://localhost:5900/api/v2
+Content-Type: application/json
+Authorization: Basic api-user api-pass
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "moderation.AdminAlgoCallbacks",
+  "params": {
+    "channel_id": "c9da929d12afe6066acc89eb044b552f0d63782a",
+    "watcher_id": 0,
+    "add": false
+  }
+}

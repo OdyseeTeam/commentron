@@ -236,3 +236,37 @@ func (a ActOnClassificationArgs) Validate() api.StatusError {
 type ActOnClassificationResponse struct {
 	Status string `json:"status"`
 }
+
+// AdminAlgoCallbacksArgs Arguments to modify the algo_callbacks table
+type AdminAlgoCallbacksArgs struct {
+	ChannelID string `json:"channel_id"`
+	WatcherID uint   `json:"watcher_id"`
+	Add       bool   `json:"add"`
+}
+
+// InternalWatcherID is the ID of the internal watcher
+const InternalWatcherID = 0
+
+// Validate validates the data in the AdminAlgoCallbacksArgs
+func (a AdminAlgoCallbacksArgs) Validate() api.StatusError {
+	err := v.ValidateStruct(&a,
+		v.Field(&a.ChannelID, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+
+	if a.WatcherID != InternalWatcherID {
+		return api.StatusError{
+			Err:    errors.Err("user-defined watchers are not supported"),
+			Status: http.StatusBadRequest,
+		}
+	}
+
+	return api.StatusError{}
+}
+
+// AdminAlgoCallbacksResponse response for moderation.AdminAlgoCallbacks
+type AdminAlgoCallbacksResponse struct {
+	Status string `json:"status"`
+}
