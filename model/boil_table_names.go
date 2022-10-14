@@ -9,6 +9,8 @@ var TableNames = struct {
 	BlockedListAppeal     string
 	BlockedListInvite     string
 	Channel               string
+	ChannelAlgoCallbacks  string
+	ClaimToChannel        string
 	Comment               string
 	CommentClassification string
 	CreatorSetting        string
@@ -23,6 +25,8 @@ var TableNames = struct {
 	BlockedListAppeal:     "blocked_list_appeal",
 	BlockedListInvite:     "blocked_list_invite",
 	Channel:               "channel",
+	ChannelAlgoCallbacks:  "channel_algo_callbacks",
+	ClaimToChannel:        "claim_to_channel",
 	Comment:               "comment",
 	CommentClassification: "comment_classification",
 	CreatorSetting:        "creator_setting",

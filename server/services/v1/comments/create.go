@@ -94,6 +94,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		flags.CheckComment(request.comment)
 	}
 
+	err = EnsureClaimToChannelExists(request.comment.LbryClaimID)
+	if err != nil {
+		return err
+	}
+
 	err = request.comment.Insert(db.RW, boil.Infer())
 	if err != nil {
 		return err
@@ -229,6 +234,46 @@ func IsLivestreamClaim(claimID string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+var claimToChannelExistsCache = ccache.New(ccache.Configure().MaxSize(10000))
+
+// EnsureClaimToChannelExists ensures that a claim to channel exists for the given claim id
+func EnsureClaimToChannelExists(claimID string) error {
+	// check cache first. it's only storing a boolean but it lets us do db upserts less.
+	_, err := claimToChannelExistsCache.Fetch(claimID, 24*time.Hour, func() (interface{}, error) {
+
+		// SDK calls have their own cache and the GetClaim call is done multiple times in create,
+		// so this doesn't add much overhead.
+		claim, err := lbry.SDK.GetClaim(claimID)
+		if err != nil {
+			return true, err
+		}
+
+		// It may be an anonymous channel.
+		channel := claim.SigningChannel
+		if channel == nil {
+			return true, nil
+		}
+
+		// Create the claim to channel.
+		cl2ch := &m.ClaimToChannel{
+			ClaimID:   claimID,
+			ChannelID: channel.ClaimID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+
+		// Upsert it.
+		err = cl2ch.Upsert(db.RW, boil.None(), boil.Infer())
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	})
+
+	return err
 }
 
 // HasAccessToProtectedContent checks if a channel has access to a protected claim
