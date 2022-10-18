@@ -26,3 +26,13 @@ func (s Service) Signature(r *http.Request, args *commentapi.SignatureArgs, repl
 	reply.IsValid = true
 	return nil
 }
+
+// ClaimSignature validates a channel signed a particular claim id
+func (s Service) ClaimSignature(r *http.Request, args *commentapi.SignatureArgs, reply *commentapi.SignatureResponse) error {
+	err := lbry.ValidateSignatureAndTSForClaim(args.ChannelID, args.ClaimID, args.Signature)
+	if err != nil {
+		return err
+	}
+	reply.IsValid = true
+	return nil
+}
