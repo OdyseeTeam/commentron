@@ -121,7 +121,7 @@ func ValidateSignatureAndTS(channelClaimID, signature, signingTS, data string) e
 }
 
 // ValidateSignatureAndTSForClaim validates the signature was signed by the channel reference for a particular claim id.
-func ValidateSignatureAndTSForClaim(channelClaimID, claimID, signature, signingTS string) error {
+func ValidateSignatureAndTSForClaim(channelClaimID, claimID, signature, signingTS, data string) error {
 	if config.IsTestMode {
 		return nil
 	}
@@ -129,7 +129,7 @@ func ValidateSignatureAndTSForClaim(channelClaimID, claimID, signature, signingT
 	if err != nil {
 		return err
 	}
-	return validateSignatureForClaim(claimID, signature, signingTS, pk)
+	return validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, data, pk)
 }
 
 // ValidateSignatureNoTSLimit validates the signature was signed by the channel reference.
@@ -206,7 +206,7 @@ func validateSignature(channelClaimID, signature, signingTS, data string, pubkey
 	return nil
 }
 
-func validateSignatureForClaim(claimID, signature, signingTS string, pubkey []byte) error {
+func validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, data string, pubkey []byte) error {
 	publicKey, err := getPublicKeyFromBytes(pubkey)
 	if err != nil {
 		return errors.Err(err)
@@ -214,7 +214,8 @@ func validateSignatureForClaim(claimID, signature, signingTS string, pubkey []by
 	injest := sha256.Sum256(
 		helper.CreateDigest(
 			[]byte(signingTS),
-			unhelixifyAndReverse(claimID),
+			unhelixifyAndReverse(channelClaimID),
+			[]byte(data),
 		))
 	sig, err := hex.DecodeString(signature)
 	if err != nil {
