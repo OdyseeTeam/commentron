@@ -8,8 +8,8 @@ import (
 	"github.com/OdyseeTeam/commentron/helper"
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
-
 	"github.com/OdyseeTeam/commentron/sockety"
+
 	"github.com/btcsuite/btcutil"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
@@ -226,11 +226,11 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		})
 	}
 
-	if args.FeaturedChannels != nil {
-		settings.FeaturedChannels = *args.FeaturedChannels
+	if !args.FeaturedChannels.IsZero() {
+		settings.FeaturedChannels = args.FeaturedChannels
 	}
-	if args.HomepageSettings != nil {
-		settings.HomepageSettings = *args.HomepageSettings
+	if !args.HomepageSettings.IsZero() {
+		settings.HomepageSettings = args.HomepageSettings
 	}
 
 	applySettingsToReply(settings, reply, authorized)
@@ -288,6 +288,6 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.PrivateShowProtected = &settings.PrivateShowProtected
 	reply.LivestreamChatMembersOnly = &settings.LivestreamChatMembersOnly
 	reply.CommentsMembersOnly = &settings.CommentsMembersOnly
-	reply.FeaturedChannels = &settings.FeaturedChannels
-	reply.HomepageSettings = &settings.HomepageSettings
+	reply.FeaturedChannels = settings.FeaturedChannels
+	reply.HomepageSettings = settings.HomepageSettings
 }
