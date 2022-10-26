@@ -54,6 +54,10 @@ type CreatorSetting struct {
 	PrivateShowProtected       bool        `boil:"private_show_protected" json:"private_show_protected" toml:"private_show_protected" yaml:"private_show_protected"`
 	LivestreamChatMembersOnly  bool        `boil:"livestream_chat_members_only" json:"livestream_chat_members_only" toml:"livestream_chat_members_only" yaml:"livestream_chat_members_only"`
 	CommentsMembersOnly        bool        `boil:"comments_members_only" json:"comments_members_only" toml:"comments_members_only" yaml:"comments_members_only"`
+	// array data for featured channels
+	FeaturedChannels null.JSON `boil:"featured_channels" json:"featured_channels,omitempty" toml:"featured_channels" yaml:"featured_channels,omitempty"`
+	// array data for homepage settings
+	HomepageSettings null.JSON `boil:"homepage_settings" json:"homepage_settings,omitempty" toml:"homepage_settings" yaml:"homepage_settings,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -91,6 +95,8 @@ var CreatorSettingColumns = struct {
 	PrivateShowProtected       string
 	LivestreamChatMembersOnly  string
 	CommentsMembersOnly        string
+	FeaturedChannels           string
+	HomepageSettings           string
 }{
 	ID:                         "id",
 	CreatorChannelID:           "creator_channel_id",
@@ -123,6 +129,8 @@ var CreatorSettingColumns = struct {
 	PrivateShowProtected:       "private_show_protected",
 	LivestreamChatMembersOnly:  "livestream_chat_members_only",
 	CommentsMembersOnly:        "comments_members_only",
+	FeaturedChannels:           "featured_channels",
+	HomepageSettings:           "homepage_settings",
 }
 
 var CreatorSettingTableColumns = struct {
@@ -157,6 +165,8 @@ var CreatorSettingTableColumns = struct {
 	PrivateShowProtected       string
 	LivestreamChatMembersOnly  string
 	CommentsMembersOnly        string
+	FeaturedChannels           string
+	HomepageSettings           string
 }{
 	ID:                         "creator_setting.id",
 	CreatorChannelID:           "creator_setting.creator_channel_id",
@@ -189,6 +199,8 @@ var CreatorSettingTableColumns = struct {
 	PrivateShowProtected:       "creator_setting.private_show_protected",
 	LivestreamChatMembersOnly:  "creator_setting.livestream_chat_members_only",
 	CommentsMembersOnly:        "creator_setting.comments_members_only",
+	FeaturedChannels:           "creator_setting.featured_channels",
+	HomepageSettings:           "creator_setting.homepage_settings",
 }
 
 // Generated where
@@ -254,6 +266,30 @@ func (w whereHelpernull_Int64) NIN(slice []int64) qm.QueryMod {
 func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+type whereHelpernull_JSON struct{ field string }
+
+func (w whereHelpernull_JSON) EQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_JSON) NEQ(x null.JSON) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_JSON) LT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_JSON) LTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_JSON) GT(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_JSON) GTE(x null.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_JSON) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var CreatorSettingWhere = struct {
 	ID                         whereHelperuint64
 	CreatorChannelID           whereHelperstring
@@ -286,6 +322,8 @@ var CreatorSettingWhere = struct {
 	PrivateShowProtected       whereHelperbool
 	LivestreamChatMembersOnly  whereHelperbool
 	CommentsMembersOnly        whereHelperbool
+	FeaturedChannels           whereHelpernull_JSON
+	HomepageSettings           whereHelpernull_JSON
 }{
 	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -318,6 +356,8 @@ var CreatorSettingWhere = struct {
 	PrivateShowProtected:       whereHelperbool{field: "`creator_setting`.`private_show_protected`"},
 	LivestreamChatMembersOnly:  whereHelperbool{field: "`creator_setting`.`livestream_chat_members_only`"},
 	CommentsMembersOnly:        whereHelperbool{field: "`creator_setting`.`comments_members_only`"},
+	FeaturedChannels:           whereHelpernull_JSON{field: "`creator_setting`.`featured_channels`"},
+	HomepageSettings:           whereHelpernull_JSON{field: "`creator_setting`.`homepage_settings`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -348,8 +388,8 @@ func (r *creatorSettingR) GetCreatorChannel() *Channel {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only", "featured_channels", "homepage_settings"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match", "featured_channels", "homepage_settings"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 	creatorSettingGeneratedColumns      = []string{}
