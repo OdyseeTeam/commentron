@@ -1,5 +1,6 @@
 -- +migrate Up
 -- +migrate StatementBegin
 ALTER TABLE creator_setting
-    RENAME COLUMN featured_channels TO channel_sections;
+    DROP COLUMN featured_channels,
+    ADD COLUMN creator_setting JSON DEFAULT NULL COMMENT 'array data for featured channels';
 -- +migrate StatementEnd
