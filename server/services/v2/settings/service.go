@@ -226,8 +226,8 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		})
 	}
 
-	if !args.FeaturedChannels.IsZero() {
-		settings.FeaturedChannels = args.FeaturedChannels
+	if !args.ChannelSections.IsZero() {
+		settings.ChannelSections = args.ChannelSections
 	}
 	if !args.HomepageSettings.IsZero() {
 		settings.HomepageSettings = args.HomepageSettings
@@ -288,6 +288,6 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.PrivateShowProtected = &settings.PrivateShowProtected
 	reply.LivestreamChatMembersOnly = &settings.LivestreamChatMembersOnly
 	reply.CommentsMembersOnly = &settings.CommentsMembersOnly
-	reply.FeaturedChannels = settings.FeaturedChannels
+	reply.ChannelSections = settings.ChannelSections
 	reply.HomepageSettings = settings.HomepageSettings
 }
