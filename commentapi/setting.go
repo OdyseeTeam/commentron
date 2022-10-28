@@ -46,7 +46,7 @@ type ListSettingsResponse struct {
 	PrivateShowProtected       *bool     `json:"private_show_protected"`
 	LivestreamChatMembersOnly  *bool     `json:"livestream_chat_members_only"`
 	CommentsMembersOnly        *bool     `json:"comments_members_only"`
-	FeaturedChannels           null.JSON `json:"featured_channels,omitempty"`
+	ChannelSections            null.JSON `json:"channel_sections,omitempty"`
 	HomepageSettings           null.JSON `json:"homepage_settings,omitempty"`
 }
 
@@ -80,7 +80,7 @@ type UpdateSettingsArgs struct {
 	LivestreamChatMembersOnly *bool     `json:"livestream_chat_members_only"`
 	CommentsMembersOnly       *bool     `json:"comments_members_only"`
 	ActiveClaimID             *string   `json:"active_claim_id"`
-	FeaturedChannels          null.JSON `json:"featured_channels,omitempty"`
+	ChannelSections           null.JSON `json:"channel_sections,omitempty"`
 	HomepageSettings          null.JSON `json:"homepage_settings,omitempty"`
 }
 
@@ -92,7 +92,7 @@ func (u UpdateSettingsArgs) Validate() api.StatusError {
 		v.Field(&u.TipgoalOverlayPosition, v.In("Top", "Bottom")),
 		v.Field(&u.TipgoalCurrency, v.In("LBC", "FIAT")),
 		v.Field(&u.ActiveClaimID, validator.ClaimID),
-		v.Field(&u.FeaturedChannels, is.JSON),
+		v.Field(&u.ChannelSections, is.JSON),
 		v.Field(&u.HomepageSettings, is.JSON),
 	)
 	if err != nil {

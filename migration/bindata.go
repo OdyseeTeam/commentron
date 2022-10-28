@@ -25,6 +25,7 @@
 // migration/022_comments_soft_delete.sql (126B)
 // migration/023_claim_to_channel.sql (794B)
 // migration/024_more_creator_settings.sql (285B)
+// migration/025_more_creator_settings_rename.sql (224B)
 // migration/migration.go (66B)
 
 package migration
@@ -593,6 +594,26 @@ func migration024_more_creator_settingsSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration025_more_creator_settings_renameSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x8e\x31\x4e\xc4\x30\x10\x45\x7b\x9f\xe2\x77\x5b\xc0\x9e\x80\xca\x1b\x9b\x02\x39\x36\x4a\xec\x3a\x1a\x25\x93\x60\x89\x38\xc8\x1e\x0a\x6e\x8f\x84\x08\xa2\xd8\xf2\xeb\x3f\x3d\xbd\xeb\x15\x0f\x7b\xde\x2a\x09\x23\x7d\xa8\xff\x73\x14\x12\xde\xb9\xc8\x8d\xb7\x5c\x94\x76\xd1\x0e\x88\xfa\xe6\x2c\xe6\xca\x24\x47\x9d\x1a\x8b\xe4\xb2\x29\x00\x30\x43\x78\x45\x17\x5c\xea\x3d\x56\x26\xf9\xac\xbc\x4c\xf3\x1b\x95\xc2\xef\xed\xf1\x07\xd1\xc6\x9c\xc4\xef\x31\x35\x9e\x25\x1f\xa5\xe1\x65\x0c\x1e\xc6\x3e\xeb\xe4\x22\x7c\x72\x0e\x5d\xe8\x7b\xeb\x23\x2e\x54\x2b\x7d\x61\x21\x21\xac\x47\xfd\x93\x9f\x8e\x76\x79\xba\xdf\x6d\xcb\xa2\xbe\x03\x00\x00\xff\xff\xee\x70\xc1\xd3\xe0\x00\x00\x00")
+
+func migration025_more_creator_settings_renameSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration025_more_creator_settings_renameSql,
+		"migration/025_more_creator_settings_rename.sql",
+	)
+}
+
+func migration025_more_creator_settings_renameSql() (*asset, error) {
+	bytes, err := migration025_more_creator_settings_renameSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/025_more_creator_settings_rename.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x90, 0xc3, 0xd3, 0x55, 0x59, 0x59, 0x17, 0x9a, 0x4e, 0x87, 0x23, 0x13, 0x45, 0x56, 0xfb, 0x9d, 0xae, 0x15, 0xf0, 0x6b, 0x79, 0xf6, 0x88, 0xda, 0x3f, 0xa8, 0x86, 0xeb, 0x11, 0xfa, 0x2c, 0xbb}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -704,32 +725,33 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"migration/000_init.sql":                    migration000_initSql,
-	"migration/001_cascade_reaction_delete.sql": migration001_cascade_reaction_deleteSql,
-	"migration/002_pinned_comments.sql":         migration002_pinned_commentsSql,
-	"migration/003_blocked.sql":                 migration003_blockedSql,
-	"migration/004_flagged.sql":                 migration004_flaggedSql,
-	"migration/005_creator_settings.sql":        migration005_creator_settingsSql,
-	"migration/006_new_settings.sql":            migration006_new_settingsSql,
-	"migration/007_indices.sql":                 migration007_indicesSql,
-	"migration/008_comment_ranking.sql":         migration008_comment_rankingSql,
-	"migration/009_comment_fiat.sql":            migration009_comment_fiatSql,
-	"migration/010_shared_blocked_list.sql":     migration010_shared_blocked_listSql,
-	"migration/011_accepted_default.sql":        migration011_accepted_defaultSql,
-	"migration/012_appeals_for_all.sql":         migration012_appeals_for_allSql,
-	"migration/013_oauth.sql":                   migration013_oauthSql,
-	"migration/014_overlap_settings.sql":        migration014_overlap_settingsSql,
-	"migration/015_creationtime.sql":            migration015_creationtimeSql,
-	"migration/016_protected_settings.sql":      migration016_protected_settingsSql,
-	"migration/017_comments_protected_flag.sql": migration017_comments_protected_flagSql,
-	"migration/018_comments_timestamp_idx.sql":  migration018_comments_timestamp_idxSql,
-	"migration/019_comments_protected_idx.sql":  migration019_comments_protected_idxSql,
-	"migration/020_members_only_settings.sql":   migration020_members_only_settingsSql,
-	"migration/021_comment_classification.sql":  migration021_comment_classificationSql,
-	"migration/022_comments_soft_delete.sql":    migration022_comments_soft_deleteSql,
-	"migration/023_claim_to_channel.sql":        migration023_claim_to_channelSql,
-	"migration/024_more_creator_settings.sql":   migration024_more_creator_settingsSql,
-	"migration/migration.go":                    migrationMigrationGo,
+	"migration/000_init.sql":                         migration000_initSql,
+	"migration/001_cascade_reaction_delete.sql":      migration001_cascade_reaction_deleteSql,
+	"migration/002_pinned_comments.sql":              migration002_pinned_commentsSql,
+	"migration/003_blocked.sql":                      migration003_blockedSql,
+	"migration/004_flagged.sql":                      migration004_flaggedSql,
+	"migration/005_creator_settings.sql":             migration005_creator_settingsSql,
+	"migration/006_new_settings.sql":                 migration006_new_settingsSql,
+	"migration/007_indices.sql":                      migration007_indicesSql,
+	"migration/008_comment_ranking.sql":              migration008_comment_rankingSql,
+	"migration/009_comment_fiat.sql":                 migration009_comment_fiatSql,
+	"migration/010_shared_blocked_list.sql":          migration010_shared_blocked_listSql,
+	"migration/011_accepted_default.sql":             migration011_accepted_defaultSql,
+	"migration/012_appeals_for_all.sql":              migration012_appeals_for_allSql,
+	"migration/013_oauth.sql":                        migration013_oauthSql,
+	"migration/014_overlap_settings.sql":             migration014_overlap_settingsSql,
+	"migration/015_creationtime.sql":                 migration015_creationtimeSql,
+	"migration/016_protected_settings.sql":           migration016_protected_settingsSql,
+	"migration/017_comments_protected_flag.sql":      migration017_comments_protected_flagSql,
+	"migration/018_comments_timestamp_idx.sql":       migration018_comments_timestamp_idxSql,
+	"migration/019_comments_protected_idx.sql":       migration019_comments_protected_idxSql,
+	"migration/020_members_only_settings.sql":        migration020_members_only_settingsSql,
+	"migration/021_comment_classification.sql":       migration021_comment_classificationSql,
+	"migration/022_comments_soft_delete.sql":         migration022_comments_soft_deleteSql,
+	"migration/023_claim_to_channel.sql":             migration023_claim_to_channelSql,
+	"migration/024_more_creator_settings.sql":        migration024_more_creator_settingsSql,
+	"migration/025_more_creator_settings_rename.sql": migration025_more_creator_settings_renameSql,
+	"migration/migration.go":                         migrationMigrationGo,
 }
 
 // AssetDebug is true if the assets were built with the debug flag enabled.
@@ -779,32 +801,33 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"migration": {nil, map[string]*bintree{
-		"000_init.sql":                    {migration000_initSql, map[string]*bintree{}},
-		"001_cascade_reaction_delete.sql": {migration001_cascade_reaction_deleteSql, map[string]*bintree{}},
-		"002_pinned_comments.sql":         {migration002_pinned_commentsSql, map[string]*bintree{}},
-		"003_blocked.sql":                 {migration003_blockedSql, map[string]*bintree{}},
-		"004_flagged.sql":                 {migration004_flaggedSql, map[string]*bintree{}},
-		"005_creator_settings.sql":        {migration005_creator_settingsSql, map[string]*bintree{}},
-		"006_new_settings.sql":            {migration006_new_settingsSql, map[string]*bintree{}},
-		"007_indices.sql":                 {migration007_indicesSql, map[string]*bintree{}},
-		"008_comment_ranking.sql":         {migration008_comment_rankingSql, map[string]*bintree{}},
-		"009_comment_fiat.sql":            {migration009_comment_fiatSql, map[string]*bintree{}},
-		"010_shared_blocked_list.sql":     {migration010_shared_blocked_listSql, map[string]*bintree{}},
-		"011_accepted_default.sql":        {migration011_accepted_defaultSql, map[string]*bintree{}},
-		"012_appeals_for_all.sql":         {migration012_appeals_for_allSql, map[string]*bintree{}},
-		"013_oauth.sql":                   {migration013_oauthSql, map[string]*bintree{}},
-		"014_overlap_settings.sql":        {migration014_overlap_settingsSql, map[string]*bintree{}},
-		"015_creationtime.sql":            {migration015_creationtimeSql, map[string]*bintree{}},
-		"016_protected_settings.sql":      {migration016_protected_settingsSql, map[string]*bintree{}},
-		"017_comments_protected_flag.sql": {migration017_comments_protected_flagSql, map[string]*bintree{}},
-		"018_comments_timestamp_idx.sql":  {migration018_comments_timestamp_idxSql, map[string]*bintree{}},
-		"019_comments_protected_idx.sql":  {migration019_comments_protected_idxSql, map[string]*bintree{}},
-		"020_members_only_settings.sql":   {migration020_members_only_settingsSql, map[string]*bintree{}},
-		"021_comment_classification.sql":  {migration021_comment_classificationSql, map[string]*bintree{}},
-		"022_comments_soft_delete.sql":    {migration022_comments_soft_deleteSql, map[string]*bintree{}},
-		"023_claim_to_channel.sql":        {migration023_claim_to_channelSql, map[string]*bintree{}},
-		"024_more_creator_settings.sql":   {migration024_more_creator_settingsSql, map[string]*bintree{}},
-		"migration.go":                    {migrationMigrationGo, map[string]*bintree{}},
+		"000_init.sql":                         {migration000_initSql, map[string]*bintree{}},
+		"001_cascade_reaction_delete.sql":      {migration001_cascade_reaction_deleteSql, map[string]*bintree{}},
+		"002_pinned_comments.sql":              {migration002_pinned_commentsSql, map[string]*bintree{}},
+		"003_blocked.sql":                      {migration003_blockedSql, map[string]*bintree{}},
+		"004_flagged.sql":                      {migration004_flaggedSql, map[string]*bintree{}},
+		"005_creator_settings.sql":             {migration005_creator_settingsSql, map[string]*bintree{}},
+		"006_new_settings.sql":                 {migration006_new_settingsSql, map[string]*bintree{}},
+		"007_indices.sql":                      {migration007_indicesSql, map[string]*bintree{}},
+		"008_comment_ranking.sql":              {migration008_comment_rankingSql, map[string]*bintree{}},
+		"009_comment_fiat.sql":                 {migration009_comment_fiatSql, map[string]*bintree{}},
+		"010_shared_blocked_list.sql":          {migration010_shared_blocked_listSql, map[string]*bintree{}},
+		"011_accepted_default.sql":             {migration011_accepted_defaultSql, map[string]*bintree{}},
+		"012_appeals_for_all.sql":              {migration012_appeals_for_allSql, map[string]*bintree{}},
+		"013_oauth.sql":                        {migration013_oauthSql, map[string]*bintree{}},
+		"014_overlap_settings.sql":             {migration014_overlap_settingsSql, map[string]*bintree{}},
+		"015_creationtime.sql":                 {migration015_creationtimeSql, map[string]*bintree{}},
+		"016_protected_settings.sql":           {migration016_protected_settingsSql, map[string]*bintree{}},
+		"017_comments_protected_flag.sql":      {migration017_comments_protected_flagSql, map[string]*bintree{}},
+		"018_comments_timestamp_idx.sql":       {migration018_comments_timestamp_idxSql, map[string]*bintree{}},
+		"019_comments_protected_idx.sql":       {migration019_comments_protected_idxSql, map[string]*bintree{}},
+		"020_members_only_settings.sql":        {migration020_members_only_settingsSql, map[string]*bintree{}},
+		"021_comment_classification.sql":       {migration021_comment_classificationSql, map[string]*bintree{}},
+		"022_comments_soft_delete.sql":         {migration022_comments_soft_deleteSql, map[string]*bintree{}},
+		"023_claim_to_channel.sql":             {migration023_claim_to_channelSql, map[string]*bintree{}},
+		"024_more_creator_settings.sql":        {migration024_more_creator_settingsSql, map[string]*bintree{}},
+		"025_more_creator_settings_rename.sql": {migration025_more_creator_settings_renameSql, map[string]*bintree{}},
+		"migration.go":                         {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}
 
