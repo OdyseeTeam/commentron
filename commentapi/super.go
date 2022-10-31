@@ -22,8 +22,9 @@ type SuperListArgs struct {
 	TopLevel             bool    `json:"top_level"`
 	Hidden               bool    `json:"hidden"`
 	// Satoshi amount to filter below >= x
-	SuperChatsAmount int  `json:"super_chat"`
-	IsProtected      bool `json:"is_protected"`
+	SuperChatsAmount int     `json:"super_chat"`
+	IsProtected      bool    `json:"is_protected"`
+	Environment      *string `json:"environment"`
 }
 
 // SuperListResponse response for the comment.List rpc call
@@ -57,7 +58,7 @@ func (c *SuperListArgs) ApplyDefaults() {
 	}
 }
 
-//Key returns the hash of the list args struct for caching
+// Key returns the hash of the list args struct for caching
 func (c SuperListArgs) Key() (string, error) {
 	//this is a value receiver, so we can delete a bunch of fields without impacting the original struct
 	c.ChannelName = ""
