@@ -203,10 +203,7 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.CommentsMembersOnly = *args.CommentsMembersOnly
 	}
 
-	err = settings.Update(db.RW, boil.Infer())
-	if err != nil {
-		return errors.Err(err)
-	}
+
 
 	membersOnlyChatToggled := args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil)
 
@@ -231,6 +228,10 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	}
 	if !args.HomepageSettings.IsZero() {
 		settings.HomepageSettings = args.HomepageSettings
+	}
+	err = settings.Update(db.RW, boil.Infer())
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	applySettingsToReply(settings, reply, authorized)
