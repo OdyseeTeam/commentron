@@ -388,7 +388,7 @@ type createRequest struct {
 	isLivestream     bool
 }
 
-const maxSimilaryScoreToCreatorName = 0.6
+const maxSimilaryScoreToCreatorName = 0.8
 
 func blockedByCreator(request *createRequest) error {
 	var err error
