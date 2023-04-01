@@ -121,7 +121,7 @@ func (d *Client) CommentEdit(args EditArgs) (*EditResponse, error) {
 func (d *Client) GetChannelForComment(args ChannelArgs) (*ChannelResponse, error) {
 	structs.DefaultTagName = "json"
 	response := new(ChannelResponse)
-	return response, d.call(response, "comment.Abandon", structs.Map(args))
+	return response, d.call(response, "comment.GetChannelFromCommentID", structs.Map(args))
 }
 
 ////////////////
