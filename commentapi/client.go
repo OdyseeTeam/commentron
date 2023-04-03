@@ -16,7 +16,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
-	"github.com/ybbus/jsonrpc"
+	"github.com/ybbus/jsonrpc/v2"
 )
 
 // DefaultPort the default port that is used for commentron client

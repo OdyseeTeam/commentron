@@ -3,8 +3,8 @@ package sockety
 import (
 	"github.com/OdyseeTeam/commentron/config"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/sirupsen/logrus"
 )

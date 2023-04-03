@@ -10,8 +10,8 @@ import (
 	"github.com/OdyseeTeam/commentron/server/lbry"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

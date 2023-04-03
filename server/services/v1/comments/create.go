@@ -18,12 +18,12 @@ import (
 	"github.com/OdyseeTeam/commentron/server/websocket"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 	v "github.com/lbryio/ozzo-validation"
-	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/Avalanche-io/counter"
 	"github.com/btcsuite/btcutil"

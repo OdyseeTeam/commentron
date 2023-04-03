@@ -15,10 +15,10 @@ import (
 	"github.com/OdyseeTeam/commentron/server/auth"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-	"github.com/lbryio/sockety/socketyapi"
 
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/null/v8"

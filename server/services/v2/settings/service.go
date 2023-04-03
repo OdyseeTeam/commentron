@@ -10,10 +10,10 @@ import (
 	"github.com/OdyseeTeam/commentron/server/lbry"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/btcsuite/btcutil"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-	"github.com/lbryio/sockety/socketyapi"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -202,8 +202,6 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	if args.CommentsMembersOnly != nil {
 		settings.CommentsMembersOnly = *args.CommentsMembersOnly
 	}
-
-
 
 	membersOnlyChatToggled := args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil)
 
