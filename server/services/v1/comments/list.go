@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"golang.org/x/sync/singleflight"
 )
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
@@ -259,53 +260,73 @@ func checkCommentsEnabled(channelName, ChannelID string) (*m.Channel, error) {
 	return nil, nil
 }
 
+var repliesCountCache = ccache.New(ccache.Configure().MaxSize(100000))
+var sf singleflight.Group
+
 func getItems(comments m.CommentSlice, creatorChannel *m.Channel, skipBlocked bool) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
-	var alreadyInSet = map[string]bool{}
-Comments:
+	var alreadyInSet = make(map[string]bool)
+
+comments:
 	for _, comment := range comments {
-		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
-			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
-			if len(blockedFrom) > 0 && !skipBlocked {
-				channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
-				if err != nil {
-					//cannot find claim commented on in SDK, ignore, nil channel by default
-				}
-				if channel != nil {
-					for _, entry := range blockedFrom {
-						if creatorChannel != nil && creatorChannel.BlockedListID.Valid {
-							if creatorChannel.BlockedListID == entry.BlockedListID {
-								if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
-									blockedCommentCnt++
-									continue Comments
-								}
-							}
+		if comment.R == nil || comment.R.Channel == nil || comment.R.Channel.R == nil {
+			continue
+		}
+
+		blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
+		if len(blockedFrom) > 0 && !skipBlocked {
+			channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
+			if err != nil {
+				// Cannot find claim commented on in SDK, ignore, nil channel by default
+			} else if channel != nil {
+				for _, entry := range blockedFrom {
+					if creatorChannel != nil && creatorChannel.BlockedListID.Valid && creatorChannel.BlockedListID == entry.BlockedListID {
+						if !entry.Expiry.Valid || entry.Expiry.Time.After(time.Now()) {
+							blockedCommentCnt++
+							continue comments
 						}
-						if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
-							if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
-								blockedCommentCnt++
-								continue Comments
-							}
+					}
+					if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
+						if !entry.Expiry.Valid || entry.Expiry.Time.After(time.Now()) {
+							blockedCommentCnt++
+							continue comments
 						}
 					}
 				}
 			}
 		}
-		var channel *m.Channel
-		if comment.R != nil {
-			channel = comment.R.Channel
-			if channel != nil && channel.Name != "" {
-				if !alreadyInSet[comment.CommentID] {
-					replies, err := comment.ParentComments().Count(db.RO)
-					if err != nil && errors.Is(err, sql.ErrNoRows) {
-						return items, blockedCommentCnt, errors.Err(err)
-					}
-					alreadyInSet[comment.CommentID] = true
-					items = append(items, populateItem(comment, channel, int(replies)))
-				}
-			}
+
+		channel := comment.R.Channel
+		if channel == nil || channel.Name == "" {
+			continue
 		}
+
+		if alreadyInSet[comment.CommentID] {
+			continue
+		}
+
+		repliesCachedCount := repliesCountCache.Get(comment.CommentID)
+		if repliesCachedCount != nil && !repliesCachedCount.Expired() {
+			alreadyInSet[comment.CommentID] = true
+			items = append(items, populateItem(comment, channel, repliesCachedCount.Value().(int)))
+			continue
+		}
+
+		val, err, _ := sf.Do(comment.CommentID, func() (interface{}, error) {
+			replies, err := comment.ParentComments().Count(db.RO)
+			if err != nil && errors.Is(err, sql.ErrNoRows) {
+				return nil, errors.Err(err)
+			}
+			repliesCountCache.Set(comment.CommentID, replies, 30*time.Second)
+			return replies, nil
+		})
+		if err != nil {
+			return items, blockedCommentCnt, err
+		}
+		replies := val.(int)
+		items = append(items, populateItem(comment, channel, replies))
 	}
+
 	return items, blockedCommentCnt, nil
 }
