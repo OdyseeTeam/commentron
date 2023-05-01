@@ -73,4 +73,6 @@ var flaggedPhrases = []*regexp.Regexp{
 	regexp.MustCompile(`(?mis).*Nicholas Jonathan Gregory.*`),
 	regexp.MustCompile(`(?mis).*Windsor Dr..*`),
 	regexp.MustCompile(`(?mis).*SunlightAFA.*`),
+	regexp.MustCompile(`(?mis).*earn(?s).*online(?s).*http.*`),
+	regexp.MustCompile(`(?mis).*online(?s).*work(?s).*$(?s).*http.*`),
 }
