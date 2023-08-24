@@ -3,7 +3,7 @@ dist: focal
 language: go
 go_import_path: github.com/OdyseeTeam/commentron
 
-go: 1.18.x
+go: 1.20.x
 
 install: true
 
@@ -12,6 +12,7 @@ services:
   - docker
 
 before_install:
+  - git config --global url."git@github.com:".insteadOf "https://github.com/"
   - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS commentron;'
   - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS social;'
   - mysql -u root -e "CREATE USER 'lbry-rw'@'localhost' IDENTIFIED BY 'lbry';"
