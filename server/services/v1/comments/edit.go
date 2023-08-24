@@ -2,7 +2,6 @@ package comments
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/OdyseeTeam/commentron/commentapi"
 	"github.com/OdyseeTeam/commentron/db"
@@ -41,7 +40,8 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	comment.IsPinned = false
 	comment.Signature.SetValid(args.Signature)
 	comment.Signingts.SetValid(args.SigningTS)
-	comment.Timestamp = int(time.Now().Unix())
+	// keep original timestamp for now. Eventually track last edit. Frontend can compare signingts and this.
+	//comment.Timestamp = int(time.Now().Unix())
 
 	//todo: check the edited comment against the channel's rules (blockedByCreator currently only accepts CreateRequest objects and not EditRequest objects)
 	//err = blockedByCreator(&createRequest{args: args})
