@@ -309,7 +309,7 @@ comments:
 		repliesCachedCount := repliesCountCache.Get(comment.CommentID)
 		if repliesCachedCount != nil && !repliesCachedCount.Expired() {
 			alreadyInSet[comment.CommentID] = true
-			items = append(items, populateItem(comment, channel, repliesCachedCount.Value().(int)))
+			items = append(items, populateItem(comment, channel, int(repliesCachedCount.Value().(int64))))
 			continue
 		}
 
@@ -324,8 +324,8 @@ comments:
 		if err != nil {
 			return items, blockedCommentCnt, err
 		}
-		replies := val.(int)
-		items = append(items, populateItem(comment, channel, replies))
+		replies := val.(int64)
+		items = append(items, populateItem(comment, channel, int(replies)))
 	}
 
 	return items, blockedCommentCnt, nil
