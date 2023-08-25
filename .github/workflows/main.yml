@@ -1,0 +1,76 @@
+name: CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04  # equivalent to 'dist: focal'
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: start Default Ubuntu MySQL
+        run: sudo systemctl start mysql.service
+
+      - name: Before Install
+        run: |
+          sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS commentron;'
+          sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS social;'
+          sudo mysql -u root -proot -e "CREATE USER 'lbry-rw'@'localhost' IDENTIFIED BY 'lbry';"
+          sudo mysql -u root -proot -e "CREATE USER 'lbry-ro'@'localhost' IDENTIFIED BY 'lbry';"
+          sudo mysql -u root -proot -e "GRANT ALL ON commentron.* TO 'lbry-rw'@'localhost';"
+          sudo mysql -u root -proot -e "GRANT SELECT ON commentron.* TO 'lbry-ro'@'localhost';"
+          sudo mysql -u root -proot -e "GRANT ALL ON social.* TO 'lbry-rw'@'localhost';"
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ runner.home }}/go/pkg/mod
+            ${{ runner.home }}/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Add SSH Go Module Private Key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+
+      - name: Setup access for private go modules
+        run: |
+          git config --global url."ssh://git@github.com/".insteadOf https://github.com/
+
+      - name: Run Scripts and Tests
+        env:
+          GOPRIVATE: github.com/OdyseeTeam
+        run: |
+          ./scripts/build.sh
+          ./scripts/lint.sh
+          source ./scripts/setup.sh
+          ./bin/commentron serve &
+          sleep 5s
+          curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' http://localhost:5900
+          go test ./...
+          go mod tidy
+          git diff --exit-code
+          ./scripts/gen_models.sh
+          sqlboiler --version
+          git diff --exit-code
+          ./bin/commentron test
+
+      - name: Deploy
+        if: github.event_name == 'push'
+        run: |
+          bash docker/docker.sh
