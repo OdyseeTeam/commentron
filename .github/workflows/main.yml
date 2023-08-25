@@ -55,6 +55,8 @@ jobs:
       - name: Run Scripts and Tests
         env:
           GOPRIVATE: github.com/OdyseeTeam
+          IS_TEST: true
+          SDK_URL: https://api.lbry.tv/api/v1/proxy
         run: |
           ./scripts/build.sh
           ./scripts/lint.sh
@@ -70,7 +72,15 @@ jobs:
           git diff --exit-code
           ./bin/commentron test
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Deploy
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          BRANCH_NAME: ${{ steps.branch-name.outputs.current_branch }}
         if: github.event_name == 'push'
         run: |
           bash docker/docker.sh
