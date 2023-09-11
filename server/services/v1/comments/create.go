@@ -570,7 +570,7 @@ func updateSupportInfo(request *createRequest) error {
 	triesLeft := 3
 	for {
 		triesLeft--
-		err := updateSupportInfoAttempt(request)
+		err := updateSupportInfoAttempt(request, true)
 		if err == nil {
 			return nil
 		}
@@ -581,7 +581,7 @@ func updateSupportInfo(request *createRequest) error {
 	}
 }
 
-func updateSupportInfoAttempt(request *createRequest) error {
+func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 	if request.args.PaymentIntentID != nil {
 		env := ""
 		if request.args.Environment != nil {
@@ -590,8 +590,13 @@ func updateSupportInfoAttempt(request *createRequest) error {
 		paymentintentClient := &paymentintent.Client{B: stripe.GetBackend(stripe.APIBackend), Key: config.ConnectAPIKey(config.From(env))}
 		pi, err := paymentintentClient.Get(*request.args.PaymentIntentID, &stripe.PaymentIntentParams{})
 		if err != nil {
-			logrus.Error(errors.Prefix("could not get payment intent %s", *request.args.PaymentIntentID))
-			return errors.Err("could not validate tip")
+			if !retry {
+				logrus.Error(errors.Prefix("could not get payment intent %s", *request.args.PaymentIntentID))
+				return errors.Err("could not validate tip")
+			}
+			// in the rare event that the payment intent is not found, wait a bit and try again once
+			time.Sleep(5 * time.Second)
+			return updateSupportInfoAttempt(request, false)
 		}
 		request.comment.Amount.SetValid(uint64(pi.Amount))
 		request.comment.IsFiat = true

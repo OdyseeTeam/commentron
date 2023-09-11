@@ -3,6 +3,7 @@ package lbry
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -126,21 +127,24 @@ func notify(options NotifyOptions) error {
 		return errors.Err("No response from internal APIs")
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return errors.Err(err)
 	}
-	var me CommentResponse
-	err = json.Unmarshal(b, &me)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if response.StatusCode > 200 {
-		if response.StatusCode <= 300 {
+	if response.StatusCode > http.StatusOK {
+		if response.StatusCode <= http.StatusMultipleChoices {
 			logrus.Warning("Notification Failure[Status - ", response.StatusCode, "] : ")
 		} else {
 			logrus.Error("Notification Failure[Status - ", response.StatusCode, "] : ")
 		}
+		return errors.Err("API returned non-200 status code: %d - %s", response.StatusCode, string(b))
+	}
+	//todo: add recursion if necessary
+
+	var me CommentResponse
+	err = json.Unmarshal(b, &me)
+	if err != nil {
+		return errors.Err(err)
 	}
 	return nil
 }
