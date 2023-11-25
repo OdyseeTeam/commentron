@@ -62,8 +62,13 @@ func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		if err != nil {
 			return nil, nil, errors.Err(err)
 		}
-		if !exists {
-			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator", modChannel.Name, creatorChannel.Name)
+		isGlobalMod, err := modChannel.ModChannelModerators().Exists(db.RO)
+		if err != nil {
+			return nil, nil, errors.Err(err)
+		}
+		// check if exists and if not check if the mod is a global mod
+		if !exists || !isGlobalMod {
+			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator, or isn't a global mod", modChannel.Name, creatorChannel.Name)
 		}
 	}
 	return modChannel, creatorChannel, nil
