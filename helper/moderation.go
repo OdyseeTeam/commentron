@@ -66,8 +66,8 @@ func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		if err != nil {
 			return nil, nil, errors.Err(err)
 		}
-		// check if exists and if not check if the mod is a global mod
-		if !exists || !isGlobalMod {
+		// check if exists and if not, check if the mod is a global mod
+		if !exists && !isGlobalMod {
 			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator, or isn't a global mod", modChannel.Name, creatorChannel.Name)
 		}
 	}
