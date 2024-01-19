@@ -20,7 +20,7 @@ func init() {
 
 var rootCmd = &cobra.Command{
 	Use:   "commentron",
-	Short: "LBRY Comment Server",
+	Short: "Odysee Comment Server",
 	Long:  `Accepts new and delivers existing comments`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

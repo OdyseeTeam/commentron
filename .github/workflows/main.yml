@@ -22,11 +22,11 @@ jobs:
         run: |
           sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS commentron;'
           sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS social;'
-          sudo mysql -u root -proot -e "CREATE USER 'lbry-rw'@'localhost' IDENTIFIED BY 'lbry';"
-          sudo mysql -u root -proot -e "CREATE USER 'lbry-ro'@'localhost' IDENTIFIED BY 'lbry';"
-          sudo mysql -u root -proot -e "GRANT ALL ON commentron.* TO 'lbry-rw'@'localhost';"
-          sudo mysql -u root -proot -e "GRANT SELECT ON commentron.* TO 'lbry-ro'@'localhost';"
-          sudo mysql -u root -proot -e "GRANT ALL ON social.* TO 'lbry-rw'@'localhost';"
+          sudo mysql -u root -proot -e "CREATE USER 'commentron-rw'@'localhost' IDENTIFIED BY 'commentron';"
+          sudo mysql -u root -proot -e "CREATE USER 'commentron-ro'@'localhost' IDENTIFIED BY 'commentron';"
+          sudo mysql -u root -proot -e "GRANT ALL ON commentron.* TO 'commentron-rw'@'localhost';"
+          sudo mysql -u root -proot -e "GRANT SELECT ON commentron.* TO 'commentron-ro'@'localhost';"
+          sudo mysql -u root -proot -e "GRANT ALL ON social.* TO 'commentron-rw'@'localhost';"
 
       - name: Cache
         uses: actions/cache@v2
@@ -56,7 +56,7 @@ jobs:
         env:
           GOPRIVATE: github.com/OdyseeTeam
           IS_TEST: true
-          SDK_URL: https://api.lbry.tv/api/v1/proxy
+          SDK_URL: https://api.na-backend.odysee.com/api/v1/proxy
         run: |
           ./scripts/build.sh
           ./scripts/lint.sh
