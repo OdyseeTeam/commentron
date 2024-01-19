@@ -26,6 +26,7 @@
 // migration/023_claim_to_channel.sql (794B)
 // migration/024_more_creator_settings.sql (285B)
 // migration/025_more_creator_settings_rename.sql (224B)
+// migration/026_add_indexes.sql (884B)
 // migration/migration.go (66B)
 
 package migration
@@ -614,6 +615,26 @@ func migration025_more_creator_settings_renameSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration026_add_indexesSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xb4\x92\xc1\x4e\xc3\x30\x0c\x86\xef\x7d\x0a\x1f\x87\xe8\x9e\x80\x13\x6c\x3d\x70\x19\x12\x03\x89\x5b\x66\x12\xaf\x58\x4a\x9c\x28\xf1\x24\xf6\xf6\xa8\x5b\x59\x0b\x2a\x48\x93\xb6\x5b\xe2\xf8\x8f\x3f\xff\xf6\x7c\x0e\xb7\x81\xdb\x8c\x4a\xf0\x9a\xaa\xf1\x75\xad\xa8\x14\x48\xf4\x81\x5a\x96\x6a\xf1\xdc\xdc\xbf\x34\xf0\xb8\x5a\x36\x6f\xc0\xee\xd3\xa4\x1c\x95\xac\x92\x33\xd6\x23\x07\x93\x30\x93\xa8\x71\xe4\x49\xc9\xc1\xd3\x0a\x6c\x0c\x9d\x7e\xc6\x65\x48\xae\xc1\xbf\xe7\x7d\x2f\x61\x57\x43\x2f\xeb\x8e\xbd\xd4\xa0\xde\xdc\x4d\xa3\x34\xe2\xaa\xb3\x20\x7b\x04\xe3\xb9\xe8\x18\xe9\x6f\x08\x2e\x66\xeb\xb1\x6d\xe9\x07\xd0\x21\x9e\x58\xa4\x0b\xa7\x98\x76\x1e\x33\xeb\xde\x14\x1b\x33\xd5\xa0\x1c\xa8\x28\x86\x74\x39\xf0\x0f\x14\x21\x3f\x65\xe7\xf7\xd3\x95\x2c\x3b\xf5\x62\x1c\x15\x3b\x2a\xdc\xf9\x55\x0a\x6f\xd9\xa2\x72\x14\x98\x9d\x32\x61\xd9\xac\x17\x97\x6b\xfd\x30\x16\x0c\x71\x27\x3a\xda\xb2\x09\x27\x7e\x4d\xf1\x28\x39\x8e\x6a\xd8\xb7\x2b\x58\x34\x7c\x39\xa6\xd9\x0c\xe1\xcd\x7f\xa5\xbe\x02\x00\x00\xff\xff\x51\x18\xf4\xcd\x74\x03\x00\x00")
+
+func migration026_add_indexesSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration026_add_indexesSql,
+		"migration/026_add_indexes.sql",
+	)
+}
+
+func migration026_add_indexesSql() (*asset, error) {
+	bytes, err := migration026_add_indexesSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/026_add_indexes.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x46, 0xe2, 0xd6, 0x6e, 0x1d, 0xbb, 0xf5, 0x48, 0x0, 0x30, 0x40, 0x9f, 0xb3, 0xfa, 0xad, 0xa8, 0x5b, 0x9f, 0x2e, 0x4e, 0x8a, 0x56, 0x93, 0x8e, 0xba, 0x5a, 0x41, 0xe0, 0x78, 0x9e, 0x54, 0x69}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -751,6 +772,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/023_claim_to_channel.sql":             migration023_claim_to_channelSql,
 	"migration/024_more_creator_settings.sql":        migration024_more_creator_settingsSql,
 	"migration/025_more_creator_settings_rename.sql": migration025_more_creator_settings_renameSql,
+	"migration/026_add_indexes.sql":                  migration026_add_indexesSql,
 	"migration/migration.go":                         migrationMigrationGo,
 }
 
@@ -827,6 +849,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"023_claim_to_channel.sql":             {migration023_claim_to_channelSql, map[string]*bintree{}},
 		"024_more_creator_settings.sql":        {migration024_more_creator_settingsSql, map[string]*bintree{}},
 		"025_more_creator_settings_rename.sql": {migration025_more_creator_settings_renameSql, map[string]*bintree{}},
+		"026_add_indexes.sql":                  {migration026_add_indexesSql, map[string]*bintree{}},
 		"migration.go":                         {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}
