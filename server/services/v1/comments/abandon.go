@@ -29,7 +29,18 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	if comment.R.Channel == nil {
 		return nil, errors.Err("channel id '%s' does not have a channel record", comment.ChannelID.String)
 	}
-	commenterChannel = comment.R.Channel
+	// Handle anonymous content where there's no channel associated
+	if args.CreatorChannelID == "" && args.CreatorChannelName == "" {
+		// If the content is anonymous, set the modChannel to a default or system channel
+		if args.ModChannelName != "" && args.ModChannelID != "" {
+			modChannel, _, err = helper.GetModerator(args.ModChannelID, args.ModChannelName, args.ModChannelID, args.ModChannelName)
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		commenterChannel = comment.R.Channel
+	}
 	// Old versions of desktop app will allow for just creator channel info to be sent for creators to
 	// delete comments and mod channel info is newer addition and would not be sent so we cannot assume
 	// it will sent with request.
