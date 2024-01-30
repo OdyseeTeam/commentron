@@ -42,8 +42,8 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	}
 
 	// Old versions of desktop app will allow for just creator channel info to be sent for creators to
-	// delete comments and mod channel info is newer addition and would not be sent so we cannot assume
-	// it will sent with request.
+	// delete comments and mod channel info is newer addition and would not be sent, so we cannot assume
+	// it will be sent with request.
 	if args.CreatorChannelID != "" && args.CreatorChannelName != "" {
 		modChannelID := args.CreatorChannelID
 		modChannelName := args.CreatorChannelName
@@ -66,7 +66,10 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if signingChannelClaimID != creatorChannel.ClaimID {
 			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID), Status: http.StatusBadRequest}
 		}
-	} else {
+	}
+
+	// if there are neither a mod nor a delegated mod, then we verify if the commenter is the creator which means you're trying to delete your own comment
+	if modChannel == nil {
 		modChannel = commenterChannel
 	}
 
