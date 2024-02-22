@@ -9,11 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Token token used to sent notifications to sockety
-var Token string
-
 // URL is the url to connect to an instance of sockety.
-var URL = "https://sockety.lbry.com"
+var URL = "https://sockety.odysee.tv"
 
 var socketyClient *socketyapi.Client
 
