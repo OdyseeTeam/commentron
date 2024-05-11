@@ -66,7 +66,7 @@ func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResp
 	filterFlaggedComments := m.CommentWhere.IsFlagged.EQ(false)
 
 	totalFilteredCommentsQuery := make([]qm.QueryMod, 0)
-	totalCommentsQuery := make([]qm.QueryMod, 0)
+	totalCommentsQuery := []qm.QueryMod{loadChannels}
 	offset := (args.Page - 1) * args.PageSize
 	getCommentsQuery := applySorting(args.SortBy, []qm.QueryMod{loadChannels, qm.Offset(offset), qm.Limit(args.PageSize)})
 	hasHiddenCommentsQuery := []qm.QueryMod{filterIsHidden, qm.Limit(1)}
