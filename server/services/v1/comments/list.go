@@ -331,7 +331,7 @@ comments:
 		}
 		replies := val.(int64)
 		item := populateItem(comment, channel, int(replies))
-		err := applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
+		err = applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
 		if err != nil {
 			return items, blockedCommentCnt, err
 		}
