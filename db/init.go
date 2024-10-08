@@ -28,6 +28,7 @@ func Init(dsnRO, dsnRW string, debug bool) error {
 	if err != nil {
 		return errors.Err(err)
 	}
+
 	dbConnRO.SetMaxOpenConns(500)
 	err = dbConnRO.Ping()
 	if err != nil {

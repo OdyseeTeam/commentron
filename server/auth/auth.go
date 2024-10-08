@@ -15,7 +15,7 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/volatiletech/null/v8"
 )
 
@@ -39,7 +39,7 @@ func init() {
 // ErrNotOAuth missing oauth header
 var ErrNotOAuth = errors.Base("request does not contain oauth header")
 
-//ModAuthenticate authenticates a moderator
+// ModAuthenticate authenticates a moderator
 func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorization) (*model.Channel, *model.Channel, *UserInfo, error) {
 	modChannel, ownerChannel, err := helper.GetModerator(modAuthorization.ModChannelID, modAuthorization.ModChannelName, modAuthorization.CreatorChannelID, modAuthorization.CreatorChannelName)
 	if err != nil {
