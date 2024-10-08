@@ -2,12 +2,15 @@ package helper
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/model"
 	m "github.com/OdyseeTeam/commentron/model"
 
+	"github.com/lbryio/commentron/helper"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
@@ -27,7 +30,6 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 			return errors.Err(err)
 		}
 		if parentChannel != nil {
-
 			blockedEntry, err := m.BlockedEntries(
 				m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
 				m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).One(db.RO)
@@ -35,7 +37,14 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 				return errors.Err(err)
 			}
 			if blockedEntry != nil {
-				return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+				if !blockedEntry.Expiry.Valid {
+					return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+				} else if time.Now().Before(blockedEntry.Expiry.Time) {
+					timeLeft := helper.FormatDur(blockedEntry.Expiry.Time.Sub(time.Now()))
+					message := fmt.Sprintf("'%s' has temporarily blocked you from replying to their comments for %s", parentChannel.Name, timeLeft)
+					return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
+				}
+				// If we reach here, the block has expired, so we continue as normal
 			}
 		}
 	}
