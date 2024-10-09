@@ -309,7 +309,12 @@ comments:
 		repliesCachedCount := repliesCountCache.Get(comment.CommentID)
 		if repliesCachedCount != nil && !repliesCachedCount.Expired() {
 			alreadyInSet[comment.CommentID] = true
-			items = append(items, populateItem(comment, channel, int(repliesCachedCount.Value().(int64))))
+			item := populateItem(comment, channel, int(repliesCachedCount.Value().(int64)))
+			err := applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
+			if err != nil {
+				return items, blockedCommentCnt, err
+			}
+			items = append(items, item)
 			continue
 		}
 
@@ -325,7 +330,12 @@ comments:
 			return items, blockedCommentCnt, err
 		}
 		replies := val.(int64)
-		items = append(items, populateItem(comment, channel, int(replies)))
+		item := populateItem(comment, channel, int(replies))
+		err = applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
+		if err != nil {
+			return items, blockedCommentCnt, err
+		}
+		items = append(items, item)
 	}
 
 	return items, blockedCommentCnt, nil
