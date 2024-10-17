@@ -532,7 +532,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			return errors.Err(err)
 		}
 		if time.Since(request.commenterChannel.CreatedAt) < time.Duration(settings.TimeSinceFirstComment.Int64)*time.Minute {
-			return api.StatusError{Err: errors.Err("this creator has set minimum account age requirements that are not currently met"), Status: http.StatusBadRequest}
+			return api.StatusError{Err: errors.Err(fmt.Sprintf("this creator has set minimum account age requirements that are not currently met: %d minutes", settings.TimeSinceFirstComment.Int64)), Status: http.StatusBadRequest}
 		}
 	}
 	return nil
