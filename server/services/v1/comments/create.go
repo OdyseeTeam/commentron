@@ -2,8 +2,10 @@ package comments
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -37,11 +39,29 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+var specialLogFile *os.File
+
+func init() {
+	var err error
+	specialLogFile, err = os.OpenFile("special.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
 func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
 	err := v.ValidateStruct(args,
 		v.Field(&args.ClaimID, v.Required))
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+	//log what this special commenter is doing to find the bug
+	if args.ChannelID == "ccf4e035d8164d8a6540d96d1a689a4f068b6bc7" {
+		stuffToLog, err := json.Marshal(args)
+		stuffToLog = append(stuffToLog, '\n')
+		if err == nil {
+			_, _ = specialLogFile.Write(stuffToLog)
+		}
+
 	}
 	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
