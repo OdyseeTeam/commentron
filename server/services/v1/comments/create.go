@@ -331,7 +331,33 @@ func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
 	return hasAccess, nil
 }
 
+type modStatus struct {
+	IsGlobalMod bool
+	IsCreator   bool
+	IsModerator bool
+}
+
+var modStatusCache = ccache.New(ccache.Configure().MaxSize(100000))
+
 func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
+	// Define a unique key for the cache based on channelID and claimID
+	cacheKey := channelID + ":" + claimID
+
+	// Attempt to retrieve the cached result
+	cachedStatus := modStatusCache.Get(cacheKey)
+	if cachedStatus != nil {
+		// If cache hit, use the cached result
+		if status, ok := cachedStatus.Value().(*modStatus); ok {
+			item.IsGlobalMod = status.IsGlobalMod
+			item.IsCreator = status.IsCreator
+			item.IsModerator = status.IsModerator
+			return nil
+		}
+	}
+
+	// Cache miss, proceed to check mod status
+	var isCreator bool
+	var isModerator bool
 	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
@@ -343,15 +369,25 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 		return errors.Err(err)
 	}
 	if signingChannel != nil {
-		item.IsCreator = channelID == signingChannel.ClaimID
+		isCreator = channelID == signingChannel.ClaimID
+		item.IsCreator = isCreator
 		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
 		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
-		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
+		isModerator, err = m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
 		if err != nil {
 			return errors.Err(err)
 		}
-		item.IsModerator = isMod
+		item.IsModerator = isModerator
 	}
+
+	// Cache the moderation status
+	modStatus := &modStatus{
+		IsGlobalMod: isGlobalMod,
+		IsCreator:   isCreator,
+		IsModerator: isModerator,
+	}
+	modStatusCache.Set(cacheKey, modStatus, time.Minute*10)
+
 	return nil
 }
 
