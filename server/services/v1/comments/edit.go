@@ -37,7 +37,6 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	}
 
 	comment.Body = args.Comment
-	comment.IsPinned = false
 	comment.Signature.SetValid(args.Signature)
 	comment.Signingts.SetValid(args.SigningTS)
 	// keep original timestamp for now. Eventually track last edit. Frontend can compare signingts and this.
