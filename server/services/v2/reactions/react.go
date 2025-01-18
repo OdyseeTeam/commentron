@@ -13,6 +13,7 @@ import (
 	"github.com/OdyseeTeam/commentron/helper"
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
+	"github.com/OdyseeTeam/commentron/server/lbry"
 	"github.com/OdyseeTeam/commentron/sockety"
 
 	"github.com/OdyseeTeam/sockety/socketyapi"
@@ -112,7 +113,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			return errors.Err(err)
 		}
 		for _, p := range comments {
-			err = helper.AllowedToRespond(p.CommentID, channel.ClaimID)
+			err = helper.AllowedToRespond(p.CommentID, channel.ClaimID, p.LbryClaimID, lbry.SDK.GetSigningChannelForClaim)
 			if err != nil {
 				return err
 			}

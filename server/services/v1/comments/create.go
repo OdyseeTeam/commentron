@@ -176,7 +176,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 	}
 
 	if request.args.ParentID != nil {
-		err = helper.AllowedToRespond(util.StrFromPtr(request.args.ParentID), request.args.ChannelID)
+		err = helper.AllowedToRespond(util.StrFromPtr(request.args.ParentID), request.args.ChannelID, request.args.ClaimID, lbry.SDK.GetSigningChannelForClaim)
 		if err != nil {
 			return err
 		}

@@ -12,13 +12,24 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // AllowedToRespond checks if the creator of the comment will allow a response from the respondent
-func AllowedToRespond(parentCommentID, commenterClaimID string) error {
+func AllowedToRespond(parentCommentID, commenterClaimID, contentClaimID string, GetSigningChannelForClaim func(string) (*jsonrpc.Claim, error)) error {
+	contentCreatorChannel, err := GetSigningChannelForClaim(contentClaimID)
+	if err != nil {
+		return errors.Err(err)
+	}
+	if contentCreatorChannel != nil {
+		isCreator := commenterClaimID == contentCreatorChannel.ClaimID
+		if isCreator {
+			return nil
+		}
+	}
 	parentComment, err := m.Comments(m.CommentWhere.CommentID.EQ(parentCommentID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
