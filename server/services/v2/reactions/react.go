@@ -113,12 +113,16 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			return errors.Err(err)
 		}
 		for _, p := range comments {
-			err = helper.AllowedToRespond(p.CommentID, channel.ClaimID, p.LbryClaimID, lbry.SDK.GetSigningChannelForClaim)
+			contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(p.LbryClaimID)
+			if err != nil {
+				return errors.Err(err)
+			}
+			err = helper.AllowedToRespond(p.CommentID, channel.ClaimID, contentCreatorChannel)
 			if err != nil {
 				return err
 			}
 			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID, ClaimID: p.LbryClaimID, IsFlagged: len(comments) > 1}
-			err := flags.CheckReaction(newReaction)
+			err = flags.CheckReaction(newReaction)
 			if err != nil {
 				return err
 			}

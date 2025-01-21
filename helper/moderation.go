@@ -19,11 +19,8 @@ import (
 )
 
 // AllowedToRespond checks if the creator of the comment will allow a response from the respondent
-func AllowedToRespond(parentCommentID, commenterClaimID, contentClaimID string, GetSigningChannelForClaim func(string) (*jsonrpc.Claim, error)) error {
-	contentCreatorChannel, err := GetSigningChannelForClaim(contentClaimID)
-	if err != nil {
-		return errors.Err(err)
-	}
+func AllowedToRespond(parentCommentID, commenterClaimID string, contentCreatorChannel *jsonrpc.Claim) error {
+
 	if contentCreatorChannel != nil {
 		isCreator := commenterClaimID == contentCreatorChannel.ClaimID
 		if isCreator {
