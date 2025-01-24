@@ -119,6 +119,11 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return err
 	}
 
+	if args.DryRun {
+		reply.CommentItem = &item
+		return nil
+	}
+
 	err = request.comment.Insert(db.RW, boil.Infer())
 	if err != nil {
 		return err

@@ -88,6 +88,7 @@ type CreateArgs struct {
 	SigningTS         string             `json:"signing_ts"`
 	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
 	IsProtected       bool               `json:"is_protected"`
+	DryRun            bool               `json:"dry_run"`
 }
 
 // CreateResponse response for the comment.Create rpc call
