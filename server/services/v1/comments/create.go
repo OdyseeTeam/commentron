@@ -86,8 +86,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		}
 		// ignore the frequency if its a tipped comment
 		frequencyCheck = ignoreFrequency
-	} else if args.DryRun && args.Amount != nil {
-		request.comment.Amount.SetValid(*args.Amount)
 	}
 
 	// This is strategically placed, nothing can be done before this using the comment id or timestamp
