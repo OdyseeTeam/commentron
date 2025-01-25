@@ -80,14 +80,18 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	var frequencyCheck = checkFrequency
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
-		err := updateSupportInfo(request)
-		if err != nil {
-			return err
+		if args.DryRun {
+			if args.Amount != nil {
+				request.comment.Amount.SetValid(*args.Amount)
+			}
+		} else {
+			err := updateSupportInfo(request)
+			if err != nil {
+				return err
+			}
 		}
 		// ignore the frequency if its a tipped comment
 		frequencyCheck = ignoreFrequency
-	} else if args.DryRun && args.Amount != nil {
-		request.comment.Amount.SetValid(*args.Amount)
 	}
 
 	// This is strategically placed, nothing can be done before this using the comment id or timestamp
