@@ -80,9 +80,15 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	var frequencyCheck = checkFrequency
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
-		err := updateSupportInfo(request)
-		if err != nil {
-			return err
+		if args.DryRun {
+			if args.Amount != nil {
+				request.comment.Amount.SetValid(*args.Amount)
+			}
+		} else {
+			err := updateSupportInfo(request)
+			if err != nil {
+				return err
+			}
 		}
 		// ignore the frequency if its a tipped comment
 		frequencyCheck = ignoreFrequency
@@ -540,7 +546,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		}
 		if !settings.SlowModeMinGap.IsZero() {
-			err := checkMinGap(request.args.ChannelID+request.creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+			err := checkMinGap(request.args.ChannelID+request.creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second, request.args.DryRun)
 			if err != nil {
 				return err
 			}
@@ -603,7 +609,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	return nil
 }
 
-func checkMinGap(key string, expiration time.Duration) error {
+func checkMinGap(key string, expiration time.Duration, dryRun bool) error {
 	creatorCounter, err := getCounter(key, expiration)
 	if err != nil {
 		return err
@@ -612,7 +618,9 @@ func checkMinGap(key string, expiration time.Duration) error {
 		minGapViolated := fmt.Sprintf("Slow mode is on. Please wait at most %d seconds before commenting again.", int(expiration.Seconds()))
 		return api.StatusError{Err: errors.Err(minGapViolated), Status: http.StatusBadRequest}
 	}
-	creatorCounter.Add(1)
+	if !dryRun {
+		creatorCounter.Add(1)
+	}
 
 	return nil
 }
