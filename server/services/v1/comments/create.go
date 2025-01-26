@@ -536,12 +536,12 @@ func checkMinTipAmountComment(settings *m.CreatorSetting, request *createRequest
 	return nil
 }
 
-func checkMinUSDCTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
+func checkMinUsdcTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
 	if request.comment.Amount.IsZero() {
 		return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
-	if request.comment.Amount.Uint64 < settings.MinUSDCTipAmountComment.Uint64 {
-		return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinUSDCTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountComment.Uint64 {
+		return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinUsdcTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
 	}
 	return nil
 }
@@ -553,9 +553,9 @@ func checkMinTipAmountSuperChat(settings *m.CreatorSetting, request *createReque
 	return nil
 }
 
-func checkMinUSDCTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
-	if request.comment.Amount.Uint64 < settings.MinUSDCTipAmountSuperChat.Uint64 {
-		return api.StatusError{Err: errors.Err("a min tip of %d USDC is required to hyperchat", settings.MinUSDCTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+func checkMinUsdcTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
+	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
+		return api.StatusError{Err: errors.Err("a min tip of %d USDC is required to hyperchat", settings.MinUsdcTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
 	}
 	return nil
 }
@@ -566,21 +566,21 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		return errors.Err(err)
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
-		if !request.comment.Amount.IsZero() && (!settings.MinTipAmountSuperChat.IsZero() || settings.MinUSDCTipAmountSuperChat.IsZero()) {
+		if !request.comment.Amount.IsZero() && (!settings.MinTipAmountSuperChat.IsZero() || settings.MinUsdcTipAmountSuperChat.IsZero()) {
 			if request.args.PaymentIntentID == nil {
 				err = checkMinTipAmountSuperChat(settings, request)
 			} else {
-				err = checkMinUSDCTipAmountSuperChat(settings, request)
+				err = checkMinUsdcTipAmountSuperChat(settings, request)
 			}
 			if err != nil {
 				return err
 			}
 		}
-		if !settings.MinTipAmountComment.IsZero() || !settings.MinUSDCTipAmountComment.IsZero() {
+		if !settings.MinTipAmountComment.IsZero() || !settings.MinUsdcTipAmountComment.IsZero() {
 			if request.args.PaymentIntentID == nil {
 				err = checkMinTipAmountComment(settings, request)
 			} else {
-				err = checkMinUSDCTipAmountComment(settings, request)
+				err = checkMinUsdcTipAmountComment(settings, request)
 			}
 			if err != nil {
 				return err

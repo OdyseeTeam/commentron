@@ -24,8 +24,8 @@ type ListSettingsResponse struct {
 	CommentsEnabled            *bool     `json:"comments_enabled"`
 	MinTipAmountComment        *float64  `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat      *float64  `json:"min_tip_amount_super_chat"`
-	MinUSDCTipAmountComment    *float64  `json:"min_usdc_tip_amount_comment"`
-	MinUSDCTipAmountSuperChat  *float64  `json:"min_usdc_tip_amount_super_chat"`
+	MinUsdcTipAmountComment    *float64  `json:"min_usdc_tip_amount_comment"`
+	MinUsdcTipAmountSuperChat  *float64  `json:"min_usdc_tip_amount_super_chat"`
 	SlowModeMinGap             *uint64   `json:"slow_mode_min_gap"`
 	CurseJarAmount             *uint64   `json:"curse_jar_amount"`
 	FiltersEnabled             *bool     `json:"filters_enabled,omitempty"`
@@ -58,8 +58,8 @@ type UpdateSettingsArgs struct {
 	CommentsEnabled            *bool    `json:"comments_enabled"`
 	MinTipAmountComment        *float64 `json:"min_tip_amount_comment"`
 	MinTipAmountSuperChat      *float64 `json:"min_tip_amount_super_chat"`
-	MinUSDCTipAmountComment    *float64 `json:"min_usdc_tip_amount_comment"`
-	MinUSDCTipAmountSuperChat  *float64 `json:"min_usdc_tip_amount_super_chat"`
+	MinUsdcTipAmountComment    *float64 `json:"min_usdc_tip_amount_comment"`
+	MinUsdcTipAmountSuperChat  *float64 `json:"min_usdc_tip_amount_super_chat"`
 	SlowModeMinGap             *uint64  `json:"slow_mode_min_gap"`
 	CurseJarAmount             *uint64  `json:"curse_jar_amount"`
 	FiltersEnabled             *bool    `json:"filters_enabled"`

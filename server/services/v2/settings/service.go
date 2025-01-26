@@ -110,19 +110,19 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		}
 	}
 
-	if args.MinUSDCTipAmountSuperChat != nil {
-		cents := *args.MinUSDCTipAmountComment * 100
-		settings.MinUSDCTipAmountSuperChat.SetValid(uint64(cents))
-		if *args.MinUSDCTipAmountSuperChat == 0.0 {
-			settings.MinUSDCTipAmountSuperChat.Valid = false
+	if args.MinUsdcTipAmountSuperChat != nil {
+		cents := *args.MinUsdcTipAmountSuperChat * 100
+		settings.MinUsdcTipAmountSuperChat.SetValid(uint64(cents))
+		if *args.MinUsdcTipAmountSuperChat == 0.0 {
+			settings.MinUsdcTipAmountSuperChat.Valid = false
 		}
 	}
 
-	if args.MinUSDCTipAmountComment != nil {
-		cents := *args.MinUSDCTipAmountComment * 100
-		settings.MinUSDCTipAmountComment.SetValid(uint64(cents))
-		if *args.MinUSDCTipAmountComment == 0.0 {
-			settings.MinUSDCTipAmountComment.Valid = false
+	if args.MinUsdcTipAmountComment != nil {
+		cents := *args.MinUsdcTipAmountComment * 100
+		settings.MinUsdcTipAmountComment.SetValid(uint64(cents))
+		if *args.MinUsdcTipAmountComment == 0.0 {
+			settings.MinUsdcTipAmountComment.Valid = false
 		}
 	}
 
@@ -276,13 +276,13 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 		minTipAmountSuperChat := btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()
 		reply.MinTipAmountSuperChat = &minTipAmountSuperChat
 	}
-	if settings.MinUSDCTipAmountComment.Valid {
-		minUSDCTipAmountComment := float64(settings.MinUSDCTipAmountComment.Uint64) / float64(100)
-		reply.MinUSDCTipAmountComment = &minUSDCTipAmountComment
+	if settings.MinUsdcTipAmountComment.Valid {
+		minUsdcTipAmountComment := float64(settings.MinUsdcTipAmountComment.Uint64) / float64(100)
+		reply.MinUsdcTipAmountComment = &minUsdcTipAmountComment
 	}
-	if settings.MinUSDCTipAmountSuperChat.Valid {
-		minUSDCTipAmountSuperChat := float64(settings.MinUSDCTipAmountSuperChat.Uint64) / float64(100)
-		reply.MinUSDCTipAmountSuperChat = &minUSDCTipAmountSuperChat
+	if settings.MinUsdcTipAmountSuperChat.Valid {
+		minUsdcTipAmountSuperChat := float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100)
+		reply.MinUsdcTipAmountSuperChat = &minUsdcTipAmountSuperChat
 	}
 	if settings.SlowModeMinGap.Valid {
 		reply.SlowModeMinGap = &settings.SlowModeMinGap.Uint64
