@@ -567,7 +567,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
 		if !request.comment.Amount.IsZero() {
-			if !settings.MinTipAmountSuperChat.IsZero() && settings.MinUsdcTipAmountSuperChat.IsZero() {
+			if !settings.MinTipAmountSuperChat.IsZero() && !settings.MinUsdcTipAmountSuperChat.IsZero() {
 				if request.args.PaymentIntentID == nil {
 					err = checkMinTipAmountSuperChat(settings, request)
 				} else {
