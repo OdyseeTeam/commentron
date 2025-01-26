@@ -111,16 +111,16 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	}
 
 	if args.MinUsdcTipAmountSuperChat != nil {
-		cents := *args.MinUsdcTipAmountSuperChat * 100
-		settings.MinUsdcTipAmountSuperChat.SetValid(uint64(cents))
+		cents := uint64(*args.MinUsdcTipAmountSuperChat * 100)
+		settings.MinUsdcTipAmountSuperChat.SetValid(cents)
 		if *args.MinUsdcTipAmountSuperChat == 0.0 {
 			settings.MinUsdcTipAmountSuperChat.Valid = false
 		}
 	}
 
 	if args.MinUsdcTipAmountComment != nil {
-		cents := *args.MinUsdcTipAmountComment * 100
-		settings.MinUsdcTipAmountComment.SetValid(uint64(cents))
+		cents := uint64(*args.MinUsdcTipAmountComment * 100)
+		settings.MinUsdcTipAmountComment.SetValid(cents)
 		if *args.MinUsdcTipAmountComment == 0.0 {
 			settings.MinUsdcTipAmountComment.Valid = false
 		}
