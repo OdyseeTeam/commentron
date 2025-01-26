@@ -526,23 +526,64 @@ func blockedByCreator(request *createRequest) error {
 
 const maxSimilaryScoreToBlockedWord = 0.6
 
+func checkMinTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
+	if request.comment.Amount.IsZero() {
+		return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+	}
+	if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
+		return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinUSDCTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
+	if request.comment.Amount.IsZero() {
+		return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+	}
+	if request.comment.Amount.Uint64 < settings.MinUSDCTipAmountComment.Uint64 {
+		return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinUSDCTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
+	if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+		return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinUSDCTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
+	if request.comment.Amount.Uint64 < settings.MinUSDCTipAmountSuperChat.Uint64 {
+		return api.StatusError{Err: errors.Err("a min tip of %d USDC is required to hyperchat", settings.MinUSDCTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
-		if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
-			if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
-				return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+		if !request.comment.Amount.IsZero() && (!settings.MinTipAmountSuperChat.IsZero() || settings.MinUSDCTipAmountSuperChat.IsZero()) {
+			if request.args.PaymentIntentID == nil {
+				err = checkMinTipAmountSuperChat(settings, request)
+			} else {
+				err = checkMinUSDCTipAmountSuperChat(settings, request)
+			}
+			if err != nil {
+				return err
 			}
 		}
-		if !settings.MinTipAmountComment.IsZero() {
-			if request.comment.Amount.IsZero() {
-				return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+		if !settings.MinTipAmountComment.IsZero() || !settings.MinUSDCTipAmountComment.IsZero() {
+			if request.args.PaymentIntentID == nil {
+				err = checkMinTipAmountComment(settings, request)
+			} else {
+				err = checkMinUSDCTipAmountComment(settings, request)
 			}
-			if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
-				return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+			if err != nil {
+				return err
 			}
 		}
 		if !settings.SlowModeMinGap.IsZero() {
