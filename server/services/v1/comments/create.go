@@ -41,6 +41,9 @@ import (
 
 var specialLogFile *os.File
 
+// Temp variable to allow testing
+var useOldTipAmountChecks bool
+
 func init() {
 	var err error
 	specialLogFile, err = os.OpenFile("special.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -77,6 +80,9 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return err
 	}
+
+	// Temp to allow testing
+	useOldTipAmountChecks = args.Amount == nil
 
 	var frequencyCheck = checkFrequency
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
@@ -566,35 +572,51 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		return errors.Err(err)
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
-		if !request.comment.Amount.IsZero() {
-			if !settings.MinTipAmountSuperChat.IsZero() && !settings.MinUsdcTipAmountSuperChat.IsZero() {
-				if request.args.PaymentIntentID == nil {
+		if useOldTipAmountChecks {
+			if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
+				if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+					return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+				}
+			}
+			if !settings.MinTipAmountComment.IsZero() {
+				if request.comment.Amount.IsZero() {
+					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+				}
+				if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
+					return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+				}
+			}
+		} else {
+			if !request.comment.Amount.IsZero() {
+				if !settings.MinTipAmountSuperChat.IsZero() && !settings.MinUsdcTipAmountSuperChat.IsZero() {
+					if request.args.PaymentIntentID == nil {
+						err = checkMinTipAmountSuperChat(settings, request)
+					} else {
+						err = checkMinUsdcTipAmountSuperChat(settings, request)
+					}
+				} else if !settings.MinTipAmountSuperChat.IsZero() {
 					err = checkMinTipAmountSuperChat(settings, request)
-				} else {
+				} else if !settings.MinUsdcTipAmountSuperChat.IsZero() {
 					err = checkMinUsdcTipAmountSuperChat(settings, request)
 				}
-			} else if !settings.MinTipAmountSuperChat.IsZero() {
-				err = checkMinTipAmountSuperChat(settings, request)
-			} else if !settings.MinUsdcTipAmountSuperChat.IsZero() {
-				err = checkMinUsdcTipAmountSuperChat(settings, request)
+				if err != nil {
+					return err
+				}
+			}
+			if !settings.MinTipAmountComment.IsZero() && !settings.MinUsdcTipAmountComment.IsZero() {
+				if request.args.PaymentIntentID == nil {
+					err = checkMinTipAmountComment(settings, request)
+				} else {
+					err = checkMinUsdcTipAmountComment(settings, request)
+				}
+			} else if !settings.MinTipAmountComment.IsZero() {
+				err = checkMinTipAmountComment(settings, request)
+			} else if !settings.MinUsdcTipAmountComment.IsZero() {
+				err = checkMinUsdcTipAmountComment(settings, request)
 			}
 			if err != nil {
 				return err
 			}
-		}
-		if !settings.MinTipAmountComment.IsZero() && !settings.MinUsdcTipAmountComment.IsZero() {
-			if request.args.PaymentIntentID == nil {
-				err = checkMinTipAmountComment(settings, request)
-			} else {
-				err = checkMinUsdcTipAmountComment(settings, request)
-			}
-		} else if !settings.MinTipAmountComment.IsZero() {
-			err = checkMinTipAmountComment(settings, request)
-		} else if !settings.MinUsdcTipAmountComment.IsZero() {
-			err = checkMinUsdcTipAmountComment(settings, request)
-		}
-		if err != nil {
-			return err
 		}
 
 		if !settings.SlowModeMinGap.IsZero() {
