@@ -110,6 +110,22 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		}
 	}
 
+	if args.MinUsdcTipAmountSuperChat != nil {
+		cents := uint64(*args.MinUsdcTipAmountSuperChat * 100)
+		settings.MinUsdcTipAmountSuperChat.SetValid(cents)
+		if *args.MinUsdcTipAmountSuperChat == 0.0 {
+			settings.MinUsdcTipAmountSuperChat.Valid = false
+		}
+	}
+
+	if args.MinUsdcTipAmountComment != nil {
+		cents := uint64(*args.MinUsdcTipAmountComment * 100)
+		settings.MinUsdcTipAmountComment.SetValid(cents)
+		if *args.MinUsdcTipAmountComment == 0.0 {
+			settings.MinUsdcTipAmountComment.Valid = false
+		}
+	}
+
 	if args.CurseJarAmount != nil { // Coming with Appeal process
 		settings.CurseJarAmount.SetValid(*args.CurseJarAmount)
 		if *args.CurseJarAmount == 0.0 {
@@ -259,6 +275,14 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	if settings.MinTipAmountSuperChat.Valid {
 		minTipAmountSuperChat := btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()
 		reply.MinTipAmountSuperChat = &minTipAmountSuperChat
+	}
+	if settings.MinUsdcTipAmountComment.Valid {
+		minUsdcTipAmountComment := float64(settings.MinUsdcTipAmountComment.Uint64) / float64(100)
+		reply.MinUsdcTipAmountComment = &minUsdcTipAmountComment
+	}
+	if settings.MinUsdcTipAmountSuperChat.Valid {
+		minUsdcTipAmountSuperChat := float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100)
+		reply.MinUsdcTipAmountSuperChat = &minUsdcTipAmountSuperChat
 	}
 	if settings.SlowModeMinGap.Valid {
 		reply.SlowModeMinGap = &settings.SlowModeMinGap.Uint64

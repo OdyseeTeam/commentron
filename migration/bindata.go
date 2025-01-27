@@ -27,6 +27,7 @@
 // migration/024_more_creator_settings.sql (285B)
 // migration/025_more_creator_settings_rename.sql (224B)
 // migration/026_add_indexes.sql (884B)
+// migration/027_usdc_creator_settings.sql (244B)
 // migration/migration.go (66B)
 
 package migration
@@ -635,6 +636,26 @@ func migration026_add_indexesSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration027_usdc_creator_settingsSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\xcf\xb1\xaa\xc3\x20\x14\x87\xf1\xdd\xa7\xf8\xef\xf7\xe6\x09\x3a\x99\x6a\x43\xc0\x5a\x68\x74\x16\x31\x87\xd4\x41\x13\xcc\xc9\xfb\x97\x6e\x1d\x4a\xe9\xf8\x2d\x3f\xf8\xba\x0e\x7f\x25\x2f\x2d\x32\xc1\x6f\xe2\x3d\x27\x8e\x4c\x85\x2a\xf7\xb4\xe4\x2a\xa4\x71\xfa\x0e\x27\x7b\xa3\x91\x1a\x45\x5e\x5b\xd8\x89\x39\xd7\x45\x00\x80\x54\x0a\xe7\x9b\xf1\x57\x8b\x92\x6b\x38\xf6\x39\x05\xce\x5b\x88\x65\x3d\x2a\x87\xb4\x96\x97\x85\x7e\x1c\x46\xeb\xe0\xed\x34\x0e\x56\x2b\x28\x7d\x91\xde\x38\x58\x6f\xcc\xff\x2f\xd0\x7e\x6c\xd4\x42\x7a\xc4\xef\xd6\xe9\xf3\x8b\xae\xb3\x78\x06\x00\x00\xff\xff\xab\xdf\x4d\x93\xf4\x00\x00\x00")
+
+func migration027_usdc_creator_settingsSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration027_usdc_creator_settingsSql,
+		"migration/027_usdc_creator_settings.sql",
+	)
+}
+
+func migration027_usdc_creator_settingsSql() (*asset, error) {
+	bytes, err := migration027_usdc_creator_settingsSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/027_usdc_creator_settings.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x4, 0x97, 0x95, 0x5, 0xa0, 0xea, 0xa5, 0xd1, 0x67, 0x4e, 0xe4, 0x41, 0x19, 0x30, 0x18, 0x6a, 0x80, 0xe8, 0xf9, 0x84, 0xed, 0xcc, 0xbf, 0xf2, 0x7b, 0xf6, 0x61, 0x59, 0xe7, 0xd5, 0x19, 0x8e}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -773,6 +794,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/024_more_creator_settings.sql":        migration024_more_creator_settingsSql,
 	"migration/025_more_creator_settings_rename.sql": migration025_more_creator_settings_renameSql,
 	"migration/026_add_indexes.sql":                  migration026_add_indexesSql,
+	"migration/027_usdc_creator_settings.sql":        migration027_usdc_creator_settingsSql,
 	"migration/migration.go":                         migrationMigrationGo,
 }
 
@@ -850,6 +872,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"024_more_creator_settings.sql":        {migration024_more_creator_settingsSql, map[string]*bintree{}},
 		"025_more_creator_settings_rename.sql": {migration025_more_creator_settings_renameSql, map[string]*bintree{}},
 		"026_add_indexes.sql":                  {migration026_add_indexesSql, map[string]*bintree{}},
+		"027_usdc_creator_settings.sql":        {migration027_usdc_creator_settingsSql, map[string]*bintree{}},
 		"migration.go":                         {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}

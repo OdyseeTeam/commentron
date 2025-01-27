@@ -57,7 +57,9 @@ type CreatorSetting struct {
 	// array data for homepage settings
 	HomepageSettings null.JSON `boil:"homepage_settings" json:"homepage_settings,omitempty" toml:"homepage_settings" yaml:"homepage_settings,omitempty"`
 	// array data for featured channels
-	ChannelSections null.JSON `boil:"channel_sections" json:"channel_sections,omitempty" toml:"channel_sections" yaml:"channel_sections,omitempty"`
+	ChannelSections           null.JSON   `boil:"channel_sections" json:"channel_sections,omitempty" toml:"channel_sections" yaml:"channel_sections,omitempty"`
+	MinUsdcTipAmountComment   null.Uint64 `boil:"min_usdc_tip_amount_comment" json:"min_usdc_tip_amount_comment,omitempty" toml:"min_usdc_tip_amount_comment" yaml:"min_usdc_tip_amount_comment,omitempty"`
+	MinUsdcTipAmountSuperChat null.Uint64 `boil:"min_usdc_tip_amount_super_chat" json:"min_usdc_tip_amount_super_chat,omitempty" toml:"min_usdc_tip_amount_super_chat" yaml:"min_usdc_tip_amount_super_chat,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -97,6 +99,8 @@ var CreatorSettingColumns = struct {
 	CommentsMembersOnly        string
 	HomepageSettings           string
 	ChannelSections            string
+	MinUsdcTipAmountComment    string
+	MinUsdcTipAmountSuperChat  string
 }{
 	ID:                         "id",
 	CreatorChannelID:           "creator_channel_id",
@@ -131,6 +135,8 @@ var CreatorSettingColumns = struct {
 	CommentsMembersOnly:        "comments_members_only",
 	HomepageSettings:           "homepage_settings",
 	ChannelSections:            "channel_sections",
+	MinUsdcTipAmountComment:    "min_usdc_tip_amount_comment",
+	MinUsdcTipAmountSuperChat:  "min_usdc_tip_amount_super_chat",
 }
 
 var CreatorSettingTableColumns = struct {
@@ -167,6 +173,8 @@ var CreatorSettingTableColumns = struct {
 	CommentsMembersOnly        string
 	HomepageSettings           string
 	ChannelSections            string
+	MinUsdcTipAmountComment    string
+	MinUsdcTipAmountSuperChat  string
 }{
 	ID:                         "creator_setting.id",
 	CreatorChannelID:           "creator_setting.creator_channel_id",
@@ -201,6 +209,8 @@ var CreatorSettingTableColumns = struct {
 	CommentsMembersOnly:        "creator_setting.comments_members_only",
 	HomepageSettings:           "creator_setting.homepage_settings",
 	ChannelSections:            "creator_setting.channel_sections",
+	MinUsdcTipAmountComment:    "creator_setting.min_usdc_tip_amount_comment",
+	MinUsdcTipAmountSuperChat:  "creator_setting.min_usdc_tip_amount_super_chat",
 }
 
 // Generated where
@@ -324,6 +334,8 @@ var CreatorSettingWhere = struct {
 	CommentsMembersOnly        whereHelperbool
 	HomepageSettings           whereHelpernull_JSON
 	ChannelSections            whereHelpernull_JSON
+	MinUsdcTipAmountComment    whereHelpernull_Uint64
+	MinUsdcTipAmountSuperChat  whereHelpernull_Uint64
 }{
 	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -358,6 +370,8 @@ var CreatorSettingWhere = struct {
 	CommentsMembersOnly:        whereHelperbool{field: "`creator_setting`.`comments_members_only`"},
 	HomepageSettings:           whereHelpernull_JSON{field: "`creator_setting`.`homepage_settings`"},
 	ChannelSections:            whereHelpernull_JSON{field: "`creator_setting`.`channel_sections`"},
+	MinUsdcTipAmountComment:    whereHelpernull_Uint64{field: "`creator_setting`.`min_usdc_tip_amount_comment`"},
+	MinUsdcTipAmountSuperChat:  whereHelpernull_Uint64{field: "`creator_setting`.`min_usdc_tip_amount_super_chat`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -388,8 +402,8 @@ func (r *creatorSettingR) GetCreatorChannel() *Channel {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only", "homepage_settings", "channel_sections"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match", "homepage_settings", "channel_sections"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 	creatorSettingGeneratedColumns      = []string{}
