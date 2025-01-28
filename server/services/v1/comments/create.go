@@ -88,7 +88,16 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		if args.DryRun {
 			if args.Amount != nil {
-				request.comment.Amount.SetValid(*args.Amount)
+				if args.PaymentIntentID != nil {
+					cents := uint64(*args.Amount * 100)
+					request.comment.Amount.SetValid(cents)
+				} else if args.SupportTxID != nil {
+					lbc, err := btcutil.NewAmount(*args.Amount)
+					if err != nil {
+						return errors.Err(err)
+					}
+					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+				}
 			}
 		} else {
 			err := updateSupportInfo(request)
@@ -537,7 +546,7 @@ func checkMinTipAmountComment(settings *m.CreatorSetting, request *createRequest
 		return api.StatusError{Err: errors.Err("you must include LBC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
 	if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
-		return api.StatusError{Err: errors.Err("you must tip at least %d LBC with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+		return api.StatusError{Err: errors.Err("you must tip at least %.2f LBC with this comment as required by %s", btcutil.Amount(settings.MinTipAmountComment.Uint64).ToBTC(), request.creatorChannel.Name), Status: http.StatusBadRequest}
 	}
 	return nil
 }
@@ -547,21 +556,21 @@ func checkMinUsdcTipAmountComment(settings *m.CreatorSetting, request *createReq
 		return api.StatusError{Err: errors.Err("you must include USDC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
 	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountComment.Uint64 {
-		return api.StatusError{Err: errors.Err("you must tip at least %d USDC with this comment as required by %s", settings.MinUsdcTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+		return api.StatusError{Err: errors.Err("you must tip at least %.2f USDC with this comment as required by %s", float64(settings.MinUsdcTipAmountComment.Uint64)/float64(100), request.creatorChannel.Name), Status: http.StatusBadRequest}
 	}
 	return nil
 }
 
 func checkMinTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
 	if request.args.PaymentIntentID != nil || request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
-		return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+		return api.StatusError{Err: errors.Err("a min tip of %.2f LBC is required to hyperchat", btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()), Status: http.StatusBadRequest}
 	}
 	return nil
 }
 
 func checkMinUsdcTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
 	if request.args.PaymentIntentID == nil || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
-		return api.StatusError{Err: errors.Err("a min tip of %d USDC is required to hyperchat", settings.MinUsdcTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+		return api.StatusError{Err: errors.Err("a min tip of %.2f USDC is required to hyperchat", (float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100))), Status: http.StatusBadRequest}
 	}
 	return nil
 }
