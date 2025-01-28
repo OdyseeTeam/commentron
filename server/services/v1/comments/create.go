@@ -88,7 +88,16 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		if args.DryRun {
 			if args.Amount != nil {
-				request.comment.Amount.SetValid(*args.Amount)
+				if args.PaymentIntentID != nil {
+					cents := uint64(*args.Amount * 100)
+					request.comment.Amount.SetValid(cents)
+				} else if args.SupportTxID != nil {
+					lbc, err := btcutil.NewAmount(*args.Amount)
+					if err != nil {
+						return errors.Err(err)
+					}
+					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+				}
 			}
 		} else {
 			err := updateSupportInfo(request)

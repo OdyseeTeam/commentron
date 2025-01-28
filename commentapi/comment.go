@@ -88,7 +88,7 @@ type CreateArgs struct {
 	SigningTS         string             `json:"signing_ts"`
 	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
 	IsProtected       bool               `json:"is_protected"`
-	Amount            *uint64            `json:"amount"`
+	Amount            *float64           `json:"amount"`
 	DryRun            bool               `json:"dry_run"`
 }
 
