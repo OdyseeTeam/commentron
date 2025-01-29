@@ -566,7 +566,7 @@ func checkMinUsdcTipAmountComment(settings *m.CreatorSetting, request *createReq
 	if settings.MinUsdcTipAmountComment.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID == nil || request.comment.Amount.IsZero() {
+	if (request.args.PaymentIntentID == nil && (request.args.Currency == nil || *request.args.Currency != "USDC")) || request.comment.Amount.IsZero() {
 		return api.StatusError{Err: errors.Err("you must include USDC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
 	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountComment.Uint64 {
@@ -589,7 +589,7 @@ func checkMinUsdcTipAmountSuperChat(settings *m.CreatorSetting, request *createR
 	if settings.MinUsdcTipAmountSuperChat.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID == nil || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
+	if (request.args.PaymentIntentID == nil && (request.args.Currency == nil || *request.args.Currency != "USDC")) || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
 		return api.StatusError{Err: errors.Err("a min tip of %.2f USDC is required to hyperchat", (float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100))), Status: http.StatusBadRequest}
 	}
 	return nil
@@ -617,7 +617,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		} else {
 			if !request.comment.Amount.IsZero() {
-				if request.args.PaymentIntentID == nil {
+				if request.args.PaymentIntentID == nil && request.args.Currency == nil {
 					err = checkMinTipAmountSuperChat(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountSuperChat(settings, request)
@@ -630,7 +630,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				if request.comment.Amount.IsZero() {
 					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 				}
-				if request.args.PaymentIntentID == nil {
+				if request.args.PaymentIntentID == nil && request.args.Currency == nil {
 					err = checkMinTipAmountComment(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountComment(settings, request)
