@@ -89,6 +89,9 @@ type CreateArgs struct {
 	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
 	IsProtected       bool               `json:"is_protected"`
 	Amount            *float64           `json:"amount"`
+	Currency          *string            `json:"currency"`
+	Owner             *string            `json:"owner"`
+	Recipient         *string            `json:"recipient"`
 	DryRun            bool               `json:"dry_run"`
 }
 

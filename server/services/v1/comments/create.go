@@ -1,9 +1,11 @@
 package comments
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,6 +39,8 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"github.com/machinebox/graphql"
 )
 
 var specialLogFile *os.File
@@ -85,7 +89,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	useOldTipAmountChecks = args.Amount == nil
 
 	var frequencyCheck = checkFrequency
-	if args.SupportTxID != nil || args.PaymentIntentID != nil {
+	if args.SupportTxID != nil || args.PaymentIntentID != nil || args.Currency != nil {
 		if args.DryRun {
 			if args.Amount != nil {
 				if args.PaymentIntentID != nil {
@@ -97,6 +101,10 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 						return errors.Err(err)
 					}
 					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+				} else if *args.Currency == "USDC" {
+					cents := uint64(*args.Amount * 100)
+					request.comment.Amount.SetValid(cents)
+					request.comment.Currency.SetValid(*args.Currency)
 				}
 			}
 		} else {
@@ -727,7 +735,163 @@ func getCounter(key string, expiration time.Duration) (*counter.Counter, error) 
 	return creatorCounter, nil
 }
 
+func handleUsdcTip(request *createRequest) {
+	client := graphql.NewClient("https://arweave.net/graphql")
+
+	query := `
+		query($ids: [ID!]) {
+			transactions(
+				ids: $ids
+			) {
+				edges {
+					node {
+						id
+						recipient
+						owner {
+                    		address
+                		}
+						tags {
+							name
+							value
+                		}
+					}
+				}
+			}
+		}	
+	`
+
+	req := graphql.NewRequest(query)
+
+	if request.args.SupportTxID == nil {
+		logrus.Error("Can't verify the tip, support txid missing")
+		return
+	}
+
+	req.Var("ids", []string{*request.args.SupportTxID})
+	defaultErrorInfo := fmt.Sprintf("Txid: %s", *request.args.SupportTxID)
+
+	var respData struct {
+		Transactions struct {
+			Edges []struct {
+				Node struct {
+					ID        string `json:"id"`
+					Recipient string `json:"recipient"`
+					Owner     struct {
+						Address string `json:"address"`
+					} `json:"owner"`
+					Tags []struct {
+						Name  string `json:"name"`
+						Value string `json:"value"`
+					} `json:"Tags"`
+				} `json:"node"`
+			} `json:"edges"`
+		} `json:"transactions"`
+	}
+
+	amount := request.comment.Amount.Uint64
+	triesLeft := 2
+	for triesLeft > 0 {
+		triesLeft--
+		ctx := context.Background()
+		if err := client.Run(ctx, req, &respData); err != nil {
+			logrus.Error(fmt.Sprintf("failed to execute query: %v", err.Error()))
+		}
+
+		if triesLeft == 0 {
+			if len(respData.Transactions.Edges) == 0 {
+				logrus.Error(fmt.Sprintf("Tx for id %s not found", *request.args.SupportTxID))
+			}
+			// If tx can't be found let it pass (assume a delay with gateway indexing)
+			request.comment.Amount.SetValid(amount)
+			request.comment.Currency.SetValid(*request.args.Currency)
+			return
+		}
+		time.Sleep(3 * time.Second)
+	}
+
+	if len(respData.Transactions.Edges[0].Node.Tags) == 0 {
+		logrus.Error(fmt.Sprintf("No tags found. %s", defaultErrorInfo))
+	}
+
+	wUsdcPid := "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ"
+	if respData.Transactions.Edges[0].Node.Recipient != wUsdcPid {
+		logrus.Error(fmt.Sprintf("Expected recipient %s, got %s. %s", wUsdcPid, respData.Transactions.Edges[0].Node.Recipient, defaultErrorInfo))
+	}
+
+	if request.args.Owner != nil {
+		foundOwner := respData.Transactions.Edges[0].Node.Owner.Address
+		if foundOwner != *request.args.Owner {
+			logrus.Error(fmt.Sprintf("Expected Owner %s, got %s. %s", *request.args.Owner, foundOwner, defaultErrorInfo))
+		}
+	} else {
+		logrus.Error(fmt.Sprintf("Given nil Owner. %s", defaultErrorInfo))
+	}
+
+	tagsLeftToCheck := []string{"Action", "Quantity", "Recipient", "TimeStamp", "Signature"}
+
+	for i := 0; i < len(respData.Transactions.Edges[0].Node.Tags); i++ {
+		tag := respData.Transactions.Edges[0].Node.Tags[i]
+		switch tag.Name {
+		case "Action":
+			if tag.Value != "Transfer" {
+				logrus.Error(fmt.Sprintf("Action not Transfer. %s", defaultErrorInfo))
+			}
+		case "Quantity":
+			quantity, err := strconv.Atoi(tag.Value)
+			if err != nil {
+				logrus.Error(fmt.Sprintf("Failed to parse Quantity %v. %s", err.Error(), defaultErrorInfo))
+			}
+			quantityCents := uint64(quantity / 10000)
+			amount = quantityCents
+			if quantityCents != request.comment.Amount.Uint64 {
+				logrus.Error(fmt.Sprintf("Quantity amount mismatch. Expected %d, got %d. %s", request.comment.Amount.Uint64, quantityCents, defaultErrorInfo))
+			}
+		case "Recipient":
+			if request.args.Recipient != nil {
+				if tag.Value != *request.args.Recipient {
+					logrus.Error(fmt.Sprintf("Transfer recipient mismatch. Expected %s, got %s. %s", *request.args.Recipient, tag.Value, defaultErrorInfo))
+				}
+			} else {
+				logrus.Error(fmt.Sprintf("Given nil Transfer Recipient. %s", defaultErrorInfo))
+			}
+		case "TimeStamp":
+			allowedTimeDifference, _ := time.ParseDuration("5m")
+			timeStamp, err := strconv.Atoi(tag.Value)
+			if err != nil {
+				logrus.Error(fmt.Sprintf("Failed to parse timestamp %v. %s", err.Error(), defaultErrorInfo))
+			}
+			deltaMs := math.Abs(float64(int64(timeStamp) - time.Now().UnixMilli()))
+			if int64(deltaMs) > allowedTimeDifference.Milliseconds() {
+				parsedDelta, _ := time.ParseDuration(fmt.Sprintf("%dms", int64(deltaMs)))
+				logrus.Error(fmt.Sprintf("Timestamp %d over allowed difference of %dm, difference %dm. %s", timeStamp, int64(allowedTimeDifference.Minutes()), int64(parsedDelta.Minutes()), defaultErrorInfo))
+			}
+		case "Signature":
+			if tag.Value != request.args.Signature {
+				logrus.Error(fmt.Sprintf("Signature mismatch. Expected %s, got %s. %s", request.args.Signature, tag.Value, defaultErrorInfo))
+			}
+		}
+
+		for i, v := range tagsLeftToCheck {
+			if v == tag.Name {
+				tagsLeftToCheck = append(tagsLeftToCheck[:i], tagsLeftToCheck[i+1:]...)
+			}
+		}
+	}
+
+	if len(tagsLeftToCheck) != 0 {
+		logrus.Error(fmt.Sprintf("Didn't found tags %v from the tx", tagsLeftToCheck))
+	}
+
+	request.comment.Amount.SetValid(amount)
+	request.comment.Currency.SetValid(*request.args.Currency)
+
+}
+
 func updateSupportInfo(request *createRequest) error {
+	if request.args.Currency != nil && *request.args.Currency == "USDC" {
+		handleUsdcTip(request)
+		return nil
+	}
 	triesLeft := 3
 	for {
 		triesLeft--
