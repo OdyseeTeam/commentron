@@ -469,6 +469,22 @@ func checkForDuplicate(commentID string) error {
 	return nil
 }
 
+func checkForDuplicateTxID(txID string) error {
+	// ignore checking for soft delete in this context
+	comment, err := m.Comments(
+		m.CommentWhere.TXID.EQ(null.StringFrom(txID)),
+		qm.WithDeleted(),
+	).One(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Err(err)
+	}
+
+	if comment != nil {
+		return api.StatusError{Err: errors.Err("txid already associated with a different comment!"), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
 var slowModeCache = ccache.New(ccache.Configure().MaxSize(10000))
 
 type createRequest struct {
@@ -763,12 +779,17 @@ func handleUsdcTip(request *createRequest) {
 	req := graphql.NewRequest(query)
 
 	if request.args.SupportTxID == nil {
-		logrus.Error("Can't verify the tip, support txid missing")
+		logrus.Error(fmt.Sprintf("Can't verify the tip, support txid not given. CommentID: %s", request.comment.CommentID))
 		return
+	}
+	defaultErrorInfo := fmt.Sprintf("TxID: %s CommentID: %s", *request.args.SupportTxID, request.comment.CommentID)
+
+	err := checkForDuplicateTxID(*request.args.SupportTxID)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", err.Error(), defaultErrorInfo))
 	}
 
 	req.Var("ids", []string{*request.args.SupportTxID})
-	defaultErrorInfo := fmt.Sprintf("Txid: %s", *request.args.SupportTxID)
 
 	var respData struct {
 		Transactions struct {
@@ -827,8 +848,10 @@ func handleUsdcTip(request *createRequest) {
 		logrus.Error(fmt.Sprintf("Given nil Owner. %s", defaultErrorInfo))
 	}
 
-	tagsLeftToCheck := []string{"Action", "Quantity", "Recipient", "TimeStamp", "Signature"}
+	tagsLeftToCheck := []string{"Action", "Quantity", "Recipient", "TimeStamp", "Signature", "SignatureTS"}
 
+	var signature string
+	var signatureTS string
 	for i := 0; i < len(respData.Transactions.Edges[0].Node.Tags); i++ {
 		tag := respData.Transactions.Edges[0].Node.Tags[i]
 		switch tag.Name {
@@ -866,9 +889,14 @@ func handleUsdcTip(request *createRequest) {
 				logrus.Error(fmt.Sprintf("Timestamp %d over allowed difference of %dm, difference %dm. %s", timeStamp, int64(allowedTimeDifference.Minutes()), int64(parsedDelta.Minutes()), defaultErrorInfo))
 			}
 		case "Signature":
-			if tag.Value != request.args.Signature {
-				logrus.Error(fmt.Sprintf("Signature mismatch. Expected %s, got %s. %s", request.args.Signature, tag.Value, defaultErrorInfo))
-			}
+			signature = tag.Value
+		case "SignatureTS":
+			signatureTS = tag.Value
+		}
+
+		err := lbry.ValidateSignatureAndTS(request.args.ChannelID, signature, signatureTS, request.args.ChannelName)
+		if err != nil {
+			logrus.Error(fmt.Sprintf("%v %s", errors.Prefix("could not authenticate channel signature:", err), defaultErrorInfo))
 		}
 
 		for i, v := range tagsLeftToCheck {
