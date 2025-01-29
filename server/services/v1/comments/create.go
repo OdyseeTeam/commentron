@@ -894,16 +894,16 @@ func handleUsdcTip(request *createRequest) {
 			signatureTS = tag.Value
 		}
 
-		err := lbry.ValidateSignatureAndTS(request.args.ChannelID, signature, signatureTS, request.args.ChannelName)
-		if err != nil {
-			logrus.Error(fmt.Sprintf("%v %s", errors.Prefix("could not authenticate channel signature:", err), defaultErrorInfo))
-		}
-
 		for i, v := range tagsLeftToCheck {
 			if v == tag.Name {
 				tagsLeftToCheck = append(tagsLeftToCheck[:i], tagsLeftToCheck[i+1:]...)
 			}
 		}
+	}
+
+	err = lbry.ValidateSignatureAndTS(request.args.ChannelID, signature, signatureTS, request.args.ChannelName)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", errors.Prefix("could not authenticate channel signature:", err), defaultErrorInfo))
 	}
 
 	if len(tagsLeftToCheck) != 0 {
