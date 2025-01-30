@@ -852,8 +852,7 @@ func handleUsdcTip(request *createRequest) {
 
 	var signature string
 	var signatureTS string
-	for i := 0; i < len(respData.Transactions.Edges[0].Node.Tags); i++ {
-		tag := respData.Transactions.Edges[0].Node.Tags[i]
+	for _, tag := range respData.Transactions.Edges[0].Node.Tags {
 		switch tag.Name {
 		case "Action":
 			if tag.Value != "Transfer" {
@@ -907,7 +906,7 @@ func handleUsdcTip(request *createRequest) {
 	}
 
 	if len(tagsLeftToCheck) != 0 {
-		logrus.Error(fmt.Sprintf("Didn't found tags %v from the tx", tagsLeftToCheck))
+		logrus.Error(fmt.Sprintf("Didn't found tags %v from the tx. %s", tagsLeftToCheck, defaultErrorInfo))
 	}
 
 	request.comment.Amount.SetValid(amount)
