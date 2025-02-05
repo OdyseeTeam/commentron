@@ -98,18 +98,27 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 				if args.PaymentIntentID != nil {
 					cents := uint64(*args.Amount * 100)
 					request.comment.Amount.SetValid(cents)
-				} else if args.SupportTxID != nil && args.Currency != nil {
-					switch *args.Currency {
-					case "USDC":
-						cents := uint64(*args.Amount * 100)
-						request.comment.Amount.SetValid(cents)
-						request.comment.Currency.SetValid(*args.Currency)
-					case "LBC":
+				} else if args.SupportTxID != nil {
+					if args.Currency == nil {
+						// Support for old LBC tips
 						lbc, err := btcutil.NewAmount(*args.Amount)
 						if err != nil {
 							return errors.Err(err)
 						}
 						request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+					} else {
+						switch *args.Currency {
+						case "USDC":
+							cents := uint64(*args.Amount * 100)
+							request.comment.Amount.SetValid(cents)
+							request.comment.Currency.SetValid(*args.Currency)
+						case "LBC":
+							lbc, err := btcutil.NewAmount(*args.Amount)
+							if err != nil {
+								return errors.Err(err)
+							}
+							request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+						}
 					}
 				}
 			}
