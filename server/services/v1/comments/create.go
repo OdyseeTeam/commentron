@@ -48,6 +48,9 @@ var specialLogFile *os.File
 // Temp variable to allow testing
 var useOldTipAmountChecks bool
 
+// Not sure where to put this
+var wUsdcPid = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ"
+
 func init() {
 	var err error
 	specialLogFile, err = os.OpenFile("special.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -89,22 +92,25 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	useOldTipAmountChecks = args.Amount == nil
 
 	var frequencyCheck = checkFrequency
-	if args.SupportTxID != nil || args.PaymentIntentID != nil || args.Currency != nil {
+	if args.SupportTxID != nil || args.PaymentIntentID != nil {
 		if args.DryRun {
 			if args.Amount != nil {
 				if args.PaymentIntentID != nil {
 					cents := uint64(*args.Amount * 100)
 					request.comment.Amount.SetValid(cents)
-				} else if args.SupportTxID != nil {
-					lbc, err := btcutil.NewAmount(*args.Amount)
-					if err != nil {
-						return errors.Err(err)
+				} else if args.SupportTxID != nil && args.Currency != nil {
+					switch *args.Currency {
+					case "USDC":
+						cents := uint64(*args.Amount * 100)
+						request.comment.Amount.SetValid(cents)
+						request.comment.Currency.SetValid(*args.Currency)
+					case "LBC":
+						lbc, err := btcutil.NewAmount(*args.Amount)
+						if err != nil {
+							return errors.Err(err)
+						}
+						request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
 					}
-					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
-				} else if *args.Currency == "USDC" {
-					cents := uint64(*args.Amount * 100)
-					request.comment.Amount.SetValid(cents)
-					request.comment.Currency.SetValid(*args.Currency)
 				}
 			}
 		} else {
@@ -633,7 +639,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		} else {
 			if !request.comment.Amount.IsZero() {
-				if request.args.PaymentIntentID == nil && request.args.Currency == nil {
+				if request.args.PaymentIntentID == nil && (request.args.Currency == nil || *request.args.Currency != "USDC") {
 					err = checkMinTipAmountSuperChat(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountSuperChat(settings, request)
@@ -646,7 +652,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				if request.comment.Amount.IsZero() {
 					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 				}
-				if request.args.PaymentIntentID == nil && request.args.Currency == nil {
+				if request.args.PaymentIntentID == nil && (request.args.Currency == nil || *request.args.Currency != "USDC") {
 					err = checkMinTipAmountComment(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountComment(settings, request)
@@ -751,7 +757,85 @@ func getCounter(key string, expiration time.Duration) (*counter.Counter, error) 
 	return creatorCounter, nil
 }
 
-func handleUsdcTip(request *createRequest) {
+type tag struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type cuResultResponse struct {
+	Messages []struct {
+		Data   string `json:"Data"`
+		Target string `json:"Target	"`
+		Anchor string `json:"Anchor	"`
+		Tags   []tag  `json:"Tags"`
+		Sags   []tag  `json:"Sags"`
+	} `json:"Messages"`
+	Assignments []struct{} `json:"Assignments"`
+	Spawns      []struct{} `json:"Spawns"`
+	Output      []struct{} `json:"Output"`
+	GasUsed     int        `json:"GasUsed"`
+}
+
+func getResultFromCu(txID, pID string, timeout int) (cuResultResponse, error) {
+	cuEndPoint := fmt.Sprintf(`https://cu.ao-testnet.xyz/result/%s?process-id=%s`, txID, pID)
+	var cuResp cuResultResponse
+
+	client := &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+	}
+	resp, err := client.Get(cuEndPoint)
+	if err != nil {
+		return cuResp, errors.Err("request failed: %w", err)
+	}
+
+	defer helper.CloseBody(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return cuResp, errors.Err("Request failed with status %s", resp.Status)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&cuResp); err != nil {
+		return cuResp, errors.Err("failed to decode response: %w", err)
+	}
+
+	return cuResp, nil
+}
+
+func checkCuResult(result cuResultResponse) error {
+	tagFound := false
+	if len(result.Messages) == 0 {
+		return errors.Err("No result messages")
+	}
+	message := result.Messages[0]
+	for _, v := range message.Tags {
+		if v.Value == "Debit-Notice" || v.Value == "Credit-Notice" {
+			tagFound = true
+			break
+		}
+	}
+	if !tagFound {
+		return errors.Err("Credit-Notice or Depit-Notice tag not found in first result message")
+	}
+
+	return nil
+}
+
+type graphQLRespData struct {
+	Transactions struct {
+		Edges []struct {
+			Node struct {
+				ID        string `json:"id"`
+				Recipient string `json:"recipient"`
+				Owner     struct {
+					Address string `json:"address"`
+				} `json:"owner"`
+				Tags []tag `json:"Tags"`
+			} `json:"node"`
+		} `json:"edges"`
+	} `json:"transactions"`
+}
+
+func getSupportTxFromGraphQL(request *createRequest) (graphQLRespData, error) {
 	client := graphql.NewClient("https://arweave.net/graphql")
 
 	query := `
@@ -776,40 +860,16 @@ func handleUsdcTip(request *createRequest) {
 		}	
 	`
 
-	req := graphql.NewRequest(query)
-
-	if request.args.SupportTxID == nil {
-		logrus.Error(fmt.Sprintf("Can't verify the tip, support txid not given. CommentID: %s", request.comment.CommentID))
-		return
-	}
-	defaultErrorInfo := fmt.Sprintf("TxID: %s CommentID: %s", *request.args.SupportTxID, request.comment.CommentID)
+	var respData graphQLRespData
 
 	err := checkForDuplicateTxID(*request.args.SupportTxID)
 	if err != nil {
-		logrus.Error(fmt.Sprintf("%v %s", err.Error(), defaultErrorInfo))
+		return respData, errors.Err("%v", err.Error())
 	}
 
+	req := graphql.NewRequest(query)
 	req.Var("ids", []string{*request.args.SupportTxID})
 
-	var respData struct {
-		Transactions struct {
-			Edges []struct {
-				Node struct {
-					ID        string `json:"id"`
-					Recipient string `json:"recipient"`
-					Owner     struct {
-						Address string `json:"address"`
-					} `json:"owner"`
-					Tags []struct {
-						Name  string `json:"name"`
-						Value string `json:"value"`
-					} `json:"Tags"`
-				} `json:"node"`
-			} `json:"edges"`
-		} `json:"transactions"`
-	}
-
-	amount := request.comment.Amount.Uint64
 	triesLeft := 2
 	for triesLeft > 0 {
 		triesLeft--
@@ -822,30 +882,32 @@ func handleUsdcTip(request *createRequest) {
 			if len(respData.Transactions.Edges) == 0 {
 				logrus.Error(fmt.Sprintf("Tx for id %s not found", *request.args.SupportTxID))
 			}
-			// If tx can't be found let it pass (assume a delay with gateway indexing)
-			request.comment.Amount.SetValid(amount)
-			request.comment.Currency.SetValid(*request.args.Currency)
-			return
+			return respData, nil
 		}
 		time.Sleep(3 * time.Second)
 	}
 
+	return respData, nil
+}
+
+func checkSupportTxAndGetAmount(request *createRequest, respData *graphQLRespData) (uint64, error) {
+	amount := request.comment.Amount.Uint64
+
 	if len(respData.Transactions.Edges[0].Node.Tags) == 0 {
-		logrus.Error(fmt.Sprintf("No tags found. %s", defaultErrorInfo))
+		return amount, errors.Err("No tags found. %s")
 	}
 
-	wUsdcPid := "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ"
 	if respData.Transactions.Edges[0].Node.Recipient != wUsdcPid {
-		logrus.Error(fmt.Sprintf("Expected recipient %s, got %s. %s", wUsdcPid, respData.Transactions.Edges[0].Node.Recipient, defaultErrorInfo))
+		return amount, errors.Err("Expected recipient %s, got %s. %s", wUsdcPid, respData.Transactions.Edges[0].Node.Recipient)
 	}
 
 	if request.args.Owner != nil {
 		foundOwner := respData.Transactions.Edges[0].Node.Owner.Address
 		if foundOwner != *request.args.Owner {
-			logrus.Error(fmt.Sprintf("Expected Owner %s, got %s. %s", *request.args.Owner, foundOwner, defaultErrorInfo))
+			return amount, errors.Err("Expected Owner %s, got %s. %s", *request.args.Owner, foundOwner)
 		}
 	} else {
-		logrus.Error(fmt.Sprintf("Given nil Owner. %s", defaultErrorInfo))
+		return amount, errors.Err("Given nil Owner. %s")
 	}
 
 	tagsLeftToCheck := []string{"Action", "Quantity", "Recipient", "TimeStamp", "Signature", "SignatureTS"}
@@ -856,36 +918,36 @@ func handleUsdcTip(request *createRequest) {
 		switch tag.Name {
 		case "Action":
 			if tag.Value != "Transfer" {
-				logrus.Error(fmt.Sprintf("Action not Transfer. %s", defaultErrorInfo))
+				return amount, errors.Err("Action not Transfer. %s")
 			}
 		case "Quantity":
 			quantity, err := strconv.Atoi(tag.Value)
 			if err != nil {
-				logrus.Error(fmt.Sprintf("Failed to parse Quantity %v. %s", err.Error(), defaultErrorInfo))
+				return amount, errors.Err("Failed to parse Quantity %v. %s", err.Error())
 			}
 			quantityCents := uint64(quantity / 10000)
 			amount = quantityCents
 			if quantityCents != request.comment.Amount.Uint64 {
-				logrus.Error(fmt.Sprintf("Quantity amount mismatch. Expected %d, got %d. %s", request.comment.Amount.Uint64, quantityCents, defaultErrorInfo))
+				return amount, errors.Err("Quantity amount mismatch. Expected %d, got %d. %s", request.comment.Amount.Uint64, quantityCents)
 			}
 		case "Recipient":
 			if request.args.Recipient != nil {
 				if tag.Value != *request.args.Recipient {
-					logrus.Error(fmt.Sprintf("Transfer recipient mismatch. Expected %s, got %s. %s", *request.args.Recipient, tag.Value, defaultErrorInfo))
+					return amount, errors.Err("Transfer recipient mismatch. Expected %s, got %s. %s", *request.args.Recipient, tag.Value)
 				}
 			} else {
-				logrus.Error(fmt.Sprintf("Given nil Transfer Recipient. %s", defaultErrorInfo))
+				return amount, errors.Err("Given nil Transfer Recipient. %s")
 			}
 		case "TimeStamp":
 			allowedTimeDifference, _ := time.ParseDuration("5m")
 			timeStamp, err := strconv.Atoi(tag.Value)
 			if err != nil {
-				logrus.Error(fmt.Sprintf("Failed to parse timestamp %v. %s", err.Error(), defaultErrorInfo))
+				return amount, errors.Err("Failed to parse timestamp %v. %s", err.Error())
 			}
 			deltaMs := math.Abs(float64(int64(timeStamp) - time.Now().UnixMilli()))
 			if int64(deltaMs) > allowedTimeDifference.Milliseconds() {
 				parsedDelta, _ := time.ParseDuration(fmt.Sprintf("%dms", int64(deltaMs)))
-				logrus.Error(fmt.Sprintf("Timestamp %d over allowed difference of %dm, difference %dm. %s", timeStamp, int64(allowedTimeDifference.Minutes()), int64(parsedDelta.Minutes()), defaultErrorInfo))
+				return amount, errors.Err("Timestamp %d over allowed difference of %dm, difference %dm. %s", timeStamp, int64(allowedTimeDifference.Minutes()), int64(parsedDelta.Minutes()))
 			}
 		case "Signature":
 			signature = tag.Value
@@ -900,13 +962,50 @@ func handleUsdcTip(request *createRequest) {
 		}
 	}
 
-	err = lbry.ValidateSignatureAndTS(request.args.ChannelID, signature, signatureTS, request.args.ChannelName)
+	err := lbry.ValidateSignatureAndTS(request.args.ChannelID, signature, signatureTS, request.args.ChannelName)
 	if err != nil {
-		logrus.Error(fmt.Sprintf("%v %s", errors.Prefix("could not authenticate channel signature:", err), defaultErrorInfo))
+		return amount, errors.Err("%v %s", errors.Prefix("could not authenticate channel signature:", err))
 	}
 
 	if len(tagsLeftToCheck) != 0 {
-		logrus.Error(fmt.Sprintf("Didn't found tags %v from the tx. %s", tagsLeftToCheck, defaultErrorInfo))
+		return amount, errors.Err("Didn't found tags %v from the tx. %s", tagsLeftToCheck)
+	}
+
+	return amount, nil
+
+}
+
+func handleUsdcTip(request *createRequest) {
+	if request.args.SupportTxID == nil {
+		logrus.Error(fmt.Sprintf("Can't verify the tip, support txid not given. CommentID: %s", request.comment.CommentID))
+		return
+	}
+	defaultErrorInfo := fmt.Sprintf("TxID: %s CommentID: %s", *request.args.SupportTxID, request.comment.CommentID)
+
+	respData, err := getSupportTxFromGraphQL(request)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", err, defaultErrorInfo))
+	}
+	if len(respData.Transactions.Edges) == 0 {
+		// If tx can't be found let it pass (assume a delay with gateway indexing)
+		request.comment.Amount.SetValid(request.comment.Amount.Uint64)
+		request.comment.Currency.SetValid(*request.args.Currency)
+		return
+	}
+
+	amount, err := checkSupportTxAndGetAmount(request, &respData)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", err, defaultErrorInfo))
+	}
+
+	timeout := 2
+	result, err := getResultFromCu(*request.args.SupportTxID, wUsdcPid, timeout)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", err, defaultErrorInfo))
+	}
+	err = checkCuResult(result)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("%v %s", err, defaultErrorInfo))
 	}
 
 	request.comment.Amount.SetValid(amount)
