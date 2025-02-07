@@ -777,7 +777,6 @@ type cuResultResponse struct {
 		Target string `json:"Target	"`
 		Anchor string `json:"Anchor	"`
 		Tags   []tag  `json:"Tags"`
-		Sags   []tag  `json:"Sags"`
 	} `json:"Messages"`
 	Assignments []struct{} `json:"Assignments"`
 	Spawns      []struct{} `json:"Spawns"`
