@@ -774,8 +774,8 @@ type tag struct {
 type cuResultResponse struct {
 	Messages []struct {
 		Data   string `json:"Data"`
-		Target string `json:"Target	"`
-		Anchor string `json:"Anchor	"`
+		Target string `json:"Target"`
+		Anchor string `json:"Anchor"`
 		Tags   []tag  `json:"Tags"`
 	} `json:"Messages"`
 	Assignments []struct{} `json:"Assignments"`
