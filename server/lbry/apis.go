@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/OdyseeTeam/commentron/helper"
 
@@ -75,7 +75,7 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 		return false, errors.Err("No response from internal APIs")
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Err(err)
 	}
@@ -89,6 +89,46 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 	}
 
 	return perkRes.Data.HasAccess, nil
+}
+
+type ArweavePaymentDetailsResponse struct {
+	Amount         uint64    `json:"amount"`
+	Currency       string    `json:"currency"`
+	Status         string    `json:"status"`
+	UserId         uint64    `json:"user_id"`
+	ChannelClaimId string    `json:"channel_claim_id"`
+	TippedAt       time.Time `json:"tipped_at"`
+}
+type apiArweavePaymentDetailsResponse struct {
+	Success bool                          `json:"success"`
+	Error   interface{}                   `json:"error"`
+	Data    ArweavePaymentDetailsResponse `json:"data"`
+}
+
+func (c apiClient) GetDetailsForTransaction(txId string) (*ArweavePaymentDetailsResponse, error) {
+	const apiPath = "/arweave/payment/retrieve"
+	client := http.Client{}
+	form := make(url.Values)
+	form.Set("auth_token", apiToken)
+	form.Set("tx_id", txId)
+
+	response, err := client.PostForm(apiURL+apiPath, form)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	defer helper.CloseBody(response.Body)
+
+	b, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.Err("API returned non-200 status code: %d", response.StatusCode)
+	}
+	var pr apiArweavePaymentDetailsResponse
+	err = json.Unmarshal(b, &pr)
+
+	return &pr.Data, errors.Err(err)
 }
 
 func notify(options NotifyOptions) error {

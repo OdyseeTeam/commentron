@@ -47,6 +47,7 @@ type CheckPerkOptions struct {
 type APIClient interface {
 	Notify(NotifyOptions)
 	CheckPerk(CheckPerkOptions) (bool, error)
+	GetDetailsForTransaction(string) (*ArweavePaymentDetailsResponse, error)
 }
 
 // Init initializes the configuration of the LBRY clients and allows for mock clients for testing
@@ -93,4 +94,8 @@ func (m *mockAPI) Notify(options NotifyOptions) {
 
 func (m *mockAPI) CheckPerk(options CheckPerkOptions) (bool, error) {
 	return false, nil
+}
+
+func (m *mockAPI) GetDetailsForTransaction(txId string) (*ArweavePaymentDetailsResponse, error) {
+	return nil, nil
 }

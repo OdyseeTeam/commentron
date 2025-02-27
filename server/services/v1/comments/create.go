@@ -2,10 +2,8 @@ package comments
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -39,33 +37,16 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-var specialLogFile *os.File
-
 // Temp variable to allow testing
 var useOldTipAmountChecks bool
 
-func init() {
-	var err error
-	specialLogFile, err = os.OpenFile("special.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-}
 func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
 	err := v.ValidateStruct(args,
 		v.Field(&args.ClaimID, v.Required))
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
-	//log what this special commenter is doing to find the bug
-	if args.ChannelID == "ccf4e035d8164d8a6540d96d1a689a4f068b6bc7" {
-		stuffToLog, err := json.Marshal(args)
-		stuffToLog = append(stuffToLog, '\n')
-		if err == nil {
-			_, _ = specialLogFile.Write(stuffToLog)
-		}
 
-	}
 	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -85,7 +66,31 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	useOldTipAmountChecks = args.Amount == nil
 
 	var frequencyCheck = checkFrequency
-	if args.SupportTxID != nil || args.PaymentIntentID != nil {
+
+	if args.Amount != nil {
+		if args.DryRun {
+			cents := *args.Amount
+			if args.SupportTxID != nil {
+				lbc, err := btcutil.NewAmount(*args.Amount)
+				if err != nil {
+					return errors.Err(err)
+				}
+				cents = lbc.ToUnit(btcutil.AmountSatoshi)
+			} else if args.PaymentIntentID != nil {
+				cents *= 100
+			}
+			request.comment.Amount.SetValid(uint64(cents))
+		} else {
+			err := updateSupportInfo(request)
+			if err != nil {
+				return err
+			}
+		}
+		// ignore the frequency if it's a tipped comment
+		frequencyCheck = ignoreFrequency
+	}
+
+	if args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxId != nil {
 		if args.DryRun {
 			if args.Amount != nil {
 				if args.PaymentIntentID != nil {
@@ -97,6 +102,9 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 						return errors.Err(err)
 					}
 					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
+				} else if args.PaymentTxId != nil {
+					//assume cents
+					request.comment.Amount.SetValid(uint64(*args.Amount))
 				}
 			}
 		} else {
@@ -743,6 +751,8 @@ func updateSupportInfo(request *createRequest) error {
 }
 
 func updateSupportInfoAttempt(request *createRequest, retry bool) error {
+	//TODO: fix replay attacks
+	//todo: fix stolen tx attacks
 	if request.args.PaymentIntentID != nil {
 		env := ""
 		if request.args.Environment != nil {
@@ -763,25 +773,53 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		request.comment.IsFiat = true
 		request.comment.Currency.SetValid(pi.Currency)
 		return nil
-
+	} else if request.args.SupportTxID != nil {
+		request.comment.TXID.SetValid(util.StrFromPtr(request.args.SupportTxID))
+		txSummary, err := lbry.SDK.GetTx(request.comment.TXID.String)
+		if err != nil {
+			return errors.Err(err)
+		}
+		if txSummary == nil {
+			return errors.Err("transaction not found for txid %s", request.comment.TXID.String)
+		}
+		var vout uint64
+		if request.args.SupportVout != nil {
+			vout = *request.args.SupportVout
+		}
+		amount, err := getVoutAmount(request.args.ChannelID, txSummary, vout)
+		if err != nil {
+			return errors.Err(err)
+		}
+		request.comment.Amount.SetValid(amount)
+		return nil
+	} else if request.args.PaymentTxId != nil {
+		//check for replays
+		existingComment, err := m.Comments(m.CommentWhere.TXID.EQ(null.StringFromPtr(request.args.PaymentTxId))).One(db.RO)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if !errors.Is(err, sql.ErrNoRows) {
+				return errors.Err(err)
+			}
+		}
+		if existingComment != nil {
+			return errors.Err("a comment with this transaction id already exists")
+		}
+		//query internal apis to verify the transaction
+		pi, err := lbry.API.GetDetailsForTransaction(*request.args.PaymentTxId)
+		if err != nil {
+			return err
+		}
+		if pi.Status != "confirmed" {
+			return errors.Err("transaction is not confirmed")
+		}
+		if pi.ChannelClaimId != request.args.ChannelID {
+			return errors.Err("channel mismatch for transaction")
+		}
+		if time.Since(pi.TippedAt) > time.Hour {
+			return errors.Err("transaction is too old")
+		}
+		request.comment.Amount.SetValid(pi.Amount)
+		request.comment.Currency.SetValid(pi.Currency)
 	}
-	request.comment.TXID.SetValid(util.StrFromPtr(request.args.SupportTxID))
-	txSummary, err := lbry.SDK.GetTx(request.comment.TXID.String)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if txSummary == nil {
-		return errors.Err("transaction not found for txid %s", request.comment.TXID.String)
-	}
-	var vout uint64
-	if request.args.SupportVout != nil {
-		vout = *request.args.SupportVout
-	}
-	amount, err := getVoutAmount(request.args.ChannelID, txSummary, vout)
-	if err != nil {
-		return errors.Err(err)
-	}
-	request.comment.Amount.SetValid(amount)
 	return nil
 }
 

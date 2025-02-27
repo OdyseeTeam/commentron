@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -86,7 +86,7 @@ func getPublicKeyFromCQForChannel(channelClaimID string) ([]byte, error) {
 		return nil, errors.Err(err)
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, errors.Err(err)
 	}
@@ -256,7 +256,7 @@ type publicKeyInfo struct {
 	PublicKey asn1.BitString
 }
 
-//why the hell are we reusing code from lbry.go instead of just using lbry.go??
+// why the hell are we reusing code from lbry.go instead of just using lbry.go??
 func getPublicKeyFromBytes(pubKeyBytes []byte) (*btcec.PublicKey, error) {
 	if len(pubKeyBytes) == 33 {
 		return btcec.ParsePubKey(pubKeyBytes, btcec.S256())
