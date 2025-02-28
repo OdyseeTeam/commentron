@@ -90,7 +90,7 @@ type CreateArgs struct {
 	IsProtected       bool               `json:"is_protected"`
 	Amount            *float64           `json:"amount"`
 	DryRun            bool               `json:"dry_run"`
-	PaymentTxId       *string            `json:"payment_tx_id"`
+	PaymentTxID       *string            `json:"payment_tx_id"`
 }
 
 // CreateResponse response for the comment.Create rpc call

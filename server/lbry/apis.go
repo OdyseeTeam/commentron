@@ -91,12 +91,13 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 	return perkRes.Data.HasAccess, nil
 }
 
+// ArweavePaymentDetailsResponse is the response structure from internal-apis for the arweave payment details api
 type ArweavePaymentDetailsResponse struct {
 	Amount         uint64    `json:"amount"`
 	Currency       string    `json:"currency"`
 	Status         string    `json:"status"`
-	UserId         uint64    `json:"user_id"`
-	ChannelClaimId string    `json:"channel_claim_id"`
+	UserID         uint64    `json:"user_id"`
+	ChannelClaimID string    `json:"channel_claim_id"`
 	TippedAt       time.Time `json:"tipped_at"`
 }
 type apiArweavePaymentDetailsResponse struct {
@@ -105,12 +106,12 @@ type apiArweavePaymentDetailsResponse struct {
 	Data    ArweavePaymentDetailsResponse `json:"data"`
 }
 
-func (c apiClient) GetDetailsForTransaction(txId string) (*ArweavePaymentDetailsResponse, error) {
+func (c apiClient) GetDetailsForTransaction(txID string) (*ArweavePaymentDetailsResponse, error) {
 	const apiPath = "/arweave/payment/retrieve"
 	client := http.Client{}
 	form := make(url.Values)
 	form.Set("auth_token", apiToken)
-	form.Set("tx_id", txId)
+	form.Set("tx_id", txID)
 
 	response, err := client.PostForm(apiURL+apiPath, form)
 	if err != nil {
