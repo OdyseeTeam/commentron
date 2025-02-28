@@ -29,12 +29,12 @@ func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentap
 	}
 
 	item := commentapi.CommentItem{
-		Comment:   comment.Body,
-		CommentID: comment.CommentID,
-		ClaimID:   comment.LbryClaimID,
-		Timestamp: comment.Timestamp,
-		ParentID:  comment.ParentID.String,
-		//Signature:     comment.Signature.String,
+		Comment:       comment.Body,
+		CommentID:     comment.CommentID,
+		ClaimID:       comment.LbryClaimID,
+		Timestamp:     comment.Timestamp,
+		ParentID:      comment.ParentID.String,
+		Signature:     comment.Signature.String,
 		SigningTs:     comment.Signingts.String,
 		IsHidden:      comment.IsHidden.Bool,
 		IsPinned:      comment.IsPinned,
