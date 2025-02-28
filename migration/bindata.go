@@ -28,6 +28,7 @@
 // migration/025_more_creator_settings_rename.sql (224B)
 // migration/026_add_indexes.sql (884B)
 // migration/027_usdc_creator_settings.sql (244B)
+// migration/028_comment_tx_index.sql (116B)
 // migration/migration.go (66B)
 
 package migration
@@ -656,6 +657,26 @@ func migration027_usdc_creator_settingsSql() (*asset, error) {
 	return a, nil
 }
 
+var _migration028_comment_tx_indexSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xd2\xd5\x55\xd0\xce\xcd\x4c\x2f\x4a\x2c\x49\x55\x08\x2d\xe0\x42\xe6\x06\x97\x24\x96\xa4\xe6\xa6\xe6\x95\x38\xa5\xa6\x67\xe6\x71\x39\xfa\x84\xb8\x06\x29\x84\x38\x3a\xf9\xb8\x2a\x24\xe7\xe7\x82\x24\x14\x12\x53\x52\x14\x32\xf3\x52\x52\x2b\x14\x32\x53\x2a\xe2\x4b\x2a\xe2\x33\x53\x14\x34\xc0\x94\xa6\x35\x76\xb3\x5c\xf3\x52\xb8\x00\x01\x00\x00\xff\xff\xe2\xba\xd3\xf5\x74\x00\x00\x00")
+
+func migration028_comment_tx_indexSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migration028_comment_tx_indexSql,
+		"migration/028_comment_tx_index.sql",
+	)
+}
+
+func migration028_comment_tx_indexSql() (*asset, error) {
+	bytes, err := migration028_comment_tx_indexSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migration/028_comment_tx_index.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x17, 0x82, 0xb1, 0xb1, 0xf8, 0x9d, 0x1e, 0x8e, 0x54, 0xf, 0x1, 0x64, 0x73, 0x52, 0x75, 0x9d, 0x59, 0x7f, 0xe2, 0x15, 0x24, 0x85, 0xdd, 0x30, 0x1f, 0x92, 0xf, 0xfe, 0x9f, 0x51, 0x9d, 0xa6}}
+	return a, nil
+}
+
 var _migrationMigrationGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2a\x48\x4c\xce\x4e\x4c\x4f\x55\xc8\xcd\x4c\x2f\x4a\x2c\xc9\xcc\xcf\xe3\xe2\xd2\xd7\x0f\xc9\xc8\x2c\x56\xc8\x2c\x56\x48\xcc\x53\x48\xcd\x2d\x28\xa9\x54\x48\xcf\x57\x48\xcb\xcc\x49\xd5\x51\x48\xcb\x2f\x52\x80\x69\xc9\xcc\x2d\xc8\x2f\x2a\xe1\x02\x04\x00\x00\xff\xff\x4d\x61\xca\x8f\x42\x00\x00\x00")
 
 func migrationMigrationGoBytes() ([]byte, error) {
@@ -795,6 +816,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migration/025_more_creator_settings_rename.sql": migration025_more_creator_settings_renameSql,
 	"migration/026_add_indexes.sql":                  migration026_add_indexesSql,
 	"migration/027_usdc_creator_settings.sql":        migration027_usdc_creator_settingsSql,
+	"migration/028_comment_tx_index.sql":             migration028_comment_tx_indexSql,
 	"migration/migration.go":                         migrationMigrationGo,
 }
 
@@ -873,6 +895,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"025_more_creator_settings_rename.sql": {migration025_more_creator_settings_renameSql, map[string]*bintree{}},
 		"026_add_indexes.sql":                  {migration026_add_indexesSql, map[string]*bintree{}},
 		"027_usdc_creator_settings.sql":        {migration027_usdc_creator_settingsSql, map[string]*bintree{}},
+		"028_comment_tx_index.sql":             {migration028_comment_tx_indexSql, map[string]*bintree{}},
 		"migration.go":                         {migrationMigrationGo, map[string]*bintree{}},
 	}},
 }}

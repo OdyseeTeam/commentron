@@ -90,7 +90,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		frequencyCheck = ignoreFrequency
 	}
 
-	if args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxId != nil {
+	if args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxID != nil {
 		if args.DryRun {
 			if args.Amount != nil {
 				if args.PaymentIntentID != nil {
@@ -102,7 +102,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 						return errors.Err(err)
 					}
 					request.comment.Amount.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
-				} else if args.PaymentTxId != nil {
+				} else if args.PaymentTxID != nil {
 					//assume cents
 					request.comment.Amount.SetValid(uint64(*args.Amount))
 				}
@@ -792,9 +792,9 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		}
 		request.comment.Amount.SetValid(amount)
 		return nil
-	} else if request.args.PaymentTxId != nil {
+	} else if request.args.PaymentTxID != nil {
 		//check for replays
-		existingComment, err := m.Comments(m.CommentWhere.TXID.EQ(null.StringFromPtr(request.args.PaymentTxId))).One(db.RO)
+		existingComment, err := m.Comments(m.CommentWhere.TXID.EQ(null.StringFromPtr(request.args.PaymentTxID))).One(db.RO)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			if !errors.Is(err, sql.ErrNoRows) {
 				return errors.Err(err)
@@ -804,14 +804,14 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 			return errors.Err("a comment with this transaction id already exists")
 		}
 		//query internal apis to verify the transaction
-		pi, err := lbry.API.GetDetailsForTransaction(*request.args.PaymentTxId)
+		pi, err := lbry.API.GetDetailsForTransaction(*request.args.PaymentTxID)
 		if err != nil {
 			return err
 		}
 		if pi.Status != "confirmed" {
 			return errors.Err("transaction is not confirmed")
 		}
-		if pi.ChannelClaimId != request.args.ChannelID {
+		if pi.ChannelClaimID != request.args.ChannelID {
 			return errors.Err("channel mismatch for transaction")
 		}
 		if time.Since(pi.TippedAt) > time.Hour {

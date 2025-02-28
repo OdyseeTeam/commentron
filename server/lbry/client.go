@@ -96,6 +96,6 @@ func (m *mockAPI) CheckPerk(options CheckPerkOptions) (bool, error) {
 	return false, nil
 }
 
-func (m *mockAPI) GetDetailsForTransaction(txId string) (*ArweavePaymentDetailsResponse, error) {
+func (m *mockAPI) GetDetailsForTransaction(txID string) (*ArweavePaymentDetailsResponse, error) {
 	return nil, nil
 }
