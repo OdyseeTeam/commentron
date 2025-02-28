@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/env"
 	"github.com/OdyseeTeam/commentron/helper"
@@ -13,7 +15,7 @@ import (
 // SocketyToken token used to communicate with Sockety
 var SocketyToken string
 
-//IsTestMode turns off validations for local testing
+// IsTestMode turns off validations for local testing
 var IsTestMode bool
 
 // InitializeConfiguration inits the base configuration of commentron
@@ -51,6 +53,11 @@ func initSlack(config *env.Config) {
 			Channel:        slackChannel,
 			IconEmoji:      ":speech_balloon:",
 			Username:       "Commentron",
+			Filters: []slackrus.Filter{
+				func(entry *logrus.Entry) bool {
+					return !strings.Contains(entry.Message, "could not get claim from sdk")
+				},
+			},
 		})
 	}
 }
