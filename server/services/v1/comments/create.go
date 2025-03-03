@@ -776,12 +776,12 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		if err != nil {
 			return err
 		}
-		txSummary, err := lbry.SDK.GetTx(request.comment.TXID.String)
+		txSummary, err := lbry.SDK.GetTx(*request.args.SupportTxID)
 		if err != nil {
 			return errors.Err(err)
 		}
 		if txSummary == nil {
-			return errors.Err("transaction not found for txid %s", request.comment.TXID.String)
+			return errors.Err("transaction not found for txid %s", *request.args.SupportTxID)
 		}
 		var vout uint64
 		if request.args.SupportVout != nil {
