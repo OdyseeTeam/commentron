@@ -63,9 +63,15 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	// Temp to allow testing
+	//todo: wtf is this, it's an easy race condition waiting to happen
 	useOldTipAmountChecks = args.Amount == nil
 
 	var frequencyCheck = checkFrequency
+
+	// Note, generally speaking, these are the 3 different ways a paid comment is made:
+	//	use of args.PaymentIntentID: stripe
+	//	use of args.SupportTxID: lbc
+	//	use of args.PaymentTxID: AR/crypto
 
 	isPaidComment := args.Amount != nil || args.PaymentIntentID != nil //this is because odysee android app doesn't pass an amount for dryruns...
 	isDryRun := args.DryRun && (args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxID != nil)
@@ -746,7 +752,10 @@ func checkReplays(txID string) error {
 }
 
 func updateSupportInfoAttempt(request *createRequest, retry bool) error {
-	if request.args.PaymentIntentID != nil {
+	isStripeTransaction := request.args.PaymentIntentID != nil
+	isLbcTransaction := request.args.SupportTxID != nil
+	isCryptoTransaction := request.args.PaymentTxID != nil
+	if isStripeTransaction {
 		env := ""
 		if request.args.Environment != nil {
 			env = *request.args.Environment
@@ -771,7 +780,7 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		request.comment.Currency.SetValid(pi.Currency)
 		request.comment.TXID.SetValid(*request.args.PaymentIntentID)
 		return nil
-	} else if request.args.SupportTxID != nil {
+	} else if isLbcTransaction {
 		err := checkReplays(*request.args.SupportTxID)
 		if err != nil {
 			return err
@@ -795,7 +804,7 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		request.comment.Amount.SetValid(amount)
 		request.comment.Currency.SetValid("LBC")
 		return nil
-	} else if request.args.PaymentTxID != nil {
+	} else if isCryptoTransaction {
 		err := checkReplays(*request.args.PaymentTxID)
 		if err != nil {
 			return err
@@ -804,9 +813,16 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 		if err != nil {
 			return err
 		}
-		if pi.Status != "confirmed" {
-			return errors.Err("transaction is not confirmed")
+		if pi.Status == "failed" {
+			return errors.Err("transaction is has failed")
 		}
+		if pi.Status == "pending" {
+			return errors.Err("transaction has not been notified to the APIs yet")
+		}
+		if pi.Status == "submitted" {
+			logrus.Warnf("transaction %s is submitted but not yet confirmed ", *request.args.PaymentIntentID)
+		}
+
 		if pi.ChannelClaimID != request.args.ChannelID {
 			return errors.Err("channel mismatch for transaction")
 		}
