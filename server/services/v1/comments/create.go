@@ -820,7 +820,7 @@ func updateSupportInfoAttempt(request *createRequest, retry bool) error {
 			return errors.Err("transaction has not been notified to the APIs yet")
 		}
 		if pi.Status == "submitted" {
-			logrus.Warnf("transaction %s is submitted but not yet confirmed ", *request.args.PaymentIntentID)
+			logrus.Warnf("transaction %s is submitted but not yet confirmed ", *request.args.PaymentTxID)
 		}
 
 		if pi.ChannelClaimID != request.args.ChannelID {
