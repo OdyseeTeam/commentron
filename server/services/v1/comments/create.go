@@ -124,7 +124,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		}
 	}
 
-	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
+	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentTxID != nil)) {
 		flags.CheckComment(request.comment)
 	}
 
@@ -221,7 +221,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 		if !ok {
 			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
 		}
-		if paid && request.args.PaymentIntentID == nil && request.args.SupportTxID == nil {
+		if paid && request.args.PaymentTxID == nil && request.args.SupportTxID == nil {
 			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
@@ -538,7 +538,7 @@ func checkMinTipAmountComment(settings *m.CreatorSetting, request *createRequest
 	if settings.MinTipAmountComment.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID != nil || request.comment.Amount.IsZero() {
+	if request.args.PaymentTxID != nil || request.comment.Amount.IsZero() {
 		return api.StatusError{Err: errors.Err("you must include LBC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
 	if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
@@ -551,7 +551,7 @@ func checkMinUsdcTipAmountComment(settings *m.CreatorSetting, request *createReq
 	if settings.MinUsdcTipAmountComment.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID == nil || request.comment.Amount.IsZero() {
+	if request.args.PaymentTxID == nil || request.comment.Amount.IsZero() {
 		return api.StatusError{Err: errors.Err("you must include USDC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 	}
 	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountComment.Uint64 {
@@ -564,7 +564,7 @@ func checkMinTipAmountSuperChat(settings *m.CreatorSetting, request *createReque
 	if settings.MinTipAmountSuperChat.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID != nil || request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+	if request.args.PaymentTxID != nil || request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
 		return api.StatusError{Err: errors.Err("a min tip of %.2f LBC is required to hyperchat", btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()), Status: http.StatusBadRequest}
 	}
 	return nil
@@ -574,7 +574,7 @@ func checkMinUsdcTipAmountSuperChat(settings *m.CreatorSetting, request *createR
 	if settings.MinUsdcTipAmountSuperChat.IsZero() {
 		return nil
 	}
-	if request.args.PaymentIntentID == nil || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
+	if request.args.PaymentTxID == nil || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
 		return api.StatusError{Err: errors.Err("a min tip of %.2f USDC is required to hyperchat", (float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100))), Status: http.StatusBadRequest}
 	}
 	return nil
@@ -587,7 +587,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
 		if useOldTipAmountChecks {
-			if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
+			if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentTxID == nil {
 				if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
 					return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
 				}
@@ -602,7 +602,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		} else {
 			if !request.comment.Amount.IsZero() {
-				if request.args.PaymentIntentID == nil {
+				if request.args.PaymentTxID == nil {
 					err = checkMinTipAmountSuperChat(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountSuperChat(settings, request)
@@ -615,7 +615,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 				if request.comment.Amount.IsZero() {
 					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
 				}
-				if request.args.PaymentIntentID == nil {
+				if request.args.PaymentTxID == nil {
 					err = checkMinTipAmountComment(settings, request)
 				} else {
 					err = checkMinUsdcTipAmountComment(settings, request)
