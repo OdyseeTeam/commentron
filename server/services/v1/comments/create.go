@@ -103,7 +103,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	}
 
 	// This is strategically placed, nothing can be done before this using the comment id or timestamp
-	commentID, timestamp, err := createCommentID(request.args.CommentText, null.StringFrom(request.args.ChannelID).String, frequencyCheck)
+	commentID, timestamp, err := createCommentID(request.args.CommentText, request.args.ClaimID, null.StringFrom(request.args.ChannelID).String, frequencyCheck)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -362,7 +362,7 @@ type modStatus struct {
 
 var modStatusCache = ccache.New(ccache.Configure().MaxSize(100000))
 
-func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
+func getModStatus(channelID, claimID string) (*modStatus, error) {
 	// Define a unique key for the cache based on channelID and claimID
 	cacheKey := channelID + ":" + claimID
 
@@ -371,10 +371,7 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 	if cachedStatus != nil {
 		// If cache hit, use the cached result
 		if status, ok := cachedStatus.Value().(*modStatus); ok {
-			item.IsGlobalMod = status.IsGlobalMod
-			item.IsCreator = status.IsCreator
-			item.IsModerator = status.IsModerator
-			return nil
+			return status, nil
 		}
 	}
 
@@ -383,24 +380,21 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 	var isModerator bool
 	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).Exists(db.RO)
 	if err != nil {
-		return errors.Err(err)
+		return nil, errors.Err(err)
 	}
-	item.IsGlobalMod = isGlobalMod
 
 	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(claimID)
 	if err != nil {
-		return errors.Err(err)
+		return nil, errors.Err(err)
 	}
 	if signingChannel != nil {
 		isCreator = channelID == signingChannel.ClaimID
-		item.IsCreator = isCreator
 		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
 		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
 		isModerator, err = m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
 		if err != nil {
-			return errors.Err(err)
+			return nil, errors.Err(err)
 		}
-		item.IsModerator = isModerator
 	}
 
 	// Cache the moderation status
@@ -410,6 +404,20 @@ func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) err
 		IsModerator: isModerator,
 	}
 	modStatusCache.Set(cacheKey, modStatus, time.Minute*10)
+
+	return modStatus, nil
+}
+
+func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
+	modStatus, err := getModStatus(channelID, claimID)
+
+	if err != nil {
+		return errors.Err(err)
+	}
+
+	item.IsGlobalMod = modStatus.IsGlobalMod
+	item.IsCreator = modStatus.IsCreator
+	item.IsModerator = modStatus.IsModerator
 
 	return nil
 }

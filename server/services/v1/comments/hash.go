@@ -18,9 +18,19 @@ const (
 	ignoreFrequency
 )
 
-func createCommentID(comment, channelID string, frequency check) (string, int64, error) {
+func createCommentID(comment, contentID, channelID string, frequency check) (string, int64, error) {
 	timestamp := time.Now().Unix()
 	compositeTimestamp := timestamp
+
+	modStatus, err := getModStatus(channelID, contentID)
+	if err != nil {
+		return "", 0, err
+	}
+
+	if modStatus.IsCreator || modStatus.IsGlobalMod || modStatus.IsModerator {
+		frequency = ignoreFrequency
+	}
+
 	if frequency == checkFrequency {
 		// We convert the timestamp from seconds into minutes
 		// to prevent spammers from commenting the same BS everywhere.
@@ -34,7 +44,7 @@ func createCommentID(comment, channelID string, frequency check) (string, int64,
 		[]byte(cast.ToString(compositeTimestamp))))
 	commentID := hex.EncodeToString(c[:])
 
-	err := checkForDuplicate(commentID)
+	err = checkForDuplicate(commentID)
 	if err != nil {
 		return commentID, timestamp, err
 	}
