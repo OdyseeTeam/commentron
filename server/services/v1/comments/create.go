@@ -403,7 +403,7 @@ func getModStatus(channelID, claimID string) (*modStatus, error) {
 		IsCreator:   isCreator,
 		IsModerator: isModerator,
 	}
-	modStatusCache.Set(cacheKey, modStatus, time.Minute*10)
+	modStatusCache.Set(cacheKey, modStatus, time.Second*30)
 
 	return modStatus, nil
 }
