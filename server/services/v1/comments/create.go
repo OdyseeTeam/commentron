@@ -376,7 +376,7 @@ func getModStatus(channelID, claimID string, cachePolicy modStatusCachePolicy) (
 	// Attempt to retrieve the cached result
 	if cachePolicy == useModStatusCache {
 		cachedStatus := modStatusCache.Get(cacheKey)
-		if cachedStatus != nil {
+		if cachedStatus != nil && !cachedStatus.Expired() {
 			// If cache hit, use the cached result
 			if status, ok := cachedStatus.Value().(*modStatus); ok {
 				return status, nil
