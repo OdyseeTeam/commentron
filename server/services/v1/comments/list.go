@@ -310,7 +310,7 @@ comments:
 		if repliesCachedCount != nil && !repliesCachedCount.Expired() {
 			alreadyInSet[comment.CommentID] = true
 			item := populateItem(comment, channel, int(repliesCachedCount.Value().(int64)))
-			err := applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
+			err := applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID, useModStatusCache)
 			if err != nil {
 				return items, blockedCommentCnt, err
 			}
@@ -331,7 +331,7 @@ comments:
 		}
 		replies := val.(int64)
 		item := populateItem(comment, channel, int(replies))
-		err = applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID)
+		err = applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID, useModStatusCache)
 		if err != nil {
 			return items, blockedCommentCnt, err
 		}
