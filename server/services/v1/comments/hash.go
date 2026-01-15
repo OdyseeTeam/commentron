@@ -22,7 +22,7 @@ func createCommentID(comment, contentID, channelID string, frequency check) (str
 	timestamp := time.Now().Unix()
 	compositeTimestamp := timestamp
 
-	modStatus, err := getModStatus(channelID, contentID)
+	modStatus, err := getModStatus(channelID, contentID, skipModStatusCache)
 	if err != nil {
 		return "", 0, err
 	}

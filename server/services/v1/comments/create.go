@@ -113,7 +113,8 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	item := populateItem(request.comment, channel, 0)
 
-	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
+	// Mod status cache is expected to be refreshed in createCommentID(), so using cache here gives fresh status
+	err = applyModStatus(&item, args.ChannelID, args.ClaimID, useModStatusCache)
 	if err != nil {
 		return err
 	}
@@ -359,19 +360,27 @@ type modStatus struct {
 	IsCreator   bool
 	IsModerator bool
 }
+type modStatusCachePolicy int
+
+const (
+	useModStatusCache modStatusCachePolicy = iota
+	skipModStatusCache
+)
 
 var modStatusCache = ccache.New(ccache.Configure().MaxSize(100000))
 
-func getModStatus(channelID, claimID string) (*modStatus, error) {
+func getModStatus(channelID, claimID string, cachePolicy modStatusCachePolicy) (*modStatus, error) {
 	// Define a unique key for the cache based on channelID and claimID
 	cacheKey := channelID + ":" + claimID
 
 	// Attempt to retrieve the cached result
-	cachedStatus := modStatusCache.Get(cacheKey)
-	if cachedStatus != nil {
-		// If cache hit, use the cached result
-		if status, ok := cachedStatus.Value().(*modStatus); ok {
-			return status, nil
+	if cachePolicy == useModStatusCache {
+		cachedStatus := modStatusCache.Get(cacheKey)
+		if cachedStatus != nil {
+			// If cache hit, use the cached result
+			if status, ok := cachedStatus.Value().(*modStatus); ok {
+				return status, nil
+			}
 		}
 	}
 
@@ -408,8 +417,8 @@ func getModStatus(channelID, claimID string) (*modStatus, error) {
 	return modStatus, nil
 }
 
-func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
-	modStatus, err := getModStatus(channelID, claimID)
+func applyModStatus(item *commentapi.CommentItem, channelID, claimID string, cachePolicy modStatusCachePolicy) error {
+	modStatus, err := getModStatus(channelID, claimID, cachePolicy)
 
 	if err != nil {
 		return errors.Err(err)
