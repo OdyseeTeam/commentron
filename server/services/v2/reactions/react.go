@@ -121,6 +121,11 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			if err != nil {
 				return err
 			}
+			if args.Type == "creator_like" {
+				if contentCreatorChannel == nil || channel.ClaimID != contentCreatorChannel.ClaimID {
+					return api.StatusError{Err: errors.Err("only the content creator can use the creator_like reaction"), Status: http.StatusForbidden}
+				}
+			}
 			newReaction := &model.Reaction{ChannelID: null.StringFrom(channel.ClaimID), CommentID: p.CommentID, ReactionTypeID: reactionType.ID, ClaimID: p.LbryClaimID, IsFlagged: len(comments) > 1}
 			err = flags.CheckReaction(newReaction)
 			if err != nil {
