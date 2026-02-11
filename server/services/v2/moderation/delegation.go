@@ -10,10 +10,9 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type delegatedModLevel int
@@ -68,6 +67,9 @@ func removeDelegate(r *http.Request, args *commentapi.RemoveDelegateArgs, reply 
 	}
 
 	modChannel, err := helper.FindOrCreateChannel(args.ModChannelID, args.ModChannelName)
+	if err != nil {
+		return errors.Err(err)
+	}
 	modEntry, err := creatorChannel.CreatorChannelDelegatedModerators(model.DelegatedModeratorWhere.ModChannelID.EQ(modChannel.ClaimID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)

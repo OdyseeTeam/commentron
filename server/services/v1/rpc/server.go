@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -124,13 +123,13 @@ func (s *Server) RegisterAfterFunc(f func(i *RequestInfo)) {
 //
 // Methods from the receiver will be extracted if these rules are satisfied:
 //
-//    - The receiver is exported (begins with an upper case letter) or local
-//      (defined in the package registering the service).
-//    - The method name is exported.
-//    - The method has three arguments: *http.Request, *args, *reply.
-//    - All three arguments are pointers.
-//    - The second and third arguments are exported or local.
-//    - The method has return type error.
+//   - The receiver is exported (begins with an upper case letter) or local
+//     (defined in the package registering the service).
+//   - The method name is exported.
+//   - The method has three arguments: *http.Request, *args, *reply.
+//   - All three arguments are pointers.
+//   - The second and third arguments are exported or local.
+//   - The method has return type error.
 //
 // All other methods are ignored.
 func (s *Server) RegisterService(receiver interface{}, name string) error {

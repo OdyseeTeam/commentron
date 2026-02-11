@@ -5,7 +5,6 @@ import (
 
 	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +28,7 @@ func SendNotification(args socketyapi.SendNotificationArgs) {
 		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendTo: ", err)))
 	}
 	if resp != nil && resp.Error != nil {
-		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error))))
+		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base("%s", *resp.Error))))
 	}
 }
 

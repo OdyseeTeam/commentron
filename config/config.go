@@ -7,6 +7,7 @@ import (
 	"github.com/OdyseeTeam/commentron/env"
 	"github.com/OdyseeTeam/commentron/helper"
 	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
+
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -20,7 +21,6 @@ var IsTestMode bool
 
 // InitializeConfiguration inits the base configuration of commentron
 func InitializeConfiguration(conf *env.Config) {
-
 	IsTestMode = conf.IsTestMode
 	if viper.GetBool("debugmode") {
 		helper.Debugging = true
@@ -39,7 +39,6 @@ func InitializeConfiguration(conf *env.Config) {
 	initSlack(conf)
 	initStripe(conf)
 	SocketyToken = conf.SocketyToken
-
 }
 
 // initSlack initializes the slack connection and posts info level or greater to the set channel.

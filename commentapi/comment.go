@@ -11,7 +11,6 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	v "github.com/lbryio/ozzo-validation"
 )
 
@@ -26,7 +25,7 @@ type CommentItem struct {
 	Timestamp     int     `json:"timestamp"`
 	ParentID      string  `json:"parent_id,omitempty"`
 	Signature     string  `json:"signature,omitempty"`
-	SigningTs     string  `json:"signing_ts,omitempty"`
+	SigningTS     string  `json:"signing_ts,omitempty"`
 	ChannelID     string  `json:"channel_id,omitempty"`
 	ChannelName   string  `json:"channel_name,omitempty"`
 	ChannelURL    string  `json:"channel_url,omitempty"`
