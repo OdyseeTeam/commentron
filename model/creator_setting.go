@@ -60,6 +60,10 @@ type CreatorSetting struct {
 	ChannelSections           null.JSON   `boil:"channel_sections" json:"channel_sections,omitempty" toml:"channel_sections" yaml:"channel_sections,omitempty"`
 	MinUsdcTipAmountComment   null.Uint64 `boil:"min_usdc_tip_amount_comment" json:"min_usdc_tip_amount_comment,omitempty" toml:"min_usdc_tip_amount_comment" yaml:"min_usdc_tip_amount_comment,omitempty"`
 	MinUsdcTipAmountSuperChat null.Uint64 `boil:"min_usdc_tip_amount_super_chat" json:"min_usdc_tip_amount_super_chat,omitempty" toml:"min_usdc_tip_amount_super_chat" yaml:"min_usdc_tip_amount_super_chat,omitempty"`
+	// json data for creator upload templates
+	UploadTemplates null.JSON `boil:"upload_templates" json:"upload_templates,omitempty" toml:"upload_templates" yaml:"upload_templates,omitempty"`
+	// json data for creator playlist order
+	PlaylistOrder null.JSON `boil:"playlist_order" json:"playlist_order,omitempty" toml:"playlist_order" yaml:"playlist_order,omitempty"`
 
 	R *creatorSettingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L creatorSettingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -101,6 +105,8 @@ var CreatorSettingColumns = struct {
 	ChannelSections            string
 	MinUsdcTipAmountComment    string
 	MinUsdcTipAmountSuperChat  string
+	UploadTemplates            string
+	PlaylistOrder              string
 }{
 	ID:                         "id",
 	CreatorChannelID:           "creator_channel_id",
@@ -137,6 +143,8 @@ var CreatorSettingColumns = struct {
 	ChannelSections:            "channel_sections",
 	MinUsdcTipAmountComment:    "min_usdc_tip_amount_comment",
 	MinUsdcTipAmountSuperChat:  "min_usdc_tip_amount_super_chat",
+	UploadTemplates:            "upload_templates",
+	PlaylistOrder:              "playlist_order",
 }
 
 var CreatorSettingTableColumns = struct {
@@ -175,6 +183,8 @@ var CreatorSettingTableColumns = struct {
 	ChannelSections            string
 	MinUsdcTipAmountComment    string
 	MinUsdcTipAmountSuperChat  string
+	UploadTemplates            string
+	PlaylistOrder              string
 }{
 	ID:                         "creator_setting.id",
 	CreatorChannelID:           "creator_setting.creator_channel_id",
@@ -211,6 +221,8 @@ var CreatorSettingTableColumns = struct {
 	ChannelSections:            "creator_setting.channel_sections",
 	MinUsdcTipAmountComment:    "creator_setting.min_usdc_tip_amount_comment",
 	MinUsdcTipAmountSuperChat:  "creator_setting.min_usdc_tip_amount_super_chat",
+	UploadTemplates:            "creator_setting.upload_templates",
+	PlaylistOrder:              "creator_setting.playlist_order",
 }
 
 // Generated where
@@ -336,6 +348,8 @@ var CreatorSettingWhere = struct {
 	ChannelSections            whereHelpernull_JSON
 	MinUsdcTipAmountComment    whereHelpernull_Uint64
 	MinUsdcTipAmountSuperChat  whereHelpernull_Uint64
+	UploadTemplates            whereHelpernull_JSON
+	PlaylistOrder              whereHelpernull_JSON
 }{
 	ID:                         whereHelperuint64{field: "`creator_setting`.`id`"},
 	CreatorChannelID:           whereHelperstring{field: "`creator_setting`.`creator_channel_id`"},
@@ -372,6 +386,8 @@ var CreatorSettingWhere = struct {
 	ChannelSections:            whereHelpernull_JSON{field: "`creator_setting`.`channel_sections`"},
 	MinUsdcTipAmountComment:    whereHelpernull_Uint64{field: "`creator_setting`.`min_usdc_tip_amount_comment`"},
 	MinUsdcTipAmountSuperChat:  whereHelpernull_Uint64{field: "`creator_setting`.`min_usdc_tip_amount_super_chat`"},
+	UploadTemplates:            whereHelpernull_JSON{field: "`creator_setting`.`upload_templates`"},
+	PlaylistOrder:              whereHelpernull_JSON{field: "`creator_setting`.`playlist_order`"},
 }
 
 // CreatorSettingRels is where relationship names are stored.
@@ -402,8 +418,8 @@ func (r *creatorSettingR) GetCreatorChannel() *Channel {
 type creatorSettingL struct{}
 
 var (
-	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat"}
-	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat"}
+	creatorSettingAllColumns            = []string{"id", "creator_channel_id", "comments_enabled", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "created_at", "updated_at", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "time_since_first_comment", "blocked_words_fuzziness_match", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat", "upload_templates", "playlist_order"}
+	creatorSettingColumnsWithoutDefault = []string{"creator_channel_id", "min_tip_amount_comment", "min_tip_amount_super_chat", "muted_words", "slow_mode_min_gap", "curse_jar_amount", "is_filters_enabled", "time_since_first_comment", "blocked_words_fuzziness_match", "homepage_settings", "channel_sections", "min_usdc_tip_amount_comment", "min_usdc_tip_amount_super_chat", "upload_templates", "playlist_order"}
 	creatorSettingColumnsWithDefault    = []string{"id", "comments_enabled", "created_at", "updated_at", "chat_overlay", "chat_overlay_position", "chat_remove_comment", "sticker_overlay", "sticker_overlay_keep", "sticker_overlay_remove", "viewercount_overlay", "viewercount_overlay_position", "viewercount_chat_bot", "tipgoal_overlay", "tipgoal_amount", "tipgoal_overlay_position", "tipgoal_previous_donations", "tipgoal_currency", "public_show_protected", "private_show_protected", "livestream_chat_members_only", "comments_members_only"}
 	creatorSettingPrimaryKeyColumns     = []string{"id"}
 	creatorSettingGeneratedColumns      = []string{}

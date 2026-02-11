@@ -243,6 +243,12 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	if !args.HomepageSettings.IsZero() {
 		settings.HomepageSettings = args.HomepageSettings
 	}
+	if !args.UploadTemplates.IsZero() {
+		settings.UploadTemplates = args.UploadTemplates
+	}
+	if !args.PlaylistOrder.IsZero() {
+		settings.PlaylistOrder = args.PlaylistOrder
+	}
 	err = settings.Update(db.RW, boil.Infer())
 	if err != nil {
 		return errors.Err(err)
@@ -313,4 +319,6 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.CommentsMembersOnly = &settings.CommentsMembersOnly
 	reply.ChannelSections = settings.ChannelSections
 	reply.HomepageSettings = settings.HomepageSettings
+	reply.UploadTemplates = settings.UploadTemplates
+	reply.PlaylistOrder = settings.PlaylistOrder
 }
