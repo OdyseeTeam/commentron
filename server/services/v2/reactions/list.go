@@ -14,7 +14,7 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/util"
 
 	"github.com/karlseguin/ccache/v2"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 func list(r *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {

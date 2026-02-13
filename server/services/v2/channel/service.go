@@ -13,8 +13,8 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
 )
 
 // Service is the service for the server package "server.*"

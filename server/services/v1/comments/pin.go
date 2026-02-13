@@ -13,7 +13,7 @@ import (
 	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/boil"
 )
 
 func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, error) {

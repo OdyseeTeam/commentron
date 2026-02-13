@@ -17,8 +17,8 @@ import (
 
 	"github.com/btcsuite/btcutil"
 	"github.com/karlseguin/ccache/v2"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {

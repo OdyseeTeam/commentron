@@ -4,7 +4,7 @@ import (
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/boil"
 )
 
 // TxFunc is a function that can be wrapped in a transaction

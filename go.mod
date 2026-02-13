@@ -1,10 +1,13 @@
 module github.com/OdyseeTeam/commentron
 
-go 1.23
+go 1.24.0
 
 require (
 	github.com/Avalanche-io/counter v0.0.0-20180124180526-1336089e985a
 	github.com/OdyseeTeam/sockety v0.0.0-20240425182925-abc82873a079
+	github.com/aarondl/null/v8 v8.1.3
+	github.com/aarondl/sqlboiler/v4 v4.19.7
+	github.com/aarondl/strmangle v0.0.9
 	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/caarlos0/env v3.5.0+incompatible
@@ -36,15 +39,14 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/stripe/stripe-go v70.15.0+incompatible
-	github.com/volatiletech/null/v8 v8.1.2
-	github.com/volatiletech/sqlboiler/v4 v4.18.0
-	github.com/volatiletech/strmangle v0.0.8
 	github.com/ybbus/jsonrpc/v2 v2.1.7
-	golang.org/x/sync v0.11.0
+	golang.org/x/sync v0.18.0
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/aarondl/inflect v0.0.2 // indirect
+	github.com/aarondl/randomize v0.0.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -81,15 +83,13 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/volatiletech/inflect v0.0.1 // indirect
-	github.com/volatiletech/randomize v0.0.1 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/protobuf v1.36.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

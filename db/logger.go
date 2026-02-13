@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/boil"
 )
 
 func logQueryTime(logger *log.Logger, startTime time.Time) {
