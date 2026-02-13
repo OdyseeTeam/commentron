@@ -48,7 +48,9 @@ jobs:
         run: ./scripts/build.sh
 
       - name: Lint
-        run: ./scripts/lint.sh
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.8
 
       - name: Setup environment and start server
         env:
