@@ -11,9 +11,8 @@ import (
 	"github.com/OdyseeTeam/commentron/sockety"
 
 	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, error) {
@@ -32,6 +31,9 @@ func pin(_ *http.Request, args *commentapi.PinArgs) (commentapi.CommentItem, err
 	}
 
 	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
+	if err != nil {
+		return item, errors.Err(err)
+	}
 	claimChannel := claim.SigningChannel
 	if claimChannel == nil {
 		if claim.ValueType == "channel" {

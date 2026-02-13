@@ -12,10 +12,11 @@ import (
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/metrics"
 	"github.com/OdyseeTeam/commentron/model"
+
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/sirupsen/logrus"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // PollAndClassifyNewComments looks for new comments and updates them by calling classification api

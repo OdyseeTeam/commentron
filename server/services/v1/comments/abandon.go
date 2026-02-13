@@ -11,10 +11,9 @@ import (
 	"github.com/OdyseeTeam/commentron/sockety"
 
 	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
@@ -96,5 +95,4 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	})
 
 	return &item, nil
-
 }

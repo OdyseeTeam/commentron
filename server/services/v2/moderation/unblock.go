@@ -10,11 +10,10 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/null/v8"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
-	"github.com/volatiletech/null/v8"
 )
 
 func unBlock(r *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.UnBlockResponse) error {
@@ -40,7 +39,6 @@ func unBlock(r *http.Request, args *commentapi.UnBlockArgs, reply *commentapi.Un
 
 	if !isMod && args.GlobalUnBlock {
 		return api.StatusError{Err: errors.Err("you must be a global moderator to take global action"), Status: http.StatusBadRequest}
-
 	}
 
 	if args.GlobalUnBlock {

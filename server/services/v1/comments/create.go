@@ -18,23 +18,22 @@ import (
 	"github.com/OdyseeTeam/commentron/server/websocket"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/Avalanche-io/counter"
 	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/btcsuite/btcutil"
+	"github.com/hbakhtiyor/strsim"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 	v "github.com/lbryio/ozzo-validation"
-
-	"github.com/Avalanche-io/counter"
-	"github.com/btcsuite/btcutil"
-	"github.com/hbakhtiyor/strsim"
-	"github.com/karlseguin/ccache/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/paymentintent"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Temp variable to allow testing
@@ -125,7 +124,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		}
 	}
 
-	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentTxID != nil)) {
+	if !args.Sticker || (args.SupportTxID == nil && args.PaymentTxID == nil) {
 		flags.CheckComment(request.comment)
 	}
 
@@ -173,7 +172,6 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 }
 
 func createComment(request *createRequest) error {
-
 	request.comment = &m.Comment{
 		LbryClaimID: request.args.ClaimID,
 		ChannelID:   null.StringFrom(request.args.ChannelID),
@@ -286,7 +284,6 @@ var claimToChannelExistsCache = ccache.New(ccache.Configure().MaxSize(10000))
 func EnsureClaimToChannelExists(claimID string) error {
 	// check cache first. it's only storing a boolean but it lets us do db upserts less.
 	_, err := claimToChannelExistsCache.Fetch(claimID, 24*time.Hour, func() (interface{}, error) {
-
 		// SDK calls have their own cache and the GetClaim call is done multiple times in create,
 		// so this doesn't add much overhead.
 		claim, err := lbry.SDK.GetClaim(claimID)
@@ -452,7 +449,6 @@ func pushItem(item commentapi.CommentItem, claimID string, mentionedChannels []c
 			Data:    map[string]interface{}{"comment": item, "channel": mc.ChannelName, "channel_id": mc.ChannelID},
 		})
 	}
-
 }
 
 func checkForDuplicate(commentID string) error {
@@ -479,8 +475,6 @@ type createRequest struct {
 	creatorChannel   *m.Channel
 	commenterChannel *m.Channel
 	signingChannel   *jsonrpc.Claim
-	currency         string
-	isFiat           bool
 	isLivestream     bool
 }
 
@@ -516,7 +510,7 @@ func blockedByCreator(request *createRequest) error {
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) < time.Duration(0) {
-		timeLeft := helper.FormatDur(blockedEntry.Expiry.Time.Sub(time.Now()))
+		timeLeft := helper.FormatDur(time.Until(blockedEntry.Expiry.Time))
 		message := fmt.Sprintf("publisher %s has given you a temporary ban with %s remaining.", request.creatorChannel.Name, timeLeft)
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
@@ -532,7 +526,7 @@ func blockedByCreator(request *createRequest) error {
 			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
 		}
 		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) < time.Duration(0) {
-			expiresIn := blockedListEntry.Expiry.Time.Sub(time.Now())
+			expiresIn := time.Until(blockedListEntry.Expiry.Time)
 			timeLeft := helper.FormatDur(expiresIn)
 			message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment with %s remaining.", blockedByChannel, blockedListName, timeLeft)
 			return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}

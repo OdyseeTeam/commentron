@@ -11,12 +11,11 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockResponse) error {
@@ -67,7 +66,7 @@ func block(r *http.Request, args *commentapi.BlockArgs, reply *commentapi.BlockR
 		blockedEntry.Expiry.SetValid(time.Now().Add(getStrikeDuration(strikes, participatingBlockedList)))
 	} else if args.TimeOut > 0 {
 		blockedEntry.Expiry.SetValid(time.Now().Add(time.Duration(args.TimeOut) * time.Second))
-	} else if participatingBlockedList == nil { // Only reset expiry if not participating in shared blockedlist, this should never exist from check above!
+	} else {
 		blockedEntry.Expiry.Valid = false
 		blockedEntry.Expiry.Time = time.Time{}
 	}
@@ -222,7 +221,7 @@ func populateBlockedChannelsReply(blockedBy *model.Channel, blocked model.Blocke
 			if b.Expiry.Valid {
 				blockedFor = b.Expiry.Time.Sub(b.CreatedAt)
 				if b.Expiry.Time.After(time.Now()) {
-					blockRemaining = b.Expiry.Time.Sub(time.Now())
+					blockRemaining = time.Until(b.Expiry.Time)
 				}
 			}
 			blockedChannels = append(blockedChannels, commentapi.BlockedChannel{

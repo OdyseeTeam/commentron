@@ -12,14 +12,13 @@ import (
 	m "github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
-	"github.com/karlseguin/ccache/v2"
 	"github.com/sirupsen/logrus"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -224,13 +223,14 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 
 func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 	if sort != commentapi.Newest {
-		if sort == commentapi.Popularity {
+		switch sort {
+		case commentapi.Popularity:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.PopularityScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
-		} else if sort == commentapi.Controversy {
+		case commentapi.Controversy:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
-		} else if sort == commentapi.Oldest {
+		case commentapi.Oldest:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" ASC"))
-		} else if sort == commentapi.NewestNoPins {
+		case commentapi.NewestNoPins:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" DESC"))
 		}
 	} else {

@@ -1,24 +1,29 @@
 name: CI
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
-  build:
+  build-test:
+    name: Build and Test
     runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      GOPRIVATE: github.com/OdyseeTeam
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.25'
+          cache: true
 
-      - name: start Default Ubuntu MySQL
+      - name: Start MySQL
         run: sudo systemctl start mysql.service
 
-      - name: Before Install
+      - name: Configure MySQL databases and users
         run: |
           sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS commentron;'
           sudo mysql -u root -proot -e 'CREATE DATABASE IF NOT EXISTS social;'
@@ -28,17 +33,7 @@ jobs:
           sudo mysql -u root -proot -e "GRANT SELECT ON commentron.* TO 'commentron-ro'@'localhost';"
           sudo mysql -u root -proot -e "GRANT ALL ON social.* TO 'commentron-rw'@'localhost';"
 
-      - name: Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ runner.home }}/go/pkg/mod
-            ${{ runner.home }}/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Add SSH Go Module Private Key
+      - name: Configure SSH for private Go modules
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
@@ -47,40 +42,92 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-
-      - name: Setup access for private go modules
-        run: |
           git config --global url."ssh://git@github.com/".insteadOf https://github.com/
 
-      - name: Run Scripts and Tests
+      - name: Build
+        run: ./scripts/build.sh
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.8
+
+      - name: Setup environment and start server
         env:
-          GOPRIVATE: github.com/OdyseeTeam
-          IS_TEST: true
+          IS_TEST: "true"
           SDK_URL: https://api.na-backend.odysee.com/api/v1/proxy
         run: |
-          ./scripts/build.sh
-          ./scripts/lint.sh
           source ./scripts/setup.sh
+          echo "DEBUGGING=$DEBUGGING" >> $GITHUB_ENV
+          echo "MYSQL_DSN_RO=$MYSQL_DSN_RO" >> $GITHUB_ENV
+          echo "MYSQL_DSN_RW=$MYSQL_DSN_RW" >> $GITHUB_ENV
+          echo "IS_TEST=$IS_TEST" >> $GITHUB_ENV
+          echo "SDK_URL=$SDK_URL" >> $GITHUB_ENV
           ./bin/commentron serve &
-          sleep 5s
-          curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' http://localhost:5900
+
+      - name: Wait for server
+        timeout-minutes: 1
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail -s http://localhost:5900 > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server failed to start"
+          exit 1
+
+      - name: Run tests
+        run: |
           go test ./...
+          ./bin/commentron test
+
+      - name: Verify code integrity
+        run: |
           go mod tidy
           git diff --exit-code
           ./scripts/gen_models.sh
-          sqlboiler --version
           git diff --exit-code
-          ./bin/commentron test
+
+      - name: Upload binary
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: commentron-binary
+          path: bin/commentron
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    needs: build-test
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: commentron-binary
+          path: bin/
 
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v7
 
-      - name: Deploy
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          BRANCH_NAME: ${{ steps.branch-name.outputs.current_branch }}
-        if: github.event_name == 'push'
-        run: |
-          bash docker/docker.sh
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: odyseeteam/commentron:${{ steps.branch-name.outputs.current_branch }}

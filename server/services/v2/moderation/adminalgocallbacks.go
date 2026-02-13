@@ -8,8 +8,9 @@ import (
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
 	"github.com/OdyseeTeam/commentron/model"
+
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // adminAlgoCallbacks adds or deletes rows from the ChannelAlgoCallbacks table

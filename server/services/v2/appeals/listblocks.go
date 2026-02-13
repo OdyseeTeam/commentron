@@ -11,9 +11,8 @@ import (
 	"github.com/OdyseeTeam/commentron/server/auth"
 	"github.com/OdyseeTeam/commentron/server/services/v2/blockedlists"
 
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func listBlocks(r *http.Request, args *commentapi.AppealBlockListArgs, reply *commentapi.AppealBlockListResponse) error {
@@ -45,7 +44,7 @@ func listBlocks(r *http.Request, args *commentapi.AppealBlockListArgs, reply *co
 		if be.Expiry.Valid {
 			blockedFor = be.Expiry.Time.Sub(be.CreatedAt)
 			if be.Expiry.Time.After(time.Now()) {
-				blockRemaining = be.Expiry.Time.Sub(time.Now())
+				blockRemaining = time.Until(be.Expiry.Time)
 			}
 		}
 		appeal := commentapi.AppealRequest{}
