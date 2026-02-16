@@ -2,18 +2,15 @@ package commentapi
 
 import (
 	"fmt"
-	"net/http"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/fatih/structs"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"github.com/ybbus/jsonrpc/v2"
@@ -183,10 +180,4 @@ func (d *Client) call(response interface{}, command string, params map[string]in
 		return err
 	}
 	return decode(result, response)
-}
-
-func (d *Client) setRPCTimeout(timeout time.Duration) {
-	d.conn = jsonrpc.NewClientWithOpts(d.address, &jsonrpc.RPCClientOpts{
-		HTTPClient: &http.Client{Timeout: timeout},
-	})
 }

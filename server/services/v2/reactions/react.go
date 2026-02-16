@@ -17,14 +17,13 @@ import (
 	"github.com/OdyseeTeam/commentron/sockety"
 
 	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
 	"github.com/sirupsen/logrus"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // React creates/updates a reaction to a comment
@@ -87,7 +86,6 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 
 		reactionType, err := model.ReactionTypes(model.ReactionTypeWhere.Name.EQ(args.Type)).One(tx)
 		if errors.Is(err, sql.ErrNoRows) {
-			err = nil
 			reactionType = &model.ReactionType{Name: args.Type}
 			err = reactionType.Insert(tx, boil.Infer())
 		}

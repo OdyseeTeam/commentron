@@ -1,9 +1,8 @@
 package env
 
 import (
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	e "github.com/caarlos0/env"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 )
 
 // Config holds the environment configuration used by lighthouse.

@@ -12,12 +12,11 @@ import (
 
 	"github.com/OdyseeTeam/commentron/helper"
 
+	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/schema/keys"
-
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/sirupsen/logrus"
 )
 
@@ -55,31 +54,6 @@ func ImportChannel(serializedChannel string) *Channel {
 	return channel
 }
 
-func newChannel(name, claimID string, private *btcec.PrivateKey) (*Channel, error) {
-	b := bytes.NewBuffer(nil)
-	derBytes, err := keys.PrivateKeyToDER(private)
-	if err != nil {
-		return nil, errors.Err(err)
-	}
-	err = pem.Encode(b, &pem.Block{Type: "PRIVATE KEY", Bytes: derBytes})
-	if err != nil {
-		return nil, errors.Err(err)
-	}
-	channel := Channel{
-		Name:              name,
-		ChannelID:         claimID,
-		HoldingAddress:    "",
-		HoldingPublicKey:  "",
-		SigningPrivateKey: string(b.Bytes()),
-	}
-
-	private2, _ := channel.Keys()
-	if !private2.ToECDSA().Equal(private.ToECDSA()) {
-		return nil, errors.Err("private keys don't match")
-	}
-	return &channel, nil
-}
-
 // Keys will return the private and public key of a channel
 func (l *Channel) Keys() (*btcec.PrivateKey, *btcec.PublicKey) {
 	return keys.ExtractKeyFromPem(l.SigningPrivateKey)
@@ -96,9 +70,7 @@ func (l *Channel) Sign(data []byte) (string, string, error) {
 		unhelixifyAndReverse(l.ChannelID),
 		data))
 	hashBytes := make([]byte, len(hash))
-	for i, b := range hash {
-		hashBytes[i] = b
-	}
+	copy(hashBytes, hash[:])
 	sig, err := private.Sign(hashBytes[:])
 	if err != nil {
 		return "", "", errors.Err(err)
@@ -114,6 +86,31 @@ func (l *Channel) Sign(data []byte) (string, string, error) {
 		return "", "", errors.Err(err)
 	}
 	return hex.EncodeToString(sigBytes), timestamp, nil
+}
+
+func newChannel(name, claimID string, private *btcec.PrivateKey) (*Channel, error) {
+	b := bytes.NewBuffer(nil)
+	derBytes, err := keys.PrivateKeyToDER(private)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	err = pem.Encode(b, &pem.Block{Type: "PRIVATE KEY", Bytes: derBytes})
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	channel := Channel{
+		Name:              name,
+		ChannelID:         claimID,
+		HoldingAddress:    "",
+		HoldingPublicKey:  "",
+		SigningPrivateKey: b.String(),
+	}
+
+	private2, _ := channel.Keys()
+	if !private2.ToECDSA().Equal(private.ToECDSA()) {
+		return nil, errors.Err("private keys don't match")
+	}
+	return &channel, nil
 }
 
 // Claim will return the metadata for the channel.

@@ -5,11 +5,11 @@ import (
 
 	"github.com/OdyseeTeam/commentron/validator"
 
+	"github.com/aarondl/null/v8"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
 	"github.com/lbryio/ozzo-validation/is"
-	"github.com/volatiletech/null/v8"
 )
 
 // ListSettingsArgs arguments passed to settings.List api
@@ -50,6 +50,8 @@ type ListSettingsResponse struct {
 	CommentsMembersOnly        *bool     `json:"comments_members_only"`
 	ChannelSections            null.JSON `json:"channel_sections,omitempty"`
 	HomepageSettings           null.JSON `json:"homepage_settings,omitempty"`
+	UploadTemplates            null.JSON `json:"upload_templates,omitempty"`
+	PlaylistOrder              null.JSON `json:"playlist_order,omitempty"`
 }
 
 // UpdateSettingsArgs arguments for different settings that could be set
@@ -86,6 +88,8 @@ type UpdateSettingsArgs struct {
 	ActiveClaimID             *string   `json:"active_claim_id"`
 	ChannelSections           null.JSON `json:"channel_sections,omitempty"`
 	HomepageSettings          null.JSON `json:"homepage_settings,omitempty"`
+	UploadTemplates           null.JSON `json:"upload_templates,omitempty"`
+	PlaylistOrder             null.JSON `json:"playlist_order,omitempty"`
 }
 
 // Validate validates the data in the args
@@ -98,6 +102,8 @@ func (u UpdateSettingsArgs) Validate() api.StatusError {
 		v.Field(&u.ActiveClaimID, validator.ClaimID),
 		v.Field(&u.ChannelSections, is.JSON),
 		v.Field(&u.HomepageSettings, is.JSON),
+		v.Field(&u.UploadTemplates, is.JSON),
+		v.Field(&u.PlaylistOrder, is.JSON),
 	)
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}

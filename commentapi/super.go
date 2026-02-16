@@ -57,7 +57,7 @@ func (c *SuperListArgs) ApplyDefaults() {
 	}
 }
 
-//Key returns the hash of the list args struct for caching
+// Key returns the hash of the list args struct for caching
 func (c SuperListArgs) Key() (string, error) {
 	//this is a value receiver, so we can delete a bunch of fields without impacting the original struct
 	c.ChannelName = ""

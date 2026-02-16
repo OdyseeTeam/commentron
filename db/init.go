@@ -3,14 +3,13 @@ package db
 import (
 	"github.com/OdyseeTeam/commentron/migration"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
+	"github.com/aarondl/sqlboiler/v4/boil"
 	_ "github.com/go-sql-driver/mysql" // import mysql
 	"github.com/jmoiron/sqlx"
 	_ "github.com/kevinburke/go-bindata/v4" // so it's detected by `dep ensure`
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // RW this db is used for read-write calls, it can be used for RO calls too but to load balance use the RO please.

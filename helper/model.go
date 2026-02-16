@@ -7,11 +7,10 @@ import (
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/model"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/karlseguin/ccache/v2"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 )
 
 var channelCache = ccache.New(ccache.Configure().GetsPerPromote(1).MaxSize(100000))
@@ -79,7 +78,6 @@ func getSettings(creatorChannel *model.Channel) (*model.CreatorSetting, error) {
 	settings, err := creatorChannel.CreatorChannelCreatorSettings().One(db.RO)
 	if errors.Is(err, sql.ErrNoRows) {
 		settings = &model.CreatorSetting{CreatorChannelID: creatorChannel.ClaimID, CommentsEnabled: null.BoolFrom(true)}
-		err = nil
 		err := settings.Insert(db.RW, boil.Infer())
 		if err != nil {
 			return nil, errors.Err(err)

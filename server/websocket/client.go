@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/gorilla/websocket"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -86,7 +85,7 @@ func (c *Client) read() {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		message = bytes.TrimSpace(bytes.ReplaceAll(message, newline, space))
 		go c.handleMessage(message)
 	}
 }

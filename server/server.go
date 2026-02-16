@@ -29,14 +29,13 @@ import (
 	"github.com/OdyseeTeam/commentron/server/services/v2/verify"
 	"github.com/OdyseeTeam/commentron/server/websocket"
 
-	"github.com/lbryio/lbry.go/v2/extras/api"
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
 	"github.com/justinas/alice"
+	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"

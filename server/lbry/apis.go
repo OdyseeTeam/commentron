@@ -12,7 +12,6 @@ import (
 	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/sirupsen/logrus"
 )
 
