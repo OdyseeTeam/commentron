@@ -22,8 +22,9 @@ type SuperListArgs struct {
 	TopLevel             bool    `json:"top_level"`
 	Hidden               bool    `json:"hidden"`
 	// Satoshi amount to filter below >= x
-	SuperChatsAmount int  `json:"super_chat"`
-	IsProtected      bool `json:"is_protected"`
+	SuperChatsAmount int     `json:"super_chat"`
+	IsProtected      bool    `json:"is_protected"`
+	Environment      *string `json:"environment"`
 }
 
 // SuperListResponse response for the comment.List rpc call

@@ -153,6 +153,7 @@ type ListArgs struct {
 	Hidden               bool    `json:"hidden"`                 // if true will show hidden comments as well
 	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
 	IsProtected          bool    `json:"is_protected"`           // if true, only return protected when authorized
+	Environment          *string `json:"environment"`            // if set, only return comments with this environment
 }
 
 // Key returns the hash of the list args struct for caching

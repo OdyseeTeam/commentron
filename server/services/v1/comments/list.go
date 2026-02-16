@@ -160,7 +160,7 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 		return api.StatusError{Err: errors.Err("requestor channel id is required to list protected comments"), Status: http.StatusBadRequest}
 	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
-		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID)
+		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID, *args.Environment)
 		if err != nil {
 			return err
 		}
