@@ -276,7 +276,7 @@ comments:
 
 		blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
 		if len(blockedFrom) > 0 && !skipBlocked {
-			channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
+			channel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(comment.LbryClaimID))
 			if err != nil {
 				// Cannot find claim commented on in SDK, ignore, nil channel by default
 			} else if channel != nil {

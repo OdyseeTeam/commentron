@@ -135,7 +135,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		return errors.Err(err)
 	}
 
-	channelClaim, err := lbry.SDK.GetSigningChannelForClaim(util.StrFromPtr(args.ClaimID))
+	channelClaim, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(util.StrFromPtr(args.ClaimID)))
 	if err != nil {
 		return errors.Err(err)
 	}

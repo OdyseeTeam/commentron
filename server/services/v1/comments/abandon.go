@@ -54,7 +54,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if err != nil {
 			return nil, err
 		}
-		content, err := lbry.SDK.GetClaim(comment.LbryClaimID)
+		content, err := lbry.SDK.GetClaim(helper.ResolveCreatorChannelClaimID(comment.LbryClaimID))
 		if err != nil {
 			return nil, errors.Err(err)
 		}

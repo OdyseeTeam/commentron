@@ -194,7 +194,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 	}
 
 	if request.args.ParentID != nil {
-		contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
+		contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(request.args.ClaimID))
 		if err != nil {
 			return errors.Err(err)
 		}
@@ -251,6 +251,9 @@ func checkAllowedAndValidate(request *createRequest) error {
 
 // IsProtectedContent resolves a claim and checks if it's a protected claim which would require authentication
 func IsProtectedContent(claimID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return false, nil
+	}
 	claim, err := lbry.SDK.GetClaim(claimID)
 	if err != nil {
 		return false, err
@@ -266,6 +269,9 @@ func IsProtectedContent(claimID string) (bool, error) {
 
 // IsLivestreamClaim resolves a claim and checks if it has a source
 func IsLivestreamClaim(claimID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return false, nil
+	}
 	claim, err := lbry.SDK.GetClaim(claimID)
 	if err != nil {
 		return true, err
@@ -284,23 +290,18 @@ var claimToChannelExistsCache = ccache.New(ccache.Configure().MaxSize(10000))
 func EnsureClaimToChannelExists(claimID string) error {
 	// check cache first. it's only storing a boolean but it lets us do db upserts less.
 	_, err := claimToChannelExistsCache.Fetch(claimID, 24*time.Hour, func() (interface{}, error) {
-		// SDK calls have their own cache and the GetClaim call is done multiple times in create,
-		// so this doesn't add much overhead.
-		claim, err := lbry.SDK.GetClaim(claimID)
+		signingChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(claimID))
 		if err != nil {
 			return true, err
 		}
-
-		// It may be an anonymous channel.
-		channel := claim.SigningChannel
-		if channel == nil {
+		if signingChannel == nil {
 			return true, nil
 		}
 
 		// Create the claim to channel.
 		cl2ch := &m.ClaimToChannel{
 			ClaimID:   claimID,
-			ChannelID: channel.ClaimID,
+			ChannelID: signingChannel.ClaimID,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
@@ -319,6 +320,9 @@ func EnsureClaimToChannelExists(claimID string) error {
 
 // HasAccessToProtectedContent checks if a channel has access to a protected claim
 func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return true, nil
+	}
 	contentType := "Exclusive content"
 	isLivestream, err := IsLivestreamClaim(claimID)
 	if err != nil {
@@ -341,6 +345,9 @@ func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 
 // HasAccessToProtectedChat checks if a channel has access to chat perk (members only mode)
 func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return true, nil
+	}
 	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
@@ -389,7 +396,7 @@ func getModStatus(channelID, claimID string, cachePolicy modStatusCachePolicy) (
 		return nil, errors.Err(err)
 	}
 
-	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(claimID)
+	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(claimID))
 	if err != nil {
 		return nil, errors.Err(err)
 	}
@@ -482,7 +489,7 @@ const maxSimilaryScoreToCreatorName = 0.8
 
 func blockedByCreator(request *createRequest) error {
 	var err error
-	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
+	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(request.args.ClaimID))
 	if err != nil {
 		return errors.Err(err)
 	}
