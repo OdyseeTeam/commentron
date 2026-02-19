@@ -111,7 +111,7 @@ func updateReactions(channel *model.Channel, args *commentapi.ReactArgs, comment
 			return errors.Err(err)
 		}
 		for _, p := range comments {
-			contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(p.LbryClaimID)
+			contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(p.LbryClaimID))
 			if err != nil {
 				return errors.Err(err)
 			}
