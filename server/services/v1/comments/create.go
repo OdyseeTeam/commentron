@@ -154,18 +154,20 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		if err != nil {
 			return errors.Err(err)
 		}
-		go lbry.API.Notify(lbry.NotifyOptions{
-			ActionType:  "C",
-			CommentID:   item.CommentID,
-			ChannelID:   &item.ChannelID,
-			ParentID:    &item.ParentID,
-			Comment:     &item.Comment,
-			ClaimID:     item.ClaimID,
-			Amount:      uint64(amount),
-			IsFiat:      item.IsFiat,
-			Currency:    util.PtrToString(item.Currency),
-			IsProtected: item.IsProtected,
-		})
+		if !helper.IsNonValidClaimID(item.ClaimID) {
+			go lbry.API.Notify(lbry.NotifyOptions{
+				ActionType:  "C",
+				CommentID:   item.CommentID,
+				ChannelID:   &item.ChannelID,
+				ParentID:    &item.ParentID,
+				Comment:     &item.Comment,
+				ClaimID:     item.ClaimID,
+				Amount:      uint64(amount),
+				IsFiat:      item.IsFiat,
+				Currency:    util.PtrToString(item.Currency),
+				IsProtected: item.IsProtected,
+			})
+		}
 	}
 
 	return nil

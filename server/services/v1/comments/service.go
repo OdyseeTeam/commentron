@@ -6,6 +6,7 @@ import (
 
 	"github.com/OdyseeTeam/commentron/commentapi"
 	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/helper"
 	m "github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
@@ -68,14 +69,16 @@ func (c *Service) Abandon(_ *http.Request, args *commentapi.AbandonArgs, reply *
 	reply.CommentItem = item
 	reply.Abandoned = true
 
-	go lbry.API.Notify(lbry.NotifyOptions{
-		ActionType: "D",
-		CommentID:  item.CommentID,
-		ChannelID:  &item.ChannelID,
-		ParentID:   &item.ParentID,
-		Comment:    &item.Comment,
-		ClaimID:    item.ClaimID,
-	})
+	if !helper.IsNonValidClaimID(item.ClaimID) {
+		go lbry.API.Notify(lbry.NotifyOptions{
+			ActionType: "D",
+			CommentID:  item.CommentID,
+			ChannelID:  &item.ChannelID,
+			ParentID:   &item.ParentID,
+			Comment:    &item.Comment,
+			ClaimID:    item.ClaimID,
+		})
+	}
 
 	return nil
 }
@@ -88,14 +91,16 @@ func (c *Service) Edit(_ *http.Request, args *commentapi.EditArgs, reply *commen
 	}
 	reply.CommentItem = item
 
-	go lbry.API.Notify(lbry.NotifyOptions{
-		ActionType: "U",
-		CommentID:  item.CommentID,
-		ChannelID:  &item.ChannelID,
-		ParentID:   &item.ParentID,
-		Comment:    &item.Comment,
-		ClaimID:    item.ClaimID,
-	})
+	if !helper.IsNonValidClaimID(item.ClaimID) {
+		go lbry.API.Notify(lbry.NotifyOptions{
+			ActionType: "U",
+			CommentID:  item.CommentID,
+			ChannelID:  &item.ChannelID,
+			ParentID:   &item.ParentID,
+			Comment:    &item.Comment,
+			ClaimID:    item.ClaimID,
+		})
+	}
 	return nil
 }
 
