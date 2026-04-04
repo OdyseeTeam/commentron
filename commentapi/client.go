@@ -75,6 +75,17 @@ func (d *Client) ReactionReact(args ReactArgs) (*ReactResponse, error) {
 	return response, d.call(response, "reaction.React", structs.Map(args))
 }
 
+/////////////////////////
+//  MODERATION SERVICE //
+/////////////////////////
+
+// ModerationWipeReactions deletes all reactions created by a target channel.
+func (d *Client) ModerationWipeReactions(args WipeReactionsArgs) (*WipeReactionsResponse, error) {
+	structs.DefaultTagName = "json"
+	response := new(WipeReactionsResponse)
+	return response, d.call(response, "moderation.WipeReactions", structs.Map(args))
+}
+
 //////////////////////
 //  COMMENT SERVICE //
 //////////////////////
