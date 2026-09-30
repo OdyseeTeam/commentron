@@ -239,7 +239,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 	request.isLivestream = isLivestream
 
 	if isProtected {
-		hasAccess, err := HasAccessToProtectedContent(request.args.ClaimID, request.args.ChannelID)
+		hasAccess, err := HasAccessToProtectedContent(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 		if err != nil {
 			return err
 		}
@@ -321,7 +321,7 @@ func EnsureClaimToChannelExists(claimID string) error {
 }
 
 // HasAccessToProtectedContent checks if a channel has access to a protected claim
-func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
+func HasAccessToProtectedContent(claimID, channelID string, environment *string) (bool, error) {
 	if helper.IsNonValidClaimID(claimID) {
 		return true, nil
 	}
@@ -338,6 +338,7 @@ func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
 		Type:           contentType,
+		Environment:    environment,
 	})
 	if err != nil {
 		return false, err
@@ -346,7 +347,7 @@ func HasAccessToProtectedContent(claimID, channelID string) (bool, error) {
 }
 
 // HasAccessToProtectedChat checks if a channel has access to chat perk (members only mode)
-func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
+func HasAccessToProtectedChat(claimID, channelID string, environment *string) (bool, error) {
 	if helper.IsNonValidClaimID(claimID) {
 		return true, nil
 	}
@@ -354,6 +355,7 @@ func HasAccessToProtectedChat(claimID, channelID string) (bool, error) {
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
 		Type:           "Members-only chat",
+		Environment:    environment,
 	})
 	if err != nil {
 		return false, err
@@ -673,7 +675,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		}
 		if request.isLivestream {
 			if settings.LivestreamChatMembersOnly {
-				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID)
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 				if err != nil {
 					return err
 				}
@@ -683,7 +685,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		} else {
 			if settings.CommentsMembersOnly {
-				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID)
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 				if err != nil {
 					return err
 				}
