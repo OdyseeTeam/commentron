@@ -51,6 +51,33 @@ type BlockResponse struct {
 	BannedFrom *string `json:"banned_from"`
 }
 
+// WipeReactionsArgs arguments to delete all reactions created by a target channel.
+type WipeReactionsArgs struct {
+	ModAuthorization
+
+	TargetChannelID   string `json:"target_channel_id"`
+	TargetChannelName string `json:"target_channel_name"`
+}
+
+// Validate validates the data in the wipe reactions args.
+func (w WipeReactionsArgs) Validate() api.StatusError {
+	err := v.ValidateStruct(&w,
+		v.Field(&w.TargetChannelID, validator.ClaimID, v.Required),
+		v.Field(&w.ModChannelID, validator.ClaimID, v.Required),
+		v.Field(&w.ModChannelName, v.Required),
+	)
+	if err != nil {
+		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
+	}
+	return api.StatusError{}
+}
+
+// WipeReactionsResponse response for the moderation.WipeReactions rpc call.
+type WipeReactionsResponse struct {
+	TargetChannelID      string `json:"target_channel_id"`
+	DeletedReactionCount uint64 `json:"deleted_reaction_count"`
+}
+
 // AmIArgs Arguments to check whether a user is a moderator or not
 type AmIArgs struct {
 	Authorization

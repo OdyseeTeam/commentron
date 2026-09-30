@@ -10,11 +10,10 @@ import (
 	"github.com/OdyseeTeam/commentron/server/lbry"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/sockety/socketyapi"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
@@ -30,9 +29,20 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		return nil, errors.Err("channel id '%s' does not have a channel record", comment.ChannelID.String)
 	}
 	commenterChannel = comment.R.Channel
+	// Handle anonymous content where there's no channel associated
+	if args.CreatorChannelID == "" && args.CreatorChannelName == "" {
+		// If the content is anonymous, set the modChannel to a default or system channel
+		if args.ModChannelName != "" && args.ModChannelID != "" {
+			modChannel, _, err = helper.GetModerator(args.ModChannelID, args.ModChannelName, args.ModChannelID, args.ModChannelName)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	// Old versions of desktop app will allow for just creator channel info to be sent for creators to
-	// delete comments and mod channel info is newer addition and would not be sent so we cannot assume
-	// it will sent with request.
+	// delete comments and mod channel info is newer addition and would not be sent, so we cannot assume
+	// it will be sent with request.
 	if args.CreatorChannelID != "" && args.CreatorChannelName != "" {
 		modChannelID := args.CreatorChannelID
 		modChannelName := args.CreatorChannelName
@@ -44,7 +54,7 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if err != nil {
 			return nil, err
 		}
-		content, err := lbry.SDK.GetClaim(comment.LbryClaimID)
+		content, err := lbry.SDK.GetClaim(helper.ResolveCreatorChannelClaimID(comment.LbryClaimID))
 		if err != nil {
 			return nil, errors.Err(err)
 		}
@@ -55,7 +65,10 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 		if signingChannelClaimID != creatorChannel.ClaimID {
 			return nil, api.StatusError{Err: errors.Err("you do not have creator authorizations to remove this comment on %s", comment.LbryClaimID), Status: http.StatusBadRequest}
 		}
-	} else {
+	}
+
+	// if there are neither a mod nor a delegated mod, then we verify if the commenter is the creator which means you're trying to delete your own comment
+	if modChannel == nil {
 		modChannel = commenterChannel
 	}
 
@@ -82,5 +95,4 @@ func abandon(args *commentapi.AbandonArgs) (*commentapi.CommentItem, error) {
 	})
 
 	return &item, nil
-
 }

@@ -3,15 +3,15 @@ package lbry
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/OdyseeTeam/commentron/helper"
 
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -74,7 +74,7 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 		return false, errors.Err("No response from internal APIs")
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Err(err)
 	}
@@ -88,6 +88,47 @@ func (c apiClient) CheckPerk(options CheckPerkOptions) (bool, error) {
 	}
 
 	return perkRes.Data.HasAccess, nil
+}
+
+// ArweavePaymentDetailsResponse is the response structure from internal-apis for the arweave payment details api
+type ArweavePaymentDetailsResponse struct {
+	Amount         uint64    `json:"amount"`
+	Currency       string    `json:"currency"`
+	Status         string    `json:"status"`
+	UserID         uint64    `json:"user_id"`
+	ChannelClaimID string    `json:"channel_claim_id"`
+	TippedAt       time.Time `json:"tipped_at"`
+}
+type apiArweavePaymentDetailsResponse struct {
+	Success bool                          `json:"success"`
+	Error   interface{}                   `json:"error"`
+	Data    ArweavePaymentDetailsResponse `json:"data"`
+}
+
+func (c apiClient) GetDetailsForTransaction(txID string) (*ArweavePaymentDetailsResponse, error) {
+	const apiPath = "/arweave/payment/retrieve"
+	client := http.Client{}
+	form := make(url.Values)
+	form.Set("auth_token", apiToken)
+	form.Set("tx_id", txID)
+
+	response, err := client.PostForm(apiURL+apiPath, form)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	defer helper.CloseBody(response.Body)
+
+	b, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.Err("API returned non-200 status code: %d", response.StatusCode)
+	}
+	var pr apiArweavePaymentDetailsResponse
+	err = json.Unmarshal(b, &pr)
+
+	return &pr.Data, errors.Err(err)
 }
 
 func notify(options NotifyOptions) error {
@@ -126,21 +167,24 @@ func notify(options NotifyOptions) error {
 		return errors.Err("No response from internal APIs")
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return errors.Err(err)
 	}
-	var me CommentResponse
-	err = json.Unmarshal(b, &me)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if response.StatusCode > 200 {
-		if response.StatusCode <= 300 {
+	if response.StatusCode > http.StatusOK {
+		if response.StatusCode <= http.StatusMultipleChoices {
 			logrus.Warning("Notification Failure[Status - ", response.StatusCode, "] : ")
 		} else {
 			logrus.Error("Notification Failure[Status - ", response.StatusCode, "] : ")
 		}
+		return errors.Err("API returned non-200 status code: %d - %s", response.StatusCode, string(b))
+	}
+	//todo: add recursion if necessary
+
+	var me CommentResponse
+	err = json.Unmarshal(b, &me)
+	if err != nil {
+		return errors.Err(err)
 	}
 	return nil
 }

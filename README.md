@@ -10,9 +10,9 @@ This is the commenting system for odysee.com. The system uses a JSON RPC server.
 
 Make sure you setup the configuration to use env files. 
 
-`MYSQL_DSN_RO="lbry-ro:lbry@tcp(localhost:3306)/commentron"`
+`MYSQL_DSN_RO="commentron-ro:commentron@tcp(localhost:3306)/commentron"`
 
-`MYSQL_DSN_RW="lbry-rw:lbry@tcp(localhost:3306)/commentron"`
+`MYSQL_DSN_RW="commentron-rw:commentron@tcp(localhost:3306)/commentron"`
 
 `SDK_URL="https://api.na-backend.odysee.com/api/v1/proxy"`
 

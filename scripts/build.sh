@@ -10,7 +10,7 @@ DIR="$PWD"
 
 echo "== Installing dependencies =="
 go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/kevinburke/go-bindata/...@latest
+go install github.com/kevinburke/go-bindata/v4/...@latest
 go mod download
 
 

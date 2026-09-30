@@ -12,14 +12,14 @@ import (
 	m "github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
-	"github.com/karlseguin/ccache/v2"
 	"github.com/sirupsen/logrus"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"golang.org/x/sync/singleflight"
 )
 
 func list(_ *http.Request, args *commentapi.ListArgs, reply *commentapi.ListResponse) error {
@@ -160,7 +160,7 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 		return api.StatusError{Err: errors.Err("requestor channel id is required to list protected comments"), Status: http.StatusBadRequest}
 	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
-		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID, *args.Environment)
+		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID, args.Environment)
 		if err != nil {
 			return err
 		}
@@ -223,13 +223,14 @@ func getCachedList(r *http.Request, args *commentapi.ListArgs, reply *commentapi
 
 func applySorting(sort commentapi.Sort, queryMods []qm.QueryMod) []qm.QueryMod {
 	if sort != commentapi.Newest {
-		if sort == commentapi.Popularity {
+		switch sort {
+		case commentapi.Popularity:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.PopularityScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
-		} else if sort == commentapi.Controversy {
+		case commentapi.Controversy:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.ControversyScore+" DESC, "+m.CommentColumns.Timestamp+" DESC"))
-		} else if sort == commentapi.Oldest {
+		case commentapi.Oldest:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.IsPinned+" DESC, "+m.CommentColumns.Timestamp+" ASC"))
-		} else if sort == commentapi.NewestNoPins {
+		case commentapi.NewestNoPins:
 			queryMods = append(queryMods, qm.OrderBy(m.CommentColumns.Timestamp+" DESC"))
 		}
 	} else {
@@ -259,53 +260,83 @@ func checkCommentsEnabled(channelName, ChannelID string) (*m.Channel, error) {
 	return nil, nil
 }
 
+var repliesCountCache = ccache.New(ccache.Configure().MaxSize(100000))
+var sf singleflight.Group
+
 func getItems(comments m.CommentSlice, creatorChannel *m.Channel, skipBlocked bool) ([]commentapi.CommentItem, int64, error) {
 	var items []commentapi.CommentItem
 	var blockedCommentCnt int64
-	var alreadyInSet = map[string]bool{}
-Comments:
+	var alreadyInSet = make(map[string]bool)
+
+comments:
 	for _, comment := range comments {
-		if comment.R != nil && comment.R.Channel != nil && comment.R.Channel.R != nil {
-			blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
-			if len(blockedFrom) > 0 && !skipBlocked {
-				channel, err := lbry.SDK.GetSigningChannelForClaim(comment.LbryClaimID)
-				if err != nil {
-					//cannot find claim commented on in SDK, ignore, nil channel by default
-				}
-				if channel != nil {
-					for _, entry := range blockedFrom {
-						if creatorChannel != nil && creatorChannel.BlockedListID.Valid {
-							if creatorChannel.BlockedListID == entry.BlockedListID {
-								if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
-									blockedCommentCnt++
-									continue Comments
-								}
-							}
+		if comment.R == nil || comment.R.Channel == nil || comment.R.Channel.R == nil {
+			continue
+		}
+
+		blockedFrom := comment.R.Channel.R.BlockedChannelBlockedEntries
+		if len(blockedFrom) > 0 && !skipBlocked {
+			channel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(comment.LbryClaimID))
+			if err != nil {
+				// Cannot find claim commented on in SDK, ignore, nil channel by default
+			} else if channel != nil {
+				for _, entry := range blockedFrom {
+					if creatorChannel != nil && creatorChannel.BlockedListID.Valid && creatorChannel.BlockedListID == entry.BlockedListID {
+						if !entry.Expiry.Valid || entry.Expiry.Time.After(time.Now()) {
+							blockedCommentCnt++
+							continue comments
 						}
-						if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
-							if !entry.Expiry.Valid || (entry.Expiry.Valid && time.Since(entry.Expiry.Time) < time.Duration(0)) {
-								blockedCommentCnt++
-								continue Comments
-							}
+					}
+					if entry.UniversallyBlocked.Bool || entry.CreatorChannelID.String == channel.ClaimID {
+						if !entry.Expiry.Valid || entry.Expiry.Time.After(time.Now()) {
+							blockedCommentCnt++
+							continue comments
 						}
 					}
 				}
 			}
 		}
-		var channel *m.Channel
-		if comment.R != nil {
-			channel = comment.R.Channel
-			if channel != nil && channel.Name != "" {
-				if !alreadyInSet[comment.CommentID] {
-					replies, err := comment.ParentComments().Count(db.RO)
-					if err != nil && errors.Is(err, sql.ErrNoRows) {
-						return items, blockedCommentCnt, errors.Err(err)
-					}
-					alreadyInSet[comment.CommentID] = true
-					items = append(items, populateItem(comment, channel, int(replies)))
-				}
-			}
+
+		channel := comment.R.Channel
+		if channel == nil || channel.Name == "" {
+			continue
 		}
+
+		if alreadyInSet[comment.CommentID] {
+			continue
+		}
+
+		repliesCachedCount := repliesCountCache.Get(comment.CommentID)
+		if repliesCachedCount != nil && !repliesCachedCount.Expired() {
+			alreadyInSet[comment.CommentID] = true
+			item := populateItem(comment, channel, int(repliesCachedCount.Value().(int64)))
+			err := applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID, useModStatusCache)
+			if err != nil {
+				return items, blockedCommentCnt, err
+			}
+			items = append(items, item)
+			continue
+		}
+
+		val, err, _ := sf.Do(comment.CommentID, func() (interface{}, error) {
+			replies, err := comment.ParentComments().Count(db.RO)
+			if err != nil && errors.Is(err, sql.ErrNoRows) {
+				return nil, errors.Err(err)
+			}
+			repliesCountCache.Set(comment.CommentID, replies, 30*time.Second)
+			return replies, nil
+		})
+		if err != nil {
+			return items, blockedCommentCnt, err
+		}
+		replies := val.(int64)
+		item := populateItem(comment, channel, int(replies))
+		err = applyModStatus(&item, comment.ChannelID.String, comment.LbryClaimID, useModStatusCache)
+		if err != nil {
+			return items, blockedCommentCnt, err
+		}
+		items = append(items, item)
 	}
+
 	return items, blockedCommentCnt, nil
 }

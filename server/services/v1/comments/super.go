@@ -11,14 +11,13 @@ import (
 	m "github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/btcsuite/btcutil"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
-	"github.com/btcsuite/btcutil"
-	"github.com/karlseguin/ccache/v2"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *commentapi.SuperListResponse) error {
@@ -136,7 +135,7 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 		return errors.Err(err)
 	}
 
-	channelClaim, err := lbry.SDK.GetSigningChannelForClaim(util.StrFromPtr(args.ClaimID))
+	channelClaim, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(util.StrFromPtr(args.ClaimID)))
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -152,6 +151,9 @@ func superChatList(_ *http.Request, args *commentapi.SuperListArgs, reply *comme
 	skipBlocked := isListingOwnSuperChats
 
 	items, blockedCommentCnt, err := getItems(comments, creatorChannel, skipBlocked)
+	if err != nil {
+		return errors.Err(err)
+	}
 
 	totalItems = totalItems - blockedCommentCnt
 	reply.Items = items
@@ -174,7 +176,7 @@ func getCachedSuperChatList(r *http.Request, args *commentapi.SuperListArgs, rep
 		return errors.Err("requestor channel id is required to list protected superchats")
 	}
 	if args.IsProtected && args.ClaimID != nil && args.RequestorChannelID != nil {
-		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID, *args.Environment)
+		hasAccess, err := HasAccessToProtectedContent(*args.ClaimID, *args.RequestorChannelID, args.Environment)
 		if err != nil {
 			return err
 		}

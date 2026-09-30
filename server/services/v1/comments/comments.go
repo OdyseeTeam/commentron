@@ -6,8 +6,8 @@ import (
 	"github.com/OdyseeTeam/commentron/commentapi"
 	m "github.com/OdyseeTeam/commentron/model"
 
+	"github.com/aarondl/null/v8"
 	"github.com/btcsuite/btcutil"
-	"github.com/volatiletech/null/v8"
 )
 
 var currencyMap = map[string]uint64{"USD": 100}
@@ -35,7 +35,7 @@ func populateItem(comment *m.Comment, channel *m.Channel, replies int) commentap
 		Timestamp:     comment.Timestamp,
 		ParentID:      comment.ParentID.String,
 		Signature:     comment.Signature.String,
-		SigningTs:     comment.Signingts.String,
+		SigningTS:     comment.Signingts.String,
 		IsHidden:      comment.IsHidden.Bool,
 		IsPinned:      comment.IsPinned,
 		ChannelID:     comment.ChannelID.String,

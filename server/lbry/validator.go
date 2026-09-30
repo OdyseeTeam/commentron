@@ -7,9 +7,8 @@ import (
 	"encoding/asn1"
 	"encoding/hex"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -19,12 +18,10 @@ import (
 	"github.com/OdyseeTeam/commentron/config"
 	"github.com/OdyseeTeam/commentron/helper"
 
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
-	"github.com/lbryio/lbry.go/v2/schema/keys"
-
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/karlseguin/ccache/v2"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 )
 
 // ValidateSignatures determines if signatures should be validated or not ( not used yet)
@@ -86,7 +83,7 @@ func getPublicKeyFromCQForChannel(channelClaimID string) ([]byte, error) {
 		return nil, errors.Err(err)
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, errors.Err(err)
 	}
@@ -129,7 +126,7 @@ func ValidateSignatureAndTSForClaim(channelClaimID, claimID, signature, signingT
 	if err != nil {
 		return err
 	}
-	return validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, data, pk)
+	return validateSignatureForClaim(channelClaimID, signature, signingTS, data, pk)
 }
 
 // ValidateSignatureNoTSLimit validates the signature was signed by the channel reference.
@@ -162,22 +159,6 @@ func ValidateSignatureFromClaim(channel *jsonrpc.Claim, signature, signingTS, da
 	}
 	pk := channel.Value.GetChannel().GetPublicKey()
 	return validateSignature(channel.ClaimID, signature, signingTS, data, pk)
-
-}
-
-// encodePrivateKey encodes an ECDSA private key to PEM format.
-func encodePrivateKey(key *btcec.PrivateKey) ([]byte, error) {
-	derPrivKey, err := keys.PrivateKeyToDER(key)
-	if err != nil {
-		return nil, err
-	}
-
-	keyBlock := &pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: derPrivKey,
-	}
-
-	return pem.EncodeToMemory(keyBlock), nil
 }
 
 func validateSignature(channelClaimID, signature, signingTS, data string, pubkey []byte) error {
@@ -196,9 +177,7 @@ func validateSignature(channelClaimID, signature, signingTS, data string, pubkey
 		return errors.Err(err)
 	}
 	signatureBytes := [64]byte{}
-	for i, b := range sig {
-		signatureBytes[i] = b
-	}
+	copy(signatureBytes[:], sig)
 	sigValid := isSignatureValid(signatureBytes, publicKey, injest[:])
 	if !sigValid {
 		return errors.Err("could not validate the signature")
@@ -206,7 +185,7 @@ func validateSignature(channelClaimID, signature, signingTS, data string, pubkey
 	return nil
 }
 
-func validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, data string, pubkey []byte) error {
+func validateSignatureForClaim(channelClaimID, signature, signingTS, data string, pubkey []byte) error {
 	publicKey, err := getPublicKeyFromBytes(pubkey)
 	if err != nil {
 		return errors.Err(err)
@@ -222,9 +201,7 @@ func validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, da
 		return errors.Err(err)
 	}
 	signatureBytes := [64]byte{}
-	for i, b := range sig {
-		signatureBytes[i] = b
-	}
+	copy(signatureBytes[:], sig)
 	sigValid := isSignatureValid(signatureBytes, publicKey, injest[:])
 	if !sigValid {
 		return errors.Err("could not validate the signature")
@@ -233,7 +210,6 @@ func validateSignatureForClaim(channelClaimID, claimID, signature, signingTS, da
 }
 
 func isSignatureValid(signature [64]byte, publicKey *btcec.PublicKey, injest []byte) bool {
-
 	R := &big.Int{}
 	S := &big.Int{}
 	R.SetBytes(signature[:32])
@@ -256,7 +232,7 @@ type publicKeyInfo struct {
 	PublicKey asn1.BitString
 }
 
-//why the hell are we reusing code from lbry.go instead of just using lbry.go??
+// why the hell are we reusing code from lbry.go instead of just using lbry.go??
 func getPublicKeyFromBytes(pubKeyBytes []byte) (*btcec.PublicKey, error) {
 	if len(pubKeyBytes) == 33 {
 		return btcec.ParsePubKey(pubKeyBytes, btcec.S256())

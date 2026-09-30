@@ -18,24 +18,26 @@ import (
 	"github.com/OdyseeTeam/commentron/server/websocket"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/Avalanche-io/counter"
+	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/btcsuite/btcutil"
+	"github.com/hbakhtiyor/strsim"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 	"github.com/lbryio/lbry.go/v2/extras/util"
 	v "github.com/lbryio/ozzo-validation"
-	"github.com/lbryio/sockety/socketyapi"
-
-	"github.com/Avalanche-io/counter"
-	"github.com/btcsuite/btcutil"
-	"github.com/hbakhtiyor/strsim"
-	"github.com/karlseguin/ccache/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/paymentintent"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
+
+// Temp variable to allow testing
+var useOldTipAmountChecks bool
 
 func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.CreateResponse) error {
 	err := v.ValidateStruct(args,
@@ -43,6 +45,7 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 	if err != nil {
 		return api.StatusError{Err: errors.Err(err), Status: http.StatusBadRequest}
 	}
+
 	channel, err := helper.FindOrCreateChannel(args.ChannelID, args.ChannelName)
 	if err != nil {
 		return errors.Err(err)
@@ -58,18 +61,48 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		return err
 	}
 
+	// Temp to allow testing
+	//todo: wtf is this, it's an easy race condition waiting to happen
+	useOldTipAmountChecks = args.Amount == nil
+
 	var frequencyCheck = checkFrequency
-	if args.SupportTxID != nil || args.PaymentIntentID != nil {
-		err := updateSupportInfo(request)
-		if err != nil {
-			return err
+
+	// Note, generally speaking, these are the 3 different ways a paid comment is made:
+	//	use of args.PaymentIntentID: stripe
+	//	use of args.SupportTxID: lbc
+	//	use of args.PaymentTxID: AR/crypto
+
+	isPaidComment := args.Amount != nil || args.PaymentIntentID != nil //this is because odysee android app doesn't pass an amount for dryruns...
+	isDryRun := args.DryRun && (args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxID != nil)
+	isActualTransaction := isPaidComment && (args.SupportTxID != nil || args.PaymentIntentID != nil || args.PaymentTxID != nil)
+
+	if isPaidComment {
+		if isDryRun {
+			cents := *args.Amount
+			if args.SupportTxID != nil {
+				lbc, err := btcutil.NewAmount(*args.Amount)
+				if err != nil {
+					return errors.Err(err)
+				}
+				cents = lbc.ToUnit(btcutil.AmountSatoshi)
+			} else if args.PaymentIntentID != nil {
+				cents *= 100
+			}
+			request.comment.Amount.SetValid(uint64(cents))
+		} else if isActualTransaction {
+			err := updateSupportInfo(request)
+			if err != nil {
+				return err
+			}
+		} else {
+			return errors.Err("you must specify a transaction if it's a paid comment")
 		}
-		// ignore the frequency if its a tipped comment
+		// ignore the frequency if it's a tipped comment
 		frequencyCheck = ignoreFrequency
 	}
 
 	// This is strategically placed, nothing can be done before this using the comment id or timestamp
-	commentID, timestamp, err := createCommentID(request.args.CommentText, null.StringFrom(request.args.ChannelID).String, frequencyCheck)
+	commentID, timestamp, err := createCommentID(request.args.CommentText, request.args.ClaimID, null.StringFrom(request.args.ChannelID).String, frequencyCheck)
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -79,7 +112,8 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 
 	item := populateItem(request.comment, channel, 0)
 
-	err = applyModStatus(&item, args.ChannelID, args.ClaimID)
+	// Mod status cache is expected to be refreshed in createCommentID(), so using cache here gives fresh status
+	err = applyModStatus(&item, args.ChannelID, args.ClaimID, useModStatusCache)
 	if err != nil {
 		return err
 	}
@@ -90,13 +124,18 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		}
 	}
 
-	if !(args.Sticker && (args.SupportTxID != nil || args.PaymentIntentID != nil)) {
+	if !args.Sticker || (args.SupportTxID == nil && args.PaymentTxID == nil) {
 		flags.CheckComment(request.comment)
 	}
 
 	err = EnsureClaimToChannelExists(request.comment.LbryClaimID)
 	if err != nil {
 		return err
+	}
+
+	if args.DryRun {
+		reply.CommentItem = &item
+		return nil
 	}
 
 	err = request.comment.Insert(db.RW, boil.Infer())
@@ -115,25 +154,26 @@ func create(_ *http.Request, args *commentapi.CreateArgs, reply *commentapi.Crea
 		if err != nil {
 			return errors.Err(err)
 		}
-		go lbry.API.Notify(lbry.NotifyOptions{
-			ActionType:  "C",
-			CommentID:   item.CommentID,
-			ChannelID:   &item.ChannelID,
-			ParentID:    &item.ParentID,
-			Comment:     &item.Comment,
-			ClaimID:     item.ClaimID,
-			Amount:      uint64(amount),
-			IsFiat:      item.IsFiat,
-			Currency:    util.PtrToString(item.Currency),
-			IsProtected: item.IsProtected,
-		})
+		if !helper.IsNonValidClaimID(item.ClaimID) {
+			go lbry.API.Notify(lbry.NotifyOptions{
+				ActionType:  "C",
+				CommentID:   item.CommentID,
+				ChannelID:   &item.ChannelID,
+				ParentID:    &item.ParentID,
+				Comment:     &item.Comment,
+				ClaimID:     item.ClaimID,
+				Amount:      uint64(amount),
+				IsFiat:      item.IsFiat,
+				Currency:    util.PtrToString(item.Currency),
+				IsProtected: item.IsProtected,
+			})
+		}
 	}
 
 	return nil
 }
 
 func createComment(request *createRequest) error {
-
 	request.comment = &m.Comment{
 		LbryClaimID: request.args.ClaimID,
 		ChannelID:   null.StringFrom(request.args.ChannelID),
@@ -156,7 +196,11 @@ func checkAllowedAndValidate(request *createRequest) error {
 	}
 
 	if request.args.ParentID != nil {
-		err = helper.AllowedToRespond(util.StrFromPtr(request.args.ParentID), request.args.ChannelID)
+		contentCreatorChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(request.args.ClaimID))
+		if err != nil {
+			return errors.Err(err)
+		}
+		err = helper.AllowedToRespond(util.StrFromPtr(request.args.ParentID), request.args.ChannelID, contentCreatorChannel)
 		if err != nil {
 			return err
 		}
@@ -178,7 +222,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 		if !ok {
 			return errors.Err("%s is not an authorized Odysee sticker", matches[1])
 		}
-		if paid && request.args.PaymentIntentID == nil && request.args.SupportTxID == nil {
+		if paid && request.args.PaymentTxID == nil && request.args.SupportTxID == nil {
 			return errors.Err("%s requires a support to post", matches[1])
 		}
 	}
@@ -195,7 +239,7 @@ func checkAllowedAndValidate(request *createRequest) error {
 	request.isLivestream = isLivestream
 
 	if isProtected {
-		hasAccess, err := HasAccessToProtectedContent(request.args.ClaimID, request.args.ChannelID, *request.args.Environment)
+		hasAccess, err := HasAccessToProtectedContent(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 		if err != nil {
 			return err
 		}
@@ -209,6 +253,9 @@ func checkAllowedAndValidate(request *createRequest) error {
 
 // IsProtectedContent resolves a claim and checks if it's a protected claim which would require authentication
 func IsProtectedContent(claimID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return false, nil
+	}
 	claim, err := lbry.SDK.GetClaim(claimID)
 	if err != nil {
 		return false, err
@@ -224,6 +271,9 @@ func IsProtectedContent(claimID string) (bool, error) {
 
 // IsLivestreamClaim resolves a claim and checks if it has a source
 func IsLivestreamClaim(claimID string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return false, nil
+	}
 	claim, err := lbry.SDK.GetClaim(claimID)
 	if err != nil {
 		return true, err
@@ -242,24 +292,18 @@ var claimToChannelExistsCache = ccache.New(ccache.Configure().MaxSize(10000))
 func EnsureClaimToChannelExists(claimID string) error {
 	// check cache first. it's only storing a boolean but it lets us do db upserts less.
 	_, err := claimToChannelExistsCache.Fetch(claimID, 24*time.Hour, func() (interface{}, error) {
-
-		// SDK calls have their own cache and the GetClaim call is done multiple times in create,
-		// so this doesn't add much overhead.
-		claim, err := lbry.SDK.GetClaim(claimID)
+		signingChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(claimID))
 		if err != nil {
 			return true, err
 		}
-
-		// It may be an anonymous channel.
-		channel := claim.SigningChannel
-		if channel == nil {
+		if signingChannel == nil {
 			return true, nil
 		}
 
 		// Create the claim to channel.
 		cl2ch := &m.ClaimToChannel{
 			ClaimID:   claimID,
-			ChannelID: channel.ClaimID,
+			ChannelID: signingChannel.ClaimID,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
@@ -277,7 +321,10 @@ func EnsureClaimToChannelExists(claimID string) error {
 }
 
 // HasAccessToProtectedContent checks if a channel has access to a protected claim
-func HasAccessToProtectedContent(claimID, channelID, environment string) (bool, error) {
+func HasAccessToProtectedContent(claimID, channelID string, environment *string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return true, nil
+	}
 	contentType := "Exclusive content"
 	isLivestream, err := IsLivestreamClaim(claimID)
 	if err != nil {
@@ -291,7 +338,7 @@ func HasAccessToProtectedContent(claimID, channelID, environment string) (bool, 
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
 		Type:           contentType,
-		Environment:    &environment,
+		Environment:    environment,
 	})
 	if err != nil {
 		return false, err
@@ -300,12 +347,15 @@ func HasAccessToProtectedContent(claimID, channelID, environment string) (bool, 
 }
 
 // HasAccessToProtectedChat checks if a channel has access to chat perk (members only mode)
-func HasAccessToProtectedChat(claimID, channelID, environment string) (bool, error) {
+func HasAccessToProtectedChat(claimID, channelID string, environment *string) (bool, error) {
+	if helper.IsNonValidClaimID(claimID) {
+		return true, nil
+	}
 	hasAccess, err := lbry.API.CheckPerk(lbry.CheckPerkOptions{
 		ChannelClaimID: channelID,
 		ClaimID:        claimID,
 		Type:           "Members-only chat",
-		Environment:    &environment,
+		Environment:    environment,
 	})
 	if err != nil {
 		return false, err
@@ -313,27 +363,79 @@ func HasAccessToProtectedChat(claimID, channelID, environment string) (bool, err
 	return hasAccess, nil
 }
 
-func applyModStatus(item *commentapi.CommentItem, channelID, claimID string) error {
+type modStatus struct {
+	IsGlobalMod bool
+	IsCreator   bool
+	IsModerator bool
+}
+type modStatusCachePolicy int
+
+const (
+	useModStatusCache modStatusCachePolicy = iota
+	skipModStatusCache
+)
+
+var modStatusCache = ccache.New(ccache.Configure().MaxSize(100000))
+
+func getModStatus(channelID, claimID string, cachePolicy modStatusCachePolicy) (*modStatus, error) {
+	// Define a unique key for the cache based on channelID and claimID
+	cacheKey := channelID + ":" + claimID
+
+	// Attempt to retrieve the cached result
+	if cachePolicy == useModStatusCache {
+		cachedStatus := modStatusCache.Get(cacheKey)
+		if cachedStatus != nil && !cachedStatus.Expired() {
+			// If cache hit, use the cached result
+			if status, ok := cachedStatus.Value().(*modStatus); ok {
+				return status, nil
+			}
+		}
+	}
+
+	// Cache miss, proceed to check mod status
+	var isCreator bool
+	var isModerator bool
 	isGlobalMod, err := m.Moderators(m.ModeratorWhere.ModChannelID.EQ(null.StringFrom(channelID))).Exists(db.RO)
 	if err != nil {
-		return errors.Err(err)
+		return nil, errors.Err(err)
 	}
-	item.IsGlobalMod = isGlobalMod
 
-	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(claimID)
+	signingChannel, err := lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(claimID))
+	if err != nil {
+		return nil, errors.Err(err)
+	}
+	if signingChannel != nil {
+		isCreator = channelID == signingChannel.ClaimID
+		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
+		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
+		isModerator, err = m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
+		if err != nil {
+			return nil, errors.Err(err)
+		}
+	}
+
+	// Cache the moderation status
+	modStatus := &modStatus{
+		IsGlobalMod: isGlobalMod,
+		IsCreator:   isCreator,
+		IsModerator: isModerator,
+	}
+	modStatusCache.Set(cacheKey, modStatus, time.Second*30)
+
+	return modStatus, nil
+}
+
+func applyModStatus(item *commentapi.CommentItem, channelID, claimID string, cachePolicy modStatusCachePolicy) error {
+	modStatus, err := getModStatus(channelID, claimID, cachePolicy)
+
 	if err != nil {
 		return errors.Err(err)
 	}
-	if signingChannel != nil {
-		item.IsCreator = channelID == signingChannel.ClaimID
-		filterCreator := m.DelegatedModeratorWhere.CreatorChannelID.EQ(signingChannel.ClaimID)
-		filterCommenter := m.DelegatedModeratorWhere.ModChannelID.EQ(channelID)
-		isMod, err := m.DelegatedModerators(filterCreator, filterCommenter).Exists(db.RO)
-		if err != nil {
-			return errors.Err(err)
-		}
-		item.IsModerator = isMod
-	}
+
+	item.IsGlobalMod = modStatus.IsGlobalMod
+	item.IsCreator = modStatus.IsCreator
+	item.IsModerator = modStatus.IsModerator
+
 	return nil
 }
 
@@ -358,7 +460,6 @@ func pushItem(item commentapi.CommentItem, claimID string, mentionedChannels []c
 			Data:    map[string]interface{}{"comment": item, "channel": mc.ChannelName, "channel_id": mc.ChannelID},
 		})
 	}
-
 }
 
 func checkForDuplicate(commentID string) error {
@@ -385,16 +486,14 @@ type createRequest struct {
 	creatorChannel   *m.Channel
 	commenterChannel *m.Channel
 	signingChannel   *jsonrpc.Claim
-	currency         string
-	isFiat           bool
 	isLivestream     bool
 }
 
-const maxSimilaryScoreToCreatorName = 0.6
+const maxSimilaryScoreToCreatorName = 0.8
 
 func blockedByCreator(request *createRequest) error {
 	var err error
-	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(request.args.ClaimID)
+	request.signingChannel, err = lbry.SDK.GetSigningChannelForClaim(helper.ResolveCreatorChannelClaimID(request.args.ClaimID))
 	if err != nil {
 		return errors.Err(err)
 	}
@@ -422,7 +521,7 @@ func blockedByCreator(request *createRequest) error {
 	if blockedEntry != nil && !blockedEntry.Expiry.Valid {
 		return api.StatusError{Err: errors.Err("channel is blocked by publisher"), Status: http.StatusBadRequest}
 	} else if blockedEntry != nil && blockedEntry.Expiry.Valid && time.Since(blockedEntry.Expiry.Time) < time.Duration(0) {
-		timeLeft := helper.FormatDur(blockedEntry.Expiry.Time.Sub(time.Now()))
+		timeLeft := helper.FormatDur(time.Until(blockedEntry.Expiry.Time))
 		message := fmt.Sprintf("publisher %s has given you a temporary ban with %s remaining.", request.creatorChannel.Name, timeLeft)
 		return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
 	}
@@ -438,7 +537,7 @@ func blockedByCreator(request *createRequest) error {
 			blockedByChannel = blockedListEntry.R.CreatorChannel.Name
 		}
 		if blockedListEntry.Expiry.Valid && time.Since(blockedListEntry.Expiry.Time) < time.Duration(0) {
-			expiresIn := blockedListEntry.Expiry.Time.Sub(time.Now())
+			expiresIn := time.Until(blockedListEntry.Expiry.Time)
 			timeLeft := helper.FormatDur(expiresIn)
 			message := fmt.Sprintf("channel %s added you to the shared block list %s and you will not be able to comment with %s remaining.", blockedByChannel, blockedListName, timeLeft)
 			return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
@@ -457,27 +556,100 @@ func blockedByCreator(request *createRequest) error {
 
 const maxSimilaryScoreToBlockedWord = 0.6
 
+func checkMinTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
+	if settings.MinTipAmountComment.IsZero() {
+		return nil
+	}
+	if request.args.PaymentTxID != nil || request.comment.Amount.IsZero() {
+		return api.StatusError{Err: errors.Err("you must include LBC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+	}
+	if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
+		return api.StatusError{Err: errors.Err("you must tip at least %.2f LBC with this comment as required by %s", btcutil.Amount(settings.MinTipAmountComment.Uint64).ToBTC(), request.creatorChannel.Name), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinUsdcTipAmountComment(settings *m.CreatorSetting, request *createRequest) error {
+	if settings.MinUsdcTipAmountComment.IsZero() {
+		return nil
+	}
+	if request.args.PaymentTxID == nil || request.comment.Amount.IsZero() {
+		return api.StatusError{Err: errors.Err("you must include USDC tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+	}
+	if request.comment.Amount.Uint64 < settings.MinUsdcTipAmountComment.Uint64 {
+		return api.StatusError{Err: errors.Err("you must tip at least %.2f USDC with this comment as required by %s", float64(settings.MinUsdcTipAmountComment.Uint64)/float64(100), request.creatorChannel.Name), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
+	if settings.MinTipAmountSuperChat.IsZero() {
+		return nil
+	}
+	if request.args.PaymentTxID != nil || request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+		return api.StatusError{Err: errors.Err("a min tip of %.2f LBC is required to hyperchat", btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func checkMinUsdcTipAmountSuperChat(settings *m.CreatorSetting, request *createRequest) error {
+	if settings.MinUsdcTipAmountSuperChat.IsZero() {
+		return nil
+	}
+	if request.args.PaymentTxID == nil || request.comment.Amount.Uint64 < settings.MinUsdcTipAmountSuperChat.Uint64 {
+		return api.StatusError{Err: errors.Err("a min tip of %.2f USDC is required to hyperchat", (float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100))), Status: http.StatusBadRequest}
+	}
+	return nil
+}
+
 func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 	isMod, err := m.DelegatedModerators(m.DelegatedModeratorWhere.ModChannelID.EQ(request.args.ChannelID), m.DelegatedModeratorWhere.CreatorChannelID.EQ(request.signingChannel.ClaimID)).Exists(db.RO)
 	if err != nil {
 		return errors.Err(err)
 	}
 	if !isMod && request.args.ChannelID != request.creatorChannel.ClaimID {
-		if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentIntentID == nil {
-			if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
-				return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+		if useOldTipAmountChecks {
+			if !settings.MinTipAmountSuperChat.IsZero() && !request.comment.Amount.IsZero() && request.args.PaymentTxID == nil {
+				if request.comment.Amount.Uint64 < settings.MinTipAmountSuperChat.Uint64 {
+					return api.StatusError{Err: errors.Err("a min tip of %d LBC is required to hyperchat", settings.MinTipAmountSuperChat.Uint64), Status: http.StatusBadRequest}
+				}
+			}
+			if !settings.MinTipAmountComment.IsZero() {
+				if request.comment.Amount.IsZero() {
+					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+				}
+				if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
+					return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
+				}
+			}
+		} else {
+			if !request.comment.Amount.IsZero() {
+				if request.args.PaymentTxID == nil {
+					err = checkMinTipAmountSuperChat(settings, request)
+				} else {
+					err = checkMinUsdcTipAmountSuperChat(settings, request)
+				}
+				if err != nil {
+					return err
+				}
+			}
+			if !settings.MinTipAmountComment.IsZero() || !settings.MinUsdcTipAmountComment.IsZero() {
+				if request.comment.Amount.IsZero() {
+					return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
+				}
+				if request.args.PaymentTxID == nil {
+					err = checkMinTipAmountComment(settings, request)
+				} else {
+					err = checkMinUsdcTipAmountComment(settings, request)
+				}
+				if err != nil {
+					return err
+				}
 			}
 		}
-		if !settings.MinTipAmountComment.IsZero() {
-			if request.comment.Amount.IsZero() {
-				return api.StatusError{Err: errors.Err("you must include tip in order to comment as required by creator"), Status: http.StatusBadRequest}
-			}
-			if request.comment.Amount.Uint64 < settings.MinTipAmountComment.Uint64 {
-				return api.StatusError{Err: errors.Err("you must tip at least %d with this comment as required by %s", settings.MinTipAmountComment.Uint64, request.creatorChannel.Name), Status: http.StatusBadRequest}
-			}
-		}
+
 		if !settings.SlowModeMinGap.IsZero() {
-			err := checkMinGap(request.args.ChannelID+request.creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second)
+			err := checkMinGap(request.args.ChannelID+request.creatorChannel.ClaimID, time.Duration(settings.SlowModeMinGap.Uint64)*time.Second, request.args.DryRun)
 			if err != nil {
 				return err
 			}
@@ -503,7 +675,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 		}
 		if request.isLivestream {
 			if settings.LivestreamChatMembersOnly {
-				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, *request.args.Environment)
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 				if err != nil {
 					return err
 				}
@@ -513,7 +685,7 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			}
 		} else {
 			if settings.CommentsMembersOnly {
-				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, *request.args.Environment)
+				hasAccess, err := HasAccessToProtectedChat(request.args.ClaimID, request.args.ChannelID, request.args.Environment)
 				if err != nil {
 					return err
 				}
@@ -534,13 +706,13 @@ func checkSettings(settings *m.CreatorSetting, request *createRequest) error {
 			return errors.Err(err)
 		}
 		if time.Since(request.commenterChannel.CreatedAt) < time.Duration(settings.TimeSinceFirstComment.Int64)*time.Minute {
-			return api.StatusError{Err: errors.Err("this creator has set minimum account age requirements that are not currently met"), Status: http.StatusBadRequest}
+			return api.StatusError{Err: errors.Err(fmt.Sprintf("this creator has set minimum account age requirements that are not currently met: %d minutes", settings.TimeSinceFirstComment.Int64)), Status: http.StatusBadRequest}
 		}
 	}
 	return nil
 }
 
-func checkMinGap(key string, expiration time.Duration) error {
+func checkMinGap(key string, expiration time.Duration, dryRun bool) error {
 	creatorCounter, err := getCounter(key, expiration)
 	if err != nil {
 		return err
@@ -549,7 +721,9 @@ func checkMinGap(key string, expiration time.Duration) error {
 		minGapViolated := fmt.Sprintf("Slow mode is on. Please wait at most %d seconds before commenting again.", int(expiration.Seconds()))
 		return api.StatusError{Err: errors.Err(minGapViolated), Status: http.StatusBadRequest}
 	}
-	creatorCounter.Add(1)
+	if !dryRun {
+		creatorCounter.Add(1)
+	}
 
 	return nil
 }
@@ -570,54 +744,118 @@ func getCounter(key string, expiration time.Duration) (*counter.Counter, error) 
 
 func updateSupportInfo(request *createRequest) error {
 	triesLeft := 3
+	backoff := time.Second
+
 	for {
 		triesLeft--
-		err := updateSupportInfoAttempt(request)
+		err := updateSupportInfoAttempt(request, true)
 		if err == nil {
 			return nil
 		}
 		if triesLeft == 0 {
 			return err
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(backoff)
+		backoff *= 2
 	}
 }
 
-func updateSupportInfoAttempt(request *createRequest) error {
-	if request.args.PaymentIntentID != nil {
+func checkReplays(txID string) error {
+	existingComment, err := m.Comments(m.CommentWhere.TXID.EQ(null.StringFrom(txID))).One(db.RO)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return errors.Err(err)
+		}
+	}
+	if existingComment != nil {
+		return errors.Err("a comment with this transaction id already exists")
+	}
+	return nil
+}
+
+func updateSupportInfoAttempt(request *createRequest, retry bool) error {
+	isStripeTransaction := request.args.PaymentIntentID != nil
+	isLbcTransaction := request.args.SupportTxID != nil
+	isCryptoTransaction := request.args.PaymentTxID != nil
+	if isStripeTransaction {
 		env := ""
 		if request.args.Environment != nil {
 			env = *request.args.Environment
 		}
-		paymentintentClient := &paymentintent.Client{B: stripe.GetBackend(stripe.APIBackend), Key: config.ConnectAPIKey(config.From(env))}
-		pi, err := paymentintentClient.Get(*request.args.PaymentIntentID, &stripe.PaymentIntentParams{})
+		err := checkReplays(*request.args.PaymentIntentID)
 		if err != nil {
-			logrus.Error(errors.Prefix("could not get payment intent %s", *request.args.PaymentIntentID))
-			return errors.Err("could not validate tip")
+			return err
+		}
+		pic := &paymentintent.Client{B: stripe.GetBackend(stripe.APIBackend), Key: config.ConnectAPIKey(config.From(env))}
+		pi, err := pic.Get(*request.args.PaymentIntentID, &stripe.PaymentIntentParams{})
+		if err != nil {
+			if !retry {
+				logrus.Error(errors.Prefix("could not get payment intent %s", *request.args.PaymentIntentID))
+				return errors.Err("could not validate tip")
+			}
+			// in the rare event that the payment intent is not found, wait a bit and try again once
+			time.Sleep(5 * time.Second)
+			return updateSupportInfoAttempt(request, false)
 		}
 		request.comment.Amount.SetValid(uint64(pi.Amount))
 		request.comment.IsFiat = true
 		request.comment.Currency.SetValid(pi.Currency)
+		request.comment.TXID.SetValid(*request.args.PaymentIntentID)
 		return nil
+	} else if isLbcTransaction {
+		err := checkReplays(*request.args.SupportTxID)
+		if err != nil {
+			return err
+		}
+		txSummary, err := lbry.SDK.GetTx(*request.args.SupportTxID)
+		if err != nil {
+			return errors.Err(err)
+		}
+		if txSummary == nil {
+			return errors.Err("transaction not found for txid %s", *request.args.SupportTxID)
+		}
+		var vout uint64
+		if request.args.SupportVout != nil {
+			vout = *request.args.SupportVout
+		}
+		amount, err := getVoutAmount(request.args.ChannelID, txSummary, vout)
+		if err != nil {
+			return errors.Err(err)
+		}
+		request.comment.TXID.SetValid(util.StrFromPtr(request.args.SupportTxID))
+		request.comment.Amount.SetValid(amount)
+		request.comment.Currency.SetValid("LBC")
+		return nil
+	} else if isCryptoTransaction {
+		err := checkReplays(*request.args.PaymentTxID)
+		if err != nil {
+			return err
+		}
+		pi, err := lbry.API.GetDetailsForTransaction(*request.args.PaymentTxID)
+		if err != nil {
+			return err
+		}
+		if pi.Status == "failed" {
+			return errors.Err("transaction is has failed")
+		}
+		if pi.Status == "pending" {
+			return errors.Err("transaction has not been notified to the APIs yet")
+		}
+		if pi.Status == "submitted" {
+			logrus.Warnf("transaction %s is submitted but not yet confirmed ", *request.args.PaymentTxID)
+		}
 
+		if pi.ChannelClaimID != request.args.ChannelID {
+			return errors.Err("channel mismatch for transaction")
+		}
+		if time.Since(pi.TippedAt) > time.Hour {
+			return errors.Err("transaction is too old")
+		}
+		request.comment.Amount.SetValid(pi.Amount)
+		request.comment.Currency.SetValid(pi.Currency)
+		request.comment.TXID.SetValid(*request.args.PaymentTxID)
+		request.comment.IsFiat = true
 	}
-	request.comment.TXID.SetValid(util.StrFromPtr(request.args.SupportTxID))
-	txSummary, err := lbry.SDK.GetTx(request.comment.TXID.String)
-	if err != nil {
-		return errors.Err(err)
-	}
-	if txSummary == nil {
-		return errors.Err("transaction not found for txid %s", request.comment.TXID.String)
-	}
-	var vout uint64
-	if request.args.SupportVout != nil {
-		vout = *request.args.SupportVout
-	}
-	amount, err := getVoutAmount(request.args.ChannelID, txSummary, vout)
-	if err != nil {
-		return errors.Err(err)
-	}
-	request.comment.Amount.SetValid(amount)
 	return nil
 }
 

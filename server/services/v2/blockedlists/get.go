@@ -9,11 +9,10 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func get(r *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *commentapi.SharedBlockedListGetResponse) error {
@@ -48,11 +47,12 @@ func get(r *http.Request, args *commentapi.SharedBlockedListGetArgs, reply *comm
 	var invitedMembers []commentapi.SharedBlockedListInvitedMember
 	if args.Status != commentapi.None && ownerChannel != nil {
 		invitesFilters := []qm.QueryMod{qm.Load(model.BlockedListInviteRels.InvitedChannel), qm.Load(model.BlockedListInviteRels.InviterChannel)}
-		if args.Status == commentapi.Pending {
+		switch args.Status {
+		case commentapi.Pending:
 			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.Bool{}))
-		} else if args.Status == commentapi.Accepted {
+		case commentapi.Accepted:
 			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true)))
-		} else if args.Status == commentapi.Rejected {
+		case commentapi.Rejected:
 			invitesFilters = append(invitesFilters, model.BlockedListInviteWhere.Accepted.EQ(null.BoolFrom(true)))
 		}
 		invites, err := list.BlockedListInvites(invitesFilters...).All(db.RO)

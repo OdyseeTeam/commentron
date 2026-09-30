@@ -2,7 +2,6 @@ package comments
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/OdyseeTeam/commentron/commentapi"
 	"github.com/OdyseeTeam/commentron/db"
@@ -10,10 +9,9 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
@@ -38,10 +36,10 @@ func edit(args *commentapi.EditArgs) (*commentapi.CommentItem, error) {
 	}
 
 	comment.Body = args.Comment
-	comment.IsPinned = false
 	comment.Signature.SetValid(args.Signature)
 	comment.Signingts.SetValid(args.SigningTS)
-	comment.Timestamp = int(time.Now().Unix())
+	// keep original timestamp for now. Eventually track last edit. Frontend can compare signingts and this.
+	//comment.Timestamp = int(time.Now().Unix())
 
 	//todo: check the edited comment against the channel's rules (blockedByCreator currently only accepts CreateRequest objects and not EditRequest objects)
 	//err = blockedByCreator(&createRequest{args: args})

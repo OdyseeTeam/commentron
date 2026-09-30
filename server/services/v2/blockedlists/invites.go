@@ -11,12 +11,11 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func listInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesArgs, reply *commentapi.SharedBlockedListListInvitesResponse) error {
@@ -29,6 +28,9 @@ func listInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesA
 		qm.Load(model.BlockedListInviteRels.BlockedList),
 		qm.Load(model.BlockedListInviteRels.InviterChannel),
 		model.BlockedListInviteWhere.InvitedChannelID.EQ(ownerChannel.ClaimID)).All(db.RO)
+	if err != nil {
+		return errors.Err(err)
+	}
 
 	var invitations []commentapi.SharedBlockedListInvitation
 	for _, invite := range invites {
@@ -65,6 +67,7 @@ func listInvites(r *http.Request, args *commentapi.SharedBlockedListListInvitesA
 }
 
 func invite(r *http.Request, args *commentapi.SharedBlockedListInviteArgs, reply *commentapi.SharedBlockedListInviteResponse) error {
+	_ = reply
 	inviter, _, err := auth.Authenticate(r, &args.Authorization)
 	if err != nil {
 		return err

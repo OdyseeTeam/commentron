@@ -3,17 +3,13 @@ package sockety
 import (
 	"github.com/OdyseeTeam/commentron/config"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-	"github.com/lbryio/sockety/socketyapi"
-
 	"github.com/sirupsen/logrus"
 )
 
-// Token token used to sent notifications to sockety
-var Token string
-
 // URL is the url to connect to an instance of sockety.
-var URL = "https://sockety.lbry.com"
+var URL = "https://sockety.odysee.tv"
 
 var socketyClient *socketyapi.Client
 
@@ -32,7 +28,7 @@ func SendNotification(args socketyapi.SendNotificationArgs) {
 		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendTo: ", err)))
 	}
 	if resp != nil && resp.Error != nil {
-		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base(*resp.Error))))
+		logrus.Error(errors.FullTrace(errors.Prefix("Sockety SendToResp: ", errors.Base("%s", *resp.Error))))
 	}
 }
 

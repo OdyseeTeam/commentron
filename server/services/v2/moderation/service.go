@@ -29,6 +29,11 @@ func (s Service) BlockedList(r *http.Request, args *commentapi.BlockedListArgs, 
 	return blockedList(r, args, reply)
 }
 
+// WipeReactions deletes all reactions created by a target channel.
+func (s Service) WipeReactions(r *http.Request, args *commentapi.WipeReactionsArgs, reply *commentapi.WipeReactionsResponse) error {
+	return wipeReactions(r, args, reply)
+}
+
 // AddDelegate return the list of blocked channels for a moderator
 func (s Service) AddDelegate(r *http.Request, args *commentapi.AddDelegateArgs, reply *commentapi.ListDelegateResponse) error {
 	return addDelegate(r, args, reply)

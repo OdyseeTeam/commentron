@@ -13,10 +13,9 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/lbry"
 
+	"github.com/aarondl/null/v8"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/coreos/go-oidc"
-	"github.com/volatiletech/null/v8"
 )
 
 const oauthClientID = "commentron"
@@ -39,7 +38,7 @@ func init() {
 // ErrNotOAuth missing oauth header
 var ErrNotOAuth = errors.Base("request does not contain oauth header")
 
-//ModAuthenticate authenticates a moderator
+// ModAuthenticate authenticates a moderator
 func ModAuthenticate(r *http.Request, modAuthorization *commentapi.ModAuthorization) (*model.Channel, *model.Channel, *UserInfo, error) {
 	modChannel, ownerChannel, err := helper.GetModerator(modAuthorization.ModChannelID, modAuthorization.ModChannelName, modAuthorization.CreatorChannelID, modAuthorization.CreatorChannelName)
 	if err != nil {

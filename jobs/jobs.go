@@ -3,9 +3,8 @@ package jobs
 import (
 	"time"
 
-	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
-
 	"github.com/OdyseeTeam/commentron/db"
+	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
 	"github.com/OdyseeTeam/commentron/metrics"
 	"github.com/OdyseeTeam/commentron/model"
 

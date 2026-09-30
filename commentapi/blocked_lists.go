@@ -6,11 +6,10 @@ import (
 
 	"github.com/OdyseeTeam/commentron/validator"
 
+	"github.com/aarondl/null/v8"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
-
-	"github.com/volatiletech/null/v8"
 )
 
 // SharedBlockedListUpdateArgs use for blockedlist.Update api

@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func logQueryTime(logger *log.Logger, startTime time.Time) {
@@ -107,7 +107,7 @@ func (t *queryLoggerTx) QueryRow(query string, args ...interface{}) *sql.Row {
 	return t.Tx.QueryRow(query, args...)
 }
 
-//Commit implementation of Transaction Executor
+// Commit implementation of Transaction Executor
 func (t *queryLoggerTx) Commit() error {
 	if t.logger != nil {
 		t.logger.Debug("->  committing tx")

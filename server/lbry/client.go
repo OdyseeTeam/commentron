@@ -4,7 +4,6 @@ import (
 	"github.com/OdyseeTeam/commentron/env"
 
 	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,6 +46,7 @@ type CheckPerkOptions struct {
 type APIClient interface {
 	Notify(NotifyOptions)
 	CheckPerk(CheckPerkOptions) (bool, error)
+	GetDetailsForTransaction(string) (*ArweavePaymentDetailsResponse, error)
 }
 
 // Init initializes the configuration of the LBRY clients and allows for mock clients for testing
@@ -93,4 +93,8 @@ func (m *mockAPI) Notify(options NotifyOptions) {
 
 func (m *mockAPI) CheckPerk(options CheckPerkOptions) (bool, error) {
 	return false, nil
+}
+
+func (m *mockAPI) GetDetailsForTransaction(txID string) (*ArweavePaymentDetailsResponse, error) {
+	return nil, nil
 }

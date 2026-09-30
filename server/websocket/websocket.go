@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/websocket"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	v "github.com/lbryio/ozzo-validation"
 	"github.com/lbryio/ozzo-validation/is"
-
-	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
 

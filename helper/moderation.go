@@ -2,22 +2,29 @@ package helper
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/model"
-	m "github.com/OdyseeTeam/commentron/model"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/lbryio/lbry.go/v2/extras/jsonrpc"
 )
 
 // AllowedToRespond checks if the creator of the comment will allow a response from the respondent
-func AllowedToRespond(parentCommentID, commenterClaimID string) error {
-	parentComment, err := m.Comments(m.CommentWhere.CommentID.EQ(parentCommentID)).One(db.RO)
+func AllowedToRespond(parentCommentID, commenterClaimID string, contentCreatorChannel *jsonrpc.Claim) error {
+	if contentCreatorChannel != nil {
+		isCreator := commenterClaimID == contentCreatorChannel.ClaimID
+		if isCreator {
+			return nil
+		}
+	}
+	parentComment, err := model.Comments(model.CommentWhere.CommentID.EQ(parentCommentID)).One(db.RO)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return errors.Err(err)
 	}
@@ -27,15 +34,21 @@ func AllowedToRespond(parentCommentID, commenterClaimID string) error {
 			return errors.Err(err)
 		}
 		if parentChannel != nil {
-
-			blockedEntry, err := m.BlockedEntries(
-				m.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
-				m.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).One(db.RO)
+			blockedEntry, err := model.BlockedEntries(
+				model.BlockedEntryWhere.CreatorChannelID.EQ(null.StringFrom(parentChannel.ClaimID)),
+				model.BlockedEntryWhere.BlockedChannelID.EQ(null.StringFrom(commenterClaimID))).One(db.RO)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return errors.Err(err)
 			}
 			if blockedEntry != nil {
-				return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+				if !blockedEntry.Expiry.Valid {
+					return api.StatusError{Err: errors.Err("'%s' has blocked you from replying to their comments", parentChannel.Name), Status: http.StatusBadRequest}
+				} else if time.Now().Before(blockedEntry.Expiry.Time) {
+					timeLeft := FormatDur(time.Until(blockedEntry.Expiry.Time))
+					message := fmt.Sprintf("'%s' has temporarily blocked you from replying to their comments for %s", parentChannel.Name, timeLeft)
+					return api.StatusError{Err: errors.Err(message), Status: http.StatusBadRequest}
+				}
+				// If we reach here, the block has expired, so we continue as normal
 			}
 		}
 	}
@@ -62,8 +75,13 @@ func GetModerator(modChannelID, modChannelName, creatorChannelID, creatorChannel
 		if err != nil {
 			return nil, nil, errors.Err(err)
 		}
-		if !exists {
-			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator", modChannel.Name, creatorChannel.Name)
+		isGlobalMod, err := modChannel.ModChannelModerators().Exists(db.RO)
+		if err != nil {
+			return nil, nil, errors.Err(err)
+		}
+		// check if exists and if not, check if the mod is a global mod
+		if !exists && !isGlobalMod {
+			return nil, nil, errors.Err("%s is not delegated by %s to be a moderator, or isn't a global mod", modChannel.Name, creatorChannel.Name)
 		}
 	}
 	return modChannel, creatorChannel, nil

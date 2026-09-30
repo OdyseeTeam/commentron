@@ -9,10 +9,9 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func listAppeals(r *http.Request, args *commentapi.AppealListArgs, reply *commentapi.AppealListResponse) error {
@@ -45,11 +44,8 @@ func getAppeals(channelID string) ([]commentapi.Appeal, error) {
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, errors.Err(err)
 	}
-	//var appeals []commentapi.Appeal
 	for _, entry := range entries {
-		if len(entry.R.BlockedListAppeals) > 0 {
-
-		}
+		_ = entry
 	}
 
 	return nil, nil

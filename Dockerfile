@@ -1,5 +1,5 @@
 ## Comments server for Odysee.com
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 LABEL MAINTAINER="beamer"
 
 RUN export DEBIAN_FRONTEND=noninteractive && \

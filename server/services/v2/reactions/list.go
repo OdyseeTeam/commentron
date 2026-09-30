@@ -10,11 +10,10 @@ import (
 	"github.com/OdyseeTeam/commentron/model"
 	"github.com/OdyseeTeam/commentron/server/auth"
 
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-
-	"github.com/karlseguin/ccache/v2"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func list(r *http.Request, args *commentapi.ReactionListArgs, reply *commentapi.ReactionListResponse) error {

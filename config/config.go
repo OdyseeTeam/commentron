@@ -1,10 +1,13 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/OdyseeTeam/commentron/db"
 	"github.com/OdyseeTeam/commentron/env"
 	"github.com/OdyseeTeam/commentron/helper"
 	"github.com/OdyseeTeam/commentron/jobs/commentclassification"
+
 	"github.com/johntdyer/slackrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -13,12 +16,11 @@ import (
 // SocketyToken token used to communicate with Sockety
 var SocketyToken string
 
-//IsTestMode turns off validations for local testing
+// IsTestMode turns off validations for local testing
 var IsTestMode bool
 
 // InitializeConfiguration inits the base configuration of commentron
 func InitializeConfiguration(conf *env.Config) {
-
 	IsTestMode = conf.IsTestMode
 	if viper.GetBool("debugmode") {
 		helper.Debugging = true
@@ -37,7 +39,6 @@ func InitializeConfiguration(conf *env.Config) {
 	initSlack(conf)
 	initStripe(conf)
 	SocketyToken = conf.SocketyToken
-
 }
 
 // initSlack initializes the slack connection and posts info level or greater to the set channel.
@@ -51,6 +52,11 @@ func initSlack(config *env.Config) {
 			Channel:        slackChannel,
 			IconEmoji:      ":speech_balloon:",
 			Username:       "Commentron",
+			Filters: []slackrus.Filter{
+				func(entry *logrus.Entry) bool {
+					return !strings.Contains(entry.Message, "could not get claim from sdk")
+				},
+			},
 		})
 	}
 }

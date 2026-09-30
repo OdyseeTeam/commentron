@@ -10,11 +10,11 @@ import (
 	"github.com/OdyseeTeam/commentron/server/lbry"
 	"github.com/OdyseeTeam/commentron/sockety"
 
+	"github.com/OdyseeTeam/sockety/socketyapi"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/btcsuite/btcutil"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/lbryio/lbry.go/v2/extras/util"
-	"github.com/lbryio/sockety/socketyapi"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // Service is the service struct defined for the comment package for rpc service "moderation.*"
@@ -107,6 +107,22 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.MinTipAmountComment.SetValid(uint64(lbc.ToUnit(btcutil.AmountSatoshi)))
 		if lbc == 0.0 {
 			settings.MinTipAmountComment.Valid = false
+		}
+	}
+
+	if args.MinUsdcTipAmountSuperChat != nil {
+		cents := uint64(*args.MinUsdcTipAmountSuperChat * 100)
+		settings.MinUsdcTipAmountSuperChat.SetValid(cents)
+		if *args.MinUsdcTipAmountSuperChat == 0.0 {
+			settings.MinUsdcTipAmountSuperChat.Valid = false
+		}
+	}
+
+	if args.MinUsdcTipAmountComment != nil {
+		cents := uint64(*args.MinUsdcTipAmountComment * 100)
+		settings.MinUsdcTipAmountComment.SetValid(cents)
+		if *args.MinUsdcTipAmountComment == 0.0 {
+			settings.MinUsdcTipAmountComment.Valid = false
 		}
 	}
 
@@ -203,11 +219,6 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 		settings.CommentsMembersOnly = *args.CommentsMembersOnly
 	}
 
-	err = settings.Update(db.RW, boil.Infer())
-	if err != nil {
-		return errors.Err(err)
-	}
-
 	membersOnlyChatToggled := args.ActiveClaimID != nil && (args.LivestreamChatMembersOnly != nil || args.CommentsMembersOnly != nil)
 
 	if membersOnlyChatToggled {
@@ -231,6 +242,16 @@ func (s *Service) Update(r *http.Request, args *commentapi.UpdateSettingsArgs, r
 	}
 	if !args.HomepageSettings.IsZero() {
 		settings.HomepageSettings = args.HomepageSettings
+	}
+	if !args.UploadTemplates.IsZero() {
+		settings.UploadTemplates = args.UploadTemplates
+	}
+	if !args.PlaylistOrder.IsZero() {
+		settings.PlaylistOrder = args.PlaylistOrder
+	}
+	err = settings.Update(db.RW, boil.Infer())
+	if err != nil {
+		return errors.Err(err)
 	}
 
 	applySettingsToReply(settings, reply, authorized)
@@ -261,6 +282,14 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 		minTipAmountSuperChat := btcutil.Amount(settings.MinTipAmountSuperChat.Uint64).ToBTC()
 		reply.MinTipAmountSuperChat = &minTipAmountSuperChat
 	}
+	if settings.MinUsdcTipAmountComment.Valid {
+		minUsdcTipAmountComment := float64(settings.MinUsdcTipAmountComment.Uint64) / float64(100)
+		reply.MinUsdcTipAmountComment = &minUsdcTipAmountComment
+	}
+	if settings.MinUsdcTipAmountSuperChat.Valid {
+		minUsdcTipAmountSuperChat := float64(settings.MinUsdcTipAmountSuperChat.Uint64) / float64(100)
+		reply.MinUsdcTipAmountSuperChat = &minUsdcTipAmountSuperChat
+	}
 	if settings.SlowModeMinGap.Valid {
 		reply.SlowModeMinGap = &settings.SlowModeMinGap.Uint64
 	}
@@ -290,4 +319,6 @@ func applySettingsToReply(settings *model.CreatorSetting, reply *commentapi.List
 	reply.CommentsMembersOnly = &settings.CommentsMembersOnly
 	reply.ChannelSections = settings.ChannelSections
 	reply.HomepageSettings = settings.HomepageSettings
+	reply.UploadTemplates = settings.UploadTemplates
+	reply.PlaylistOrder = settings.PlaylistOrder
 }

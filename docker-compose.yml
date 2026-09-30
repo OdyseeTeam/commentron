@@ -2,24 +2,24 @@ version: "3.7"
 
 services:
   mysql:
-    image: mysql/mysql-server:5.7.31
+    image: percona:ps-8.0
     restart: "no"
     expose:
       - "3306"
     environment:
       - MYSQL_DATABASE=commentron
-      - MYSQL_USER=lbry
-      - MYSQL_PASSWORD=lbry
+      - MYSQL_USER=commentron
+      - MYSQL_PASSWORD=commentron
       - MYSQL_LOG_CONSOLE=true
     volumes:
       - data:/var/lib/mysql"
   commentron:
-    image: lbry/commentron:master
+    image: odyseeteam/commentron:master
     restart: "no"
     ports:
       - "5900:5900"
     environment:
-      - MYSQL_DSN=lbry:lbry@tcp(mysql:3306)/commentron
+      - MYSQL_DSN=commentron:commentron@tcp(mysql:3306)/commentron
       - AUTH_TOKEN=<token>
     depends_on:
       - mysql

@@ -5,11 +5,11 @@ mkdir -p /tmp/commentron/init.d
 tee /tmp/commentron/init.d/001_init.sql <<EOF
 CREATE DATABASE IF NOT EXISTS commentron;
 CREATE DATABASE IF NOT EXISTS social;
-CREATE USER 'lbry-ro'@'%' IDENTIFIED BY 'lbry';
-CREATE USER 'lbry-rw'@'%' IDENTIFIED BY 'lbry';
-GRANT ALL ON commentron.* TO 'lbry-rw'@'%';
-GRANT SELECT ON commentron.* TO 'lbry-ro'@'%';
-GRANT ALL ON social.* TO 'lbry-rw'@'%';
+CREATE USER 'commentron-ro'@'%' IDENTIFIED BY 'commentron';
+CREATE USER 'commentron-rw'@'%' IDENTIFIED BY 'commentron';
+GRANT ALL ON commentron.* TO 'commentron-rw'@'%';
+GRANT SELECT ON commentron.* TO 'commentron-ro'@'%';
+GRANT ALL ON social.* TO 'commentron-rw'@'%';
 FLUSH PRIVILEGES;
 EOF
 
@@ -21,4 +21,4 @@ docker run --rm -it -p 3306:3306 \
 
 
 # Verify with:
-# mysql -h localhost -u lbry-rw -p commentron --protocol tcp
+# mysql -h localhost -u commentron-rw -p commentron --protocol tcp

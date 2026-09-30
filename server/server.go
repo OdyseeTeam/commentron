@@ -4,7 +4,7 @@ import (
 	"bytes"
 	jsonmarshall "encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -29,14 +29,13 @@ import (
 	"github.com/OdyseeTeam/commentron/server/services/v2/verify"
 	"github.com/OdyseeTeam/commentron/server/websocket"
 
-	"github.com/lbryio/lbry.go/v2/extras/api"
-	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/rpc/v2"
 	json "github.com/gorilla/rpc/v2/json2"
 	"github.com/justinas/alice"
+	"github.com/lbryio/lbry.go/v2/extras/api"
+	"github.com/lbryio/lbry.go/v2/extras/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
@@ -83,10 +82,10 @@ func Start() {
 func promRequestHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimLeft(r.URL.Path, "/")
-		body, _ := ioutil.ReadAll(r.Body)
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		body, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 		codecRequest := json.NewCodec().NewRequest(r)
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 		if method, err := codecRequest.Method(); err == nil {
 			version, service, method := getCallDetails(path, method)
 			metrics.UserLoadOverall.Inc()

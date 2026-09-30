@@ -11,7 +11,7 @@ APP_DIR="$DIR"
   hash reflex 2>/dev/null || go install github.com/cespare/reflex@latest
   hash reflex 2>/dev/null || { echo >&2 'Make sure $GOPATH/bin is in your $PATH'; exit 1;  }
 
-  hash go-bindata 2>/dev/null || go install github.com/kevinburke/go-bindata/...@latest
+  hash go-bindata 2>/dev/null || go install github.com/kevinburke/go-bindata/v4/...@latest
 
   cd "$APP_DIR"
   #golint -set_exit_status $(go list ./... | grep -v /migration/* )

@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -158,7 +158,7 @@ func getResponseFromCQ(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer helper.CloseBody(response.Body)
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)
 	}

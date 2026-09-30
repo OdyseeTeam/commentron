@@ -11,7 +11,6 @@ import (
 
 	"github.com/lbryio/lbry.go/v2/extras/api"
 	"github.com/lbryio/lbry.go/v2/extras/errors"
-
 	v "github.com/lbryio/ozzo-validation"
 )
 
@@ -26,7 +25,7 @@ type CommentItem struct {
 	Timestamp     int     `json:"timestamp"`
 	ParentID      string  `json:"parent_id,omitempty"`
 	Signature     string  `json:"signature,omitempty"`
-	SigningTs     string  `json:"signing_ts,omitempty"`
+	SigningTS     string  `json:"signing_ts,omitempty"`
 	ChannelID     string  `json:"channel_id,omitempty"`
 	ChannelName   string  `json:"channel_name,omitempty"`
 	ChannelURL    string  `json:"channel_url,omitempty"`
@@ -88,6 +87,9 @@ type CreateArgs struct {
 	SigningTS         string             `json:"signing_ts"`
 	MentionedChannels []MentionedChannel `json:"mentioned_channels"`
 	IsProtected       bool               `json:"is_protected"`
+	Amount            *float64           `json:"amount"`
+	DryRun            bool               `json:"dry_run"`
+	PaymentTxID       *string            `json:"payment_tx_id"`
 }
 
 // CreateResponse response for the comment.Create rpc call
@@ -151,7 +153,7 @@ type ListArgs struct {
 	Hidden               bool    `json:"hidden"`                 // if true will show hidden comments as well
 	SortBy               Sort    `json:"sort_by"`                // can be popularity, controversy, default is time (newest)
 	IsProtected          bool    `json:"is_protected"`           // if true, only return protected when authorized
-	Environment          *string `json:"environment"`            // if set, only return comments with this environment
+	Environment          *string `json:"environment"`            // environment for membership access checks; omitted uses the API default
 }
 
 // Key returns the hash of the list args struct for caching
